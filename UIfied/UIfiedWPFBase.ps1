@@ -65,62 +65,62 @@ class WPFLabel : WPFElement {
 }
 
 class WPFButton : WPFElement {
-    [ScriptBlock] $Action = { }
 
     WPFButton() {
         $this.SetNativeUI([System.Windows.Controls.Button]::new())
         $this.WrapProperty("Caption", "Content")
+        $this.AddScriptBlockProperty("Action")
         $this.NativeUI.Add_Click({ $this.Control.OnAction() })
     }
 
     [void] OnAction() {
-        Invoke-Command -ScriptBlock $this.Action -ArgumentList $this
+        Invoke-Command -ScriptBlock $this._Action -ArgumentList $this
     }
 }
 
 class WPFTextBox : WPFElement {
-    [ScriptBlock] $Change = { }
 
     WPFTextBox() {
         $this.SetNativeUI([System.Windows.Controls.TextBox]::new())
         $this.WrapProperty("Text", "Text")
+        $this.AddScriptBlockProperty("Change")
         $this.NativeUI.Add_TextChanged({ $this.Control.OnChange() })
     }
 
     [void] OnChange() {
-        Invoke-Command -ScriptBlock $this.Change -ArgumentList $this
+        Invoke-Command -ScriptBlock $this._Change -ArgumentList $this
     }
 
 }
 
 class WPFCheckBox : WPFElement {
-    [ScriptBlock] $Click = { }
 
     WPFCheckBox() {
         $this.SetNativeUI([System.Windows.Controls.CheckBox]::new())
         $this.WrapProperty("Caption", "Content")
         $this.WrapProperty("IsChecked", "IsChecked")
+        $this.AddScriptBlockProperty("Click")
         $this.NativeUI.Add_Click({ $this.Control.OnClick() })
     }
 
     [void] OnClick() {
-        Invoke-Command -ScriptBlock $this.Click -ArgumentList $this
+        Invoke-Command -ScriptBlock $this._Click -ArgumentList $this
     }
 
 }
 
 class WPFRadioButton : WPFElement {
-    [ScriptBlock] $Click = { }
 
     WPFRadioButton() {
         $this.SetNativeUI([System.Windows.Controls.RadioButton]::new())
         $this.WrapProperty("Caption", "Content")
         $this.WrapProperty("IsChecked", "IsChecked")
+        $this.AddScriptBlockProperty("Click")
         $this.NativeUI.Add_Click({ $this.Control.OnClick() })
     }
 
     [void] OnClick() {
-        Invoke-Command -ScriptBlock $this.Click -ArgumentList $this
+        Invoke-Command -ScriptBlock $this._Click -ArgumentList $this
     }
 
 }

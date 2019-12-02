@@ -69,26 +69,26 @@ class CFLabel : CFElement {
 }
 
 class CFButton : CFElement {
-    [ScriptBlock] $Action = { }
 
     CFButton() {
         $this.SetNativeUI([Button]::new())
         $this.WrapProperty("Caption", "Caption")
+        $this.AddScriptBlockProperty("Action")
         $this.NativeUI.Add_OnClick({ $this.Control.OnAction() })
     }
 
     [void] OnAction() {
-        Invoke-Command -ScriptBlock $this.Action -ArgumentList $this
+        Invoke-Command -ScriptBlock $this._Action -ArgumentList $this
     }
 }
 
 class CFTextBox : CFElement {
-    [ScriptBlock] $Change = {}
 
     CFTextBox() {
         $this.SetNativeUI([TextBox]::new())
         $this.NativeUI.Size = 10
         $this.WrapProperty("Text", "Text")
+        $this.AddScriptBlockProperty("Change")
         $this.NativeUI.Add_PropertyChanged({
             param (
                 [System.Object] $sender, 
@@ -101,39 +101,39 @@ class CFTextBox : CFElement {
     }
 
     [void] OnChange() {
-        Invoke-Command -ScriptBlock $this.Change -ArgumentList $this
+        Invoke-Command -ScriptBlock $this._Change -ArgumentList $this
     }
 
 }
 
 class CFCheckBox : CFElement {
-    [ScriptBlock] $Click = {}
 
     CFCheckBox() {
         $this.SetNativeUI([CheckBox]::new())
         $this.WrapProperty("Caption", "Caption")
         $this.WrapProperty("IsChecked", "Checked")
+        $this.AddScriptBlockProperty("Click")
         $this.NativeUI.Add_OnClick({ $this.Control.OnClick() })
     }
 
     [void] OnClick() {
-        Invoke-Command -ScriptBlock $this.Click -ArgumentList $this
+        Invoke-Command -ScriptBlock $this._Click -ArgumentList $this
     }
 
 }
 
 class CFRadioButton : CFElement {
-    [ScriptBlock] $Click = {}
 
     CFRadioButton() {
         $this.SetNativeUI([RadioButton]::new())
         $this.WrapProperty("Caption", "Caption")
         $this.WrapProperty("IsChecked", "Checked")
+        $this.AddScriptBlockProperty("Click")
         $this.NativeUI.Add_OnClick({ $this.Control.OnClick() })
     }
 
     [void] OnClick() {
-        Invoke-Command -ScriptBlock $this.Click -ArgumentList $this
+        Invoke-Command -ScriptBlock $this._Click -ArgumentList $this
     }
 
 }

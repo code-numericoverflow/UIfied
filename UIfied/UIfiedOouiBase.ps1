@@ -34,7 +34,7 @@ class OouiWindow : WindowBase {
             $this.NativeUI.AppendChild($element.NativeUI)
         }
     }
-    
+
     [void] ShowDialog() {
     }
 
@@ -107,13 +107,21 @@ class OouiTextBox : OouiElement {
 }
 
 class OouiCheckBox : OouiElement {
+    hidden [Ooui.List]  $ListNativeUI
+    hidden [Ooui.Label] $LabelNativeUI
+    hidden [Ooui.Input] $CheckBoxNativeUI
 
     OouiCheckBox() {
-        $this.SetNativeUI([Ooui.Input]::new("CheckBox"))
-        $this.WrapProperty("Caption", "Text")
-        $this.WrapProperty("IsChecked", "IsChecked")
+        $this.ListNativeUI      = [Ooui.List]::new()
+        $this.LabelNativeUI     = [Ooui.Label]::new()
+        $this.CheckBoxNativeUI  = [Ooui.Input]::new("CheckBox")
+        $this.ListNativeUI.AppendChild($this.CheckBoxNativeUI)
+        $this.ListNativeUI.AppendChild($this.LabelNativeUI)
+        $this.SetNativeUI($this.ListNativeUI)
+        $this.WrapProperty("Caption", "Text", "LabelNativeUI")
+        $this.WrapProperty("IsChecked", "IsChecked", "CheckBoxNativeUI")
         $this.AddScriptBlockProperty("Click")
-        Register-ObjectEvent -InputObject $this.NativeUI -EventName Change -MessageData $this -Action {
+        Register-ObjectEvent -InputObject $this.CheckBoxNativeUI -EventName Change -MessageData $this -Action {
             $this = $event.MessageData
             $this.Control.OnClick()
         } | Out-Null
@@ -126,13 +134,21 @@ class OouiCheckBox : OouiElement {
 }
 
 class OouiRadioButton : OouiElement {
+    hidden [Ooui.List]          $ListNativeUI
+    hidden [Ooui.Label]         $LabelNativeUI
+    hidden [Ooui.Input]         $RadioButtonNativeUI
 
     OouiRadioButton() {
-        $this.SetNativeUI([Ooui.Input]::new("Radio"))
-        $this.WrapProperty("Caption", "Text")
-        $this.WrapProperty("IsChecked", "IsChecked")
+        $this.ListNativeUI            = [Ooui.List]::new()
+        $this.LabelNativeUI           = [Ooui.Label]::new()
+        $this.RadioButtonNativeUI     = [Ooui.Input]::new("Radio")
+        $this.ListNativeUI.AppendChild($this.RadioButtonNativeUI)
+        $this.ListNativeUI.AppendChild($this.LabelNativeUI)
+        $this.SetNativeUI($this.ListNativeUI)
+        $this.WrapProperty("Caption", "Text", "LabelNativeUI")
+        $this.WrapProperty("IsChecked", "IsChecked", "RadioButtonNativeUI")
         $this.AddScriptBlockProperty("Click")
-        Register-ObjectEvent -InputObject $this.NativeUI -EventName Change -MessageData $this -Action {
+        Register-ObjectEvent -InputObject $this.RadioButtonNativeUI -EventName Change -MessageData $this -Action {
             $this = $event.MessageData
             $this.Control.OnClick()
         } | Out-Null
@@ -160,7 +176,7 @@ class OouiRadioGroup : OouiElement {
                     $this.Control.ChildName = "A" + [Guid]::NewGuid().ToString()
                 }
             }
-            $element.NativeUI.Name = $this.Control.ChildName
+            $element.RadioButtonNativeUI.Name = $this.Control.ChildName
             $this.NativeUI.AppendChild($element.NativeUI) | Out-Null
         }
     }

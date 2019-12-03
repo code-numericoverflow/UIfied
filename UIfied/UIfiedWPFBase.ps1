@@ -41,7 +41,7 @@ class WPFWindow : WindowBase {
             $this.NativeUI.Content = $element.NativeUI
         }
     }
-    
+
     [void] ShowDialog() {
         $this.NativeUI.ShowDialog()
     }

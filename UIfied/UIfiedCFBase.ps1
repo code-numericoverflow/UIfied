@@ -46,7 +46,7 @@ class CFWindow : WindowBase {
             $this.NativeUI.Created()
         }
     }
-    
+
     [void] ShowDialog() {
     }
 
@@ -91,7 +91,7 @@ class CFTextBox : CFElement {
         $this.AddScriptBlockProperty("Change")
         $this.NativeUI.Add_PropertyChanged({
             param (
-                [System.Object] $sender, 
+                [System.Object] $sender,
                 [System.ComponentModel.PropertyChangedEventArgs] $eventArgs
             )
             if ($this.Control.NativeUI.HasFocus -and $eventArgs.PropertyName -eq "Text") {

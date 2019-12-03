@@ -14,21 +14,33 @@ class UIConfig {
 }
 
 function Set-UIType {
-    param ( 
+    [CmdletBinding(SupportsShouldProcess)]
+    param (
         [UIType]   $Type
     )
-    [UIConfig]::UIType = $Type
+    if ($PSCmdlet.ShouldProcess('TARGET')) {
+        [UIConfig]::UIType = $Type
+    }
 }
 
 function Set-UICF {
+    [CmdletBinding(SupportsShouldProcess)]
+    param (
+    )
     Set-UIType -Type ([UIType]::CF)
 }
 
 function Set-UIWPF {
+    [CmdletBinding(SupportsShouldProcess)]
+    param (
+    )
     Set-UIType -Type ([UIType]::WPF)
 }
 
 function Set-UIOoui {
+    [CmdletBinding(SupportsShouldProcess)]
+    param (
+    )
     Set-UIType -Type ([UIType]::Ooui)
 }
 
@@ -53,7 +65,7 @@ class UIElement {
     }
 
     hidden [void] SetForm([WindowBase] $form) {
-        if ($form -ne $null) {
+        if ($null -ne $form) {
             $this.Form = $form
             $this.Children | ForEach-Object {
                 $_.SetForm($form)
@@ -61,7 +73,7 @@ class UIElement {
             }
             if ($this.Name -ne "") {
                 $nameMember = Get-Member -InputObject $form -Name $this.Name -MemberType NoteProperty
-                if ($nameMember -eq $null) {
+                if ($null -eq $nameMember) {
                     Add-Member -InputObject $form -Name $this.Name -MemberType NoteProperty -Value $this
                 }
             }
@@ -69,12 +81,16 @@ class UIElement {
     }
 
     hidden [void] WrapProperty([String] $elementPropertyName, [String] $nativeUIProperty) {
-        if (-not $this.IsValidName($elementPropertyName) -or -not $this.IsValidName($nativeUIProperty)) {
+        $this.WrapProperty($elementPropertyName, $nativeUIProperty, "NativeUI")
+    }
+
+    hidden [void] WrapProperty([String] $elementPropertyName, [String] $nativeUIProperty, [String] $nativeUIName) {
+        if (-not $this.IsValidName($elementPropertyName) -or -not $this.IsValidName($nativeUIProperty) -or -not $this.IsValidName($nativeUIName)) {
             return
         }
         Add-Member -InputObject $this -Name $elementPropertyName -MemberType ScriptProperty                `
-                    -Value          ([ScriptBlock]::Create("`$this.NativeUI.$nativeUIProperty"))           `
-                    -SecondValue    ([ScriptBlock]::Create("`$this.NativeUI.$nativeUIProperty = `$args[0]"))
+                    -Value          ([ScriptBlock]::Create("`$this.$nativeUIName.$nativeUIProperty"))           `
+                    -SecondValue    ([ScriptBlock]::Create("`$this.$nativeUIName.$nativeUIProperty = `$args[0]"))
     }
 
     hidden [void] WrapNegatedProperty([String] $elementPropertyName, [String] $nativeUIProperty) {
@@ -98,7 +114,7 @@ class UIElement {
         $commands | ForEach-Object {
             $commandName = $_.CommandElements[0].Value
             $command = Get-Command -Name $commandName -ErrorAction SilentlyContinue
-            if ($command -eq $null) {
+            if ($null -eq $command) {
                 $isValid = $false
             }
         }
@@ -145,13 +161,13 @@ class UIElement {
 
 class WindowBase : UIElement {
 
-    WindowBase() {      
+    WindowBase() {
         $this.Form = $this
     }
 }
 
 class UIHost {
-    
+
     [void] ShowFrame([WindowBase]$window) {
     }
 
@@ -164,7 +180,7 @@ enum Orientation {
 
 class ListItem {
     [List[UIElement]] $Children            = [List[UIElement]]::new()
-    
+
     ListItem() {
     }
 

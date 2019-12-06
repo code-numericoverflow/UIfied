@@ -1,3 +1,4 @@
+using namespace System.Collections.Generic
 using namespace ConsoleFramework
 using namespace ConsoleFramework.Controls
 
@@ -19,6 +20,12 @@ class CFElement : UIElement {
                 [CFElement] $element
             )
             $this.NativeUI.xChildren.Add($element.NativeUI)
+        }
+        $this.RemoveNativeUIChild = {
+            param (
+                [CFElement] $element
+            )
+            $this.NativeUI.xChildren.Remove($element.NativeUI)
         }
     }
 }
@@ -147,46 +154,73 @@ class CFRadioGroup : CFElement {
 }
 
 class CFList : CFStackPanel {
-    $Columns
-    $Items
+    [List[ListItem]] $Items = [List[ListItem]]::new()
 
     CFList() {
         $this.Orientation   = [Orientation]::Horizontal
-        $this.Columns       = @()
-        $this.Items         = @()
     }
 
     [void] AddColumn([CFListColumn] $listColumn) {
-        $this.Columns += $listColumn
+        $column = [CFStackPanel]::new()
+        $column.Orientation           = [Orientation]::Vertical
+        $column.NativeUI.Margin       = [Core.Thickness]::new(1, 1, 0, 1)
+        $title = [CFLabel]::new()
+        $title.Caption = $listColumn.Title
+        $column.AddChild($title)
+        $this.AddChild($column)
     }
 
     [void] AddItem([ListItem] $listItem) {
-        $this.Items += $listItem
-    }
-
-    [void] RemoveItem([ListItem] $listItem) {
-        $this.Items -= $listItem
-    }
-
-    [void] Refresh() {
+        $this.Items.Add($listItem)
         $columnIndex = 0
-        $this.Columns | ForEach-Object {
-            $column = [CFStackPanel]::new()
-            $column.Orientation           = [Orientation]::Vertical
-            $column.NativeUI.Margin       = [Core.Thickness]::new(1, 1, 0, 1)
-            $this.Items | ForEach-Object {
-                $cell = $_.Children.Item($columnIndex)
-                $column.AddChild($cell)
-            }
-            $this.AddChild($column)
+        $this.Children | ForEach-Object {
+            $column = $_
+            $cell = $listItem.Children.Item($columnIndex)
+            $column.AddChild($cell)
             $columnIndex++
         }
     }
+
+    [void] RemoveItem([ListItem] $listItem) {
+        $this.Items.Remove($listItem)
+        $columnIndex = 0
+        $this.Children | ForEach-Object {
+            $column = $_
+            $cell = $listItem.Children.Item($columnIndex)
+            $column.RemoveChild($cell)
+            $columnIndex++
+        }
+    }
+
 }
 
 class CFListColumn {
     [String] $Name
     [String] $Title
-    [Type]   $Type
 }
 
+class CFTabItem : CFElement {
+    [String] $Caption   = ""
+
+    CFTabItem() {
+        $this.SetNativeUI([Panel]::new())
+    }
+
+}
+
+class CFTabControl : CFElement {
+
+    CFTabControl() {
+        $this.SetNativeUI([TabControl]::new())
+        $this.AddNativeUIChild = {
+            param (
+                [CFElement] $element
+            )
+            $tabDefinition = [TabDefinition]::new()
+            $tabDefinition.Title = $element.Caption
+            $this.NativeUI.TabDefinitions.Add($tabDefinition)
+            $this.NativeUI.Controls.Add($element.NativeUI)
+        }
+    }
+
+}

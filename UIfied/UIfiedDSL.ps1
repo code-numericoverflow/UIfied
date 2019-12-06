@@ -144,7 +144,6 @@ function Get-List {
     $itemElements | ForEach-Object {
         $list.AddItem($_)
     }
-    $list.Refresh()
     $list
 }
 
@@ -172,6 +171,38 @@ function Get-ListItem {
         $listItem.AddChild($_)
     }
     $listItem
+}
+
+function Get-TabItem {
+    param (
+        [UIType]       $UIType       = [UIConfig]::UIType,
+        [ScriptBlock]  $Components   = {},
+        [String]       $Caption      = "",
+        [String]       $Name         = ""
+    )
+    $tabItem = New-Object ($UIType.ToString() + "TabItem")
+    $tabItem.Caption = $Caption
+    $tabItem.Name    = $Name
+    $childElements = Invoke-Command -ScriptBlock $Components
+    $childElements | ForEach-Object {
+        $tabItem.AddChild($_)
+    }
+    $tabItem
+}
+
+function Get-TabControl {
+    param (
+        [UIType]       $UIType       = [UIConfig]::UIType,
+        [ScriptBlock]  $Components   = {},
+        [String]       $Name         = ""
+    )
+    $tabControl = New-Object ($UIType.ToString() + "TabControl")
+    $tabControl.Name    = $Name
+    $childElements = Invoke-Command -ScriptBlock $Components
+    $childElements | ForEach-Object {
+        $tabControl.AddChild($_)
+    }
+    $tabControl
 }
 
 #endregion

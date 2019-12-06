@@ -1,3 +1,4 @@
+using namespace System.Collections.Generic
 
 class WPFElement : UIElement {
 
@@ -16,7 +17,13 @@ class WPFElement : UIElement {
             param (
                 [WPFElement] $element
             )
-            $this.NativeUI.AddChild($element.NativeUI)
+            $this.NativeUI.AddChild($element.NativeUI) | Out-Null
+        }
+        $this.RemoveNativeUIChild = {
+            param (
+                [WPFElement] $element
+            )
+            $this.NativeUI.Children.Remove($element.NativeUI) | Out-Null
         }
     }
 }
@@ -32,7 +39,10 @@ class WPFHost : UIHost {
 class WPFWindow : WindowBase {
 
     WPFWindow() {
-        $this.SetNativeUI([system.windows.window]::new())
+        $windowNativeUI = [system.windows.window]::new()
+        $windowNativeUI.SizeToContent = 'WidthAndHeight'
+        $windowNativeUI.Margin        = 10
+        $this.SetNativeUI($windowNativeUI)
         $this.WrapProperty("Caption", "Title")
         $this.AddNativeUIChild = {
             param (
@@ -138,6 +148,78 @@ class WPFRadioGroup : WPFElement {
             )
             $this.StackPanel.AddChild($element.NativeUI)
         }
+    }
+
+}
+
+class WPFList : WPFStackPanel {
+    [List[ListItem]] $Items = [List[ListItem]]::new()
+
+    WPFList() {
+        $this.Orientation   = [Orientation]::Horizontal
+    }
+
+    [void] AddColumn([WPFListColumn] $listColumn) {
+        $column = [WPFStackPanel]::new()
+        $column.Orientation           = [Orientation]::Vertical
+        $title = [WPFLabel]::new()
+        $title.Caption = $listColumn.Title
+        $column.AddChild($title)
+        $this.AddChild($column)
+    }
+
+    [void] AddItem([ListItem] $listItem) {
+        $this.Items.Add($listItem)
+        $columnIndex = 0
+        $this.Children | ForEach-Object {
+            $column = $_
+            $cell = $listItem.Children.Item($columnIndex)
+            $cell.NativeUI.Height = 25
+            $column.AddChild($cell)
+            $columnIndex++
+        }
+    }
+
+    [void] RemoveItem([ListItem] $listItem) {
+        $this.Items.Remove($listItem)
+        $columnIndex = 0
+        $this.Children | ForEach-Object {
+            $column = $_
+            $cell = $listItem.Children.Item($columnIndex)
+            $column.RemoveChild($cell)
+            $columnIndex++
+        }
+    }
+
+}
+
+class WPFListColumn {
+    [String] $Name
+    [String] $Title
+}
+
+class WPFTabItem : WPFElement {
+    hidden $StackPanelNativeUI
+
+    WPFTabItem() {
+        $this.SetNativeUI([System.Windows.Controls.TabItem]::new())
+        $this.StackPanelNativeUI = [System.Windows.Controls.StackPanel]::new()
+        $this.NativeUI.Content = $this.StackPanelNativeUI
+        $this.WrapProperty("Caption", "Header")
+        $this.AddNativeUIChild = {
+            param (
+                [WPFElement] $element
+            )
+            $this.StackPanelNativeUI.AddChild($element.NativeUI) | Out-Null
+        }
+    }
+
+}
+
+class WPFTabControl : WPFElement {
+
+    WPFTabControl() {
+        $this.SetNativeUI([System.Windows.Controls.TabControl]::new())
     }
 
 }

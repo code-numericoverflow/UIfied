@@ -50,9 +50,11 @@ function Set-UIOoui {
 
 class UIElement {
     hidden   [ScriptBlock]     $AddNativeUIChild    = { param ([UIElement] $element) }
+    hidden   [ScriptBlock]     $RemoveNativeUIChild = { param ([UIElement] $element) }
     hidden   [Object]          $NativeUI            = $null
              [List[UIElement]] $Children            = [List[UIElement]]::new()
              [WindowBase]      $Form                = $null
+             [UIElement]       $Parent              = $null
              [String]          $Name                = ""
 
     UIElement() {
@@ -61,7 +63,13 @@ class UIElement {
     [void] AddChild([UIElement] $element) {
         $this.Children.Add($element)
         $element.SetForm($this.Form)
+        $element.SetParent($this)
         Invoke-Command -ScriptBlock $this.AddNativeUIChild -ArgumentList $element
+    }
+
+    [void] RemoveChild([UIElement] $element) {
+        Invoke-Command -ScriptBlock $this.RemoveNativeUIChild -ArgumentList $element
+        $this.Children.Remove($element) | Out-Null
     }
 
     hidden [void] SetForm([WindowBase] $form) {
@@ -77,6 +85,12 @@ class UIElement {
                     Add-Member -InputObject $form -Name $this.Name -MemberType NoteProperty -Value $this
                 }
             }
+        }
+    }
+
+    hidden [void] SetParent([UIElement] $parent) {
+        if ($null -ne $parent) {
+            $this.Parent = $parent
         }
     }
 
@@ -104,8 +118,8 @@ class UIElement {
 
     hidden [void] SetNativeUI([Object] $nativeUI) {
         $this.NativeUI = $nativeUI
-        Add-Member -InputObject $NativeUI -Name Control -MemberType NoteProperty -Value $this
-        Add-Member -InputObject $this     -Name Control -MemberType NoteProperty -Value $this
+        Add-Member -InputObject $NativeUI -Name Control -MemberType NoteProperty -Value $this -Force
+        Add-Member -InputObject $this     -Name Control -MemberType NoteProperty -Value $this -Force
     }
 
     hidden [bool] IsValidScript([ScriptBlock] $scriptBlock) {

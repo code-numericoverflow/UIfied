@@ -1,3 +1,5 @@
+using namespace System.Collections.Generic
+using namespace Ooui
 
 class OouiElement : UIElement {
 
@@ -10,14 +12,20 @@ class OouiElement : UIElement {
             )
             $this.NativeUI.AppendChild($element.NativeUI) | Out-Null
         }
+        $this.RemoveNativeUIChild = {
+            param (
+                [OouiElement] $element
+            )
+            $this.NativeUI.RemoveChild($element.NativeUI) | Out-Host
+        }
     }
 }
 
 class OouiHost : UIHost {
 
     [void] ShowFrame([WindowBase]$window) {
-        [Ooui.UI]::Port = 8185
-        [Ooui.UI]::Publish("/Form", $window.NativeUI)
+        [UI]::Port = 8185
+        [UI]::Publish("/Form", $window.NativeUI)
     }
 
 }
@@ -25,7 +33,7 @@ class OouiHost : UIHost {
 class OouiWindow : WindowBase {
 
     OouiWindow() {
-        $this.SetNativeUI([Ooui.Div]::new())
+        $this.SetNativeUI([Div]::new())
         $this.WrapProperty("Caption", "Title")
         $this.AddNativeUIChild = {
             param (
@@ -41,20 +49,18 @@ class OouiWindow : WindowBase {
 }
 
 class OouiStackPanel : OouiElement {
-    #Sample http://jsfiddle.net/tCnAN/
+    #Divs   https://jsfiddle.net/rwe8hp6f/
 
     OouiStackPanel() {
-        $this.SetNativeUI([Ooui.List]::new())
-        $this.NativeUI.Style.Margin    = 0
-        $this.NativeUI.Style.Padding   = 0
+        $this.SetNativeUI([Div]::new())
         $this.AddProperty("Orientation")
         $this.AddNativeUIChild = {
             param (
                 [OouiElement] $element
             )
-            $listItem = [Ooui.ListItem]::new()
+            $listItem = [Div]::new()
             if ($this._Orientation -eq [Orientation]::Horizontal) {
-                $listItem.Style.Display = "inline-block"
+                $listItem.Style.float = "left"
             } else {
                 $listItem.Style.Display = ""
             }
@@ -67,7 +73,7 @@ class OouiStackPanel : OouiElement {
 class OouiLabel : OouiElement {
 
     OouiLabel() {
-        $this.SetNativeUI([Ooui.Label]::new())
+        $this.SetNativeUI([Span]::new())
         $this.WrapProperty("Caption", "Text")
     }
 }
@@ -75,7 +81,8 @@ class OouiLabel : OouiElement {
 class OouiButton : OouiElement {
 
     OouiButton() {
-        $this.SetNativeUI([Ooui.Button]::new("NotSet"))
+        $nativeUI = [Button]::new("NotSet")
+        $this.SetNativeUI($nativeUI)
         $this.WrapProperty("Caption", "Text")
         $this.AddScriptBlockProperty("Action")
         Register-ObjectEvent -InputObject $this.NativeUI -EventName Click -MessageData $this -Action {
@@ -92,7 +99,7 @@ class OouiButton : OouiElement {
 class OouiTextBox : OouiElement {
 
     OouiTextBox() {
-        $this.SetNativeUI([Ooui.TextInput ]::new())
+        $this.SetNativeUI([TextInput ]::new())
         $this.WrapProperty("Text", "Value")
         $this.AddScriptBlockProperty("Change")
         Register-ObjectEvent -InputObject $this.NativeUI -EventName Change -MessageData $this -Action {
@@ -107,14 +114,14 @@ class OouiTextBox : OouiElement {
 }
 
 class OouiCheckBox : OouiElement {
-    hidden [Ooui.List]  $ListNativeUI
-    hidden [Ooui.Label] $LabelNativeUI
-    hidden [Ooui.Input] $CheckBoxNativeUI
+    hidden [Div]   $ListNativeUI
+    hidden [Span] $LabelNativeUI
+    hidden [Input] $CheckBoxNativeUI
 
     OouiCheckBox() {
-        $this.ListNativeUI      = [Ooui.List]::new()
-        $this.LabelNativeUI     = [Ooui.Label]::new()
-        $this.CheckBoxNativeUI  = [Ooui.Input]::new("CheckBox")
+        $this.ListNativeUI      = [Div]::new()
+        $this.LabelNativeUI     = [Span]::new()
+        $this.CheckBoxNativeUI  = [Input]::new("CheckBox")
         $this.ListNativeUI.AppendChild($this.CheckBoxNativeUI)
         $this.ListNativeUI.AppendChild($this.LabelNativeUI)
         $this.SetNativeUI($this.ListNativeUI)
@@ -134,14 +141,14 @@ class OouiCheckBox : OouiElement {
 }
 
 class OouiRadioButton : OouiElement {
-    hidden [Ooui.List]          $ListNativeUI
-    hidden [Ooui.Label]         $LabelNativeUI
-    hidden [Ooui.Input]         $RadioButtonNativeUI
+    hidden [Div]           $ListNativeUI
+    hidden [Span]         $LabelNativeUI
+    hidden [Input]         $RadioButtonNativeUI
 
     OouiRadioButton() {
-        $this.ListNativeUI            = [Ooui.List]::new()
-        $this.LabelNativeUI           = [Ooui.Label]::new()
-        $this.RadioButtonNativeUI     = [Ooui.Input]::new("Radio")
+        $this.ListNativeUI            = [Div]::new()
+        $this.LabelNativeUI           = [Span]::new()
+        $this.RadioButtonNativeUI     = [Input]::new("Radio")
         $this.ListNativeUI.AppendChild($this.RadioButtonNativeUI)
         $this.ListNativeUI.AppendChild($this.LabelNativeUI)
         $this.SetNativeUI($this.ListNativeUI)
@@ -164,7 +171,7 @@ class OouiRadioGroup : OouiElement {
     hidden [String] $ChildName = ""
 
     OouiRadioGroup() {
-        $this.SetNativeUI([Ooui.Div]::new())
+        $this.SetNativeUI([Div]::new())
         $this.AddNativeUIChild = {
             param (
                 [OouiElement] $element
@@ -180,4 +187,130 @@ class OouiRadioGroup : OouiElement {
             $this.NativeUI.AppendChild($element.NativeUI) | Out-Null
         }
     }
+}
+
+class OouiList : OouiStackPanel {
+    [List[ListItem]] $Items = [List[ListItem]]::new()
+
+    OouiList() {
+        $this.Orientation   = [Orientation]::Horizontal
+    }
+
+    [void] AddColumn([OouiListColumn] $listColumn) {
+        $column = [OouiStackPanel]::new()
+        $column.Orientation           = [Orientation]::Vertical
+        $title = [OouiLabel]::new()
+        $title.Caption = $listColumn.Title
+        $column.AddChild($title)
+        $this.AddChild($column)
+    }
+
+    [void] AddItem([ListItem] $listItem) {
+        $this.Items.Add($listItem)
+        $columnIndex = 0
+        $this.Children | ForEach-Object {
+            $column = $_
+            $cell = $listItem.Children.Item($columnIndex)
+            $column.AddChild($cell)
+            $columnIndex++
+        }
+    }
+
+    [void] RemoveItem([ListItem] $listItem) {
+        $itemIndex = $this.Items.IndexOf($listItem) + 1
+        $this.Children | ForEach-Object {
+            $column = $_
+            $cell = $column.NativeUI.Children.Item($itemIndex)
+            $column.NativeUI.RemoveChild($cell)
+        }
+
+        $columnIndex = 0
+        $this.Children | ForEach-Object {
+            $column = $_
+            $cell = $listItem.Children.Item($columnIndex)
+            $column.Children.Remove($cell)
+            $columnIndex++
+        }
+
+        $this.Items.Remove($listItem)
+    }
+
+}
+
+class OouiListColumn {
+    [String] $Name
+    [String] $Title
+}
+
+class OouiTabItem : OouiStackPanel {
+    [String] $Caption   = ""
+}
+
+#<ul class="nav nav-tabs">
+#  <li class="nav-item">
+#    <a class="nav-link active" href="#">Active</a>
+#  </li>
+#  <li class="nav-item">
+#    <a class="nav-link" href="#">Link</a>
+#  </li>
+#  <li class="nav-item">
+#    <a class="nav-link" href="#">Link</a>
+#  </li>
+#  <li class="nav-item">
+#    <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+#  </li>
+#</ul>
+
+class OouiTabControl : OouiStackPanel {
+    [Ooui.List]     $List     = [Ooui.List]::new()
+
+    OouiTabControl() {
+        $this.List.ClassName = "nav nav-tabs"
+        $this.NativeUI.AppendChild($this.List)
+        $this.AddNativeUIChild = {
+            param (
+                [OouiElement] $element
+            )
+            $item = [Ooui.ListItem]::new()
+            $item.ClassName = "nav-item"
+            $anchor = [Ooui.Anchor]::new()
+            $anchor.ClassName = "nav-link"
+            $anchor.Text = $element.Caption
+            Register-ObjectEvent -InputObject $anchor -EventName Click -MessageData @($this, $anchor) -Action {
+                $event.MessageData
+                $Control = $event.MessageData[0]
+                $anchor  = $event.MessageData[1]
+                $Control.SelectTab($anchor.Text)
+            } | Out-Null
+            $item.AppendChild($anchor) | Out-Null
+            $this.List.AppendChild($item) | Out-Null
+            $this.NativeUI.AppendChild($element.NativeUI) | Out-Null
+
+            $firstTab = $this.GetTabs() | Select-Object -First 1
+            $this.SelectTab($firstTab.Caption)
+        }
+    }
+
+    [OOuiTabItem[]] GetTabs() {
+        return $this.Children | Where-Object { $_.GetType() -eq [OOuiTabItem] }
+    }
+
+    [void] SelectTab([String] $tabCaption) {
+        $this.GetTabs() | ForEach-Object {
+            if ($_.Caption -eq $tabCaption) {
+                $_.Visible = $true
+            } else {
+                $_.Visible = $false
+            }
+        }
+        $this.List.Children | ForEach-Object {
+            $anchor = $_.FirstChild
+            if ($anchor.Text -eq $tabCaption) {
+                $_.ClassName = "nav-link active"
+            } else {
+                $_.ClassName = "nav-link"
+            }
+        }
+    }
+
 }

@@ -27,12 +27,23 @@ class CFElement : UIElement {
             )
             $this.NativeUI.xChildren.Remove($element.NativeUI)
         }
+        $this.ShowError = {
+            param (
+                [Object] $errorObject
+            )
+            [MessageBox]::Show("Error", $errorObject, $null)
+        }
     }
 }
 
 class CFHost : UIHost {
 
-    [void] ShowFrame([WindowBase]$window) {
+    [void] ShowFrame([ScriptBlock] $frameScriptBlock) {
+        $window = Invoke-Command $frameScriptBlock
+        $Global:SyncHash = [HashTable]::Synchronized(@{
+            Window = $window
+            Errors = @()
+        })
         $winhost = [WindowsHost]::new()
         $winhost.Show($window.NativeUI)
         [ConsoleFramework.ConsoleApplication]::Instance.run($winhost)
@@ -85,7 +96,7 @@ class CFButton : CFElement {
     }
 
     [void] OnAction() {
-        Invoke-Command -ScriptBlock $this._Action -ArgumentList $this
+        $this.InvokeTrappableCommand($this._Action, $this)
     }
 }
 
@@ -108,7 +119,7 @@ class CFTextBox : CFElement {
     }
 
     [void] OnChange() {
-        Invoke-Command -ScriptBlock $this._Change -ArgumentList $this
+        $this.InvokeTrappableCommand($this._Change, $this)
     }
 
 }
@@ -124,7 +135,7 @@ class CFCheckBox : CFElement {
     }
 
     [void] OnClick() {
-        Invoke-Command -ScriptBlock $this._Click -ArgumentList $this
+        $this.InvokeTrappableCommand($this._Click, $this)
     }
 
 }
@@ -140,7 +151,7 @@ class CFRadioButton : CFElement {
     }
 
     [void] OnClick() {
-        Invoke-Command -ScriptBlock $this._Click -ArgumentList $this
+        $this.InvokeTrappableCommand($this._Click, $this)
     }
 
 }

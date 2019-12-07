@@ -1,16 +1,18 @@
 using namespace System.Collections.Generic
+using namespace System.Windows
+using namespace System.Windows.Controls
 
 class WPFElement : UIElement {
 
     WPFElement() {
         $this.WrapProperty("Enable", "IsEnabled")
         Add-Member -InputObject $this -Name Visible -MemberType ScriptProperty -Value {
-            $this.NativeUI.Visibility -eq [System.Windows.Visibility]::Visible
+            $this.NativeUI.Visibility -eq [Visibility]::Visible
         } -SecondValue {
             if ($args[0]) {
-                $this.NativeUI.Visibility = [System.Windows.Visibility]::Visible
+                $this.NativeUI.Visibility = [Visibility]::Visible
             } else {
-                $this.NativeUI.Visibility = [System.Windows.Visibility]::Collapsed
+                $this.NativeUI.Visibility = [Visibility]::Collapsed
             }
         }
         $this.AddNativeUIChild = {
@@ -25,13 +27,39 @@ class WPFElement : UIElement {
             )
             $this.NativeUI.Children.Remove($element.NativeUI) | Out-Null
         }
+        $this.ShowError = {
+            param (
+                [Object] $errorObject
+            )
+            [MessageBox]::Show($errorObject)
+        }
     }
+
 }
 
 class WPFHost : UIHost {
+    [HashTable]  $SyncHash
+                 $UIRunspace
 
-    [void] ShowFrame([WindowBase]$window) {
-        $window.ShowDialog()
+    [void] ShowFrame([ScriptBlock] $frameScriptBlock) {
+        $this.SyncHash = [HashTable]::Synchronized(@{})
+        $this.SyncHash.Errors = @()
+        $this.UIRunspace =[RunspaceFactory]::CreateRunspace()
+        $this.UIRunspace.Name = "UIRunspace"
+        $this.UIRunspace.ApartmentState = "STA"
+        $this.UIRunspace.ThreadOptions = "ReuseThread"         
+        $this.UIRunspace.Open()
+        $this.UIRunspace.SessionStateProxy.SetVariable("SyncHash", $this.SyncHash)
+        $referenceScript = "
+            Import-Module ""$PSScriptRoot\..\UIfied""
+            Set-UIWpf
+        "
+        $ps = [PowerShell]::Create()
+        $ps = $ps.AddScript($referenceScript)
+        $script = [ScriptBlock]::Create("`$SyncHash.Window = " + $frameScriptBlock.ToString() + "; `$SyncHash.Window.ShowDialog()")
+        $ps = $ps.AddScript($script)
+        $ps.Runspace = $this.UIRunspace
+        $data = $ps.BeginInvoke()
     }
 
 }
@@ -39,7 +67,7 @@ class WPFHost : UIHost {
 class WPFWindow : WindowBase {
 
     WPFWindow() {
-        $windowNativeUI = [system.windows.window]::new()
+        $windowNativeUI = [Window]::new()
         $windowNativeUI.SizeToContent = 'WidthAndHeight'
         $windowNativeUI.Margin        = 10
         $this.SetNativeUI($windowNativeUI)
@@ -61,7 +89,7 @@ class WPFWindow : WindowBase {
 class WPFStackPanel : WPFElement {
 
     WPFStackPanel() {
-        $this.SetNativeUI([System.Windows.Controls.StackPanel]::new())
+        $this.SetNativeUI([StackPanel]::new())
         $this.WrapProperty("Orientation", "Orientation")
     }
 }
@@ -69,7 +97,7 @@ class WPFStackPanel : WPFElement {
 class WPFLabel : WPFElement {
 
     WPFLabel() {
-        $this.SetNativeUI([System.Windows.Controls.Label]::new())
+        $this.SetNativeUI([Label]::new())
         $this.WrapProperty("Caption", "Content")
     }
 }
@@ -77,28 +105,28 @@ class WPFLabel : WPFElement {
 class WPFButton : WPFElement {
 
     WPFButton() {
-        $this.SetNativeUI([System.Windows.Controls.Button]::new())
+        $this.SetNativeUI([Button]::new())
         $this.WrapProperty("Caption", "Content")
         $this.AddScriptBlockProperty("Action")
         $this.NativeUI.Add_Click({ $this.Control.OnAction() })
     }
 
     [void] OnAction() {
-        Invoke-Command -ScriptBlock $this._Action -ArgumentList $this
+        $this.InvokeTrappableCommand($this._Action, $this)
     }
 }
 
 class WPFTextBox : WPFElement {
 
     WPFTextBox() {
-        $this.SetNativeUI([System.Windows.Controls.TextBox]::new())
+        $this.SetNativeUI([TextBox]::new())
         $this.WrapProperty("Text", "Text")
         $this.AddScriptBlockProperty("Change")
         $this.NativeUI.Add_TextChanged({ $this.Control.OnChange() })
     }
 
     [void] OnChange() {
-        Invoke-Command -ScriptBlock $this._Change -ArgumentList $this
+        $this.InvokeTrappableCommand($this._Change, $this)
     }
 
 }
@@ -106,7 +134,7 @@ class WPFTextBox : WPFElement {
 class WPFCheckBox : WPFElement {
 
     WPFCheckBox() {
-        $this.SetNativeUI([System.Windows.Controls.CheckBox]::new())
+        $this.SetNativeUI([CheckBox]::new())
         $this.WrapProperty("Caption", "Content")
         $this.WrapProperty("IsChecked", "IsChecked")
         $this.AddScriptBlockProperty("Click")
@@ -114,7 +142,7 @@ class WPFCheckBox : WPFElement {
     }
 
     [void] OnClick() {
-        Invoke-Command -ScriptBlock $this._Click -ArgumentList $this
+        $this.InvokeTrappableCommand($this._Click, $this)
     }
 
 }
@@ -122,7 +150,7 @@ class WPFCheckBox : WPFElement {
 class WPFRadioButton : WPFElement {
 
     WPFRadioButton() {
-        $this.SetNativeUI([System.Windows.Controls.RadioButton]::new())
+        $this.SetNativeUI([RadioButton]::new())
         $this.WrapProperty("Caption", "Content")
         $this.WrapProperty("IsChecked", "IsChecked")
         $this.AddScriptBlockProperty("Click")
@@ -130,7 +158,7 @@ class WPFRadioButton : WPFElement {
     }
 
     [void] OnClick() {
-        Invoke-Command -ScriptBlock $this._Click -ArgumentList $this
+        $this.InvokeTrappableCommand($this._Click, $this)
     }
 
 }
@@ -139,8 +167,8 @@ class WPFRadioGroup : WPFElement {
     hidden $StackPanel
 
     WPFRadioGroup() {
-        $this.SetNativeUI([System.Windows.Controls.GroupBox]::new())
-        $this.StackPanel = [System.Windows.Controls.StackPanel]::new()
+        $this.SetNativeUI([GroupBox]::new())
+        $this.StackPanel = [StackPanel]::new()
         $this.NativeUI.Content = $this.StackPanel
         $this.AddNativeUIChild = {
             param (
@@ -202,8 +230,8 @@ class WPFTabItem : WPFElement {
     hidden $StackPanelNativeUI
 
     WPFTabItem() {
-        $this.SetNativeUI([System.Windows.Controls.TabItem]::new())
-        $this.StackPanelNativeUI = [System.Windows.Controls.StackPanel]::new()
+        $this.SetNativeUI([TabItem]::new())
+        $this.StackPanelNativeUI = [StackPanel]::new()
         $this.NativeUI.Content = $this.StackPanelNativeUI
         $this.WrapProperty("Caption", "Header")
         $this.AddNativeUIChild = {
@@ -219,7 +247,7 @@ class WPFTabItem : WPFElement {
 class WPFTabControl : WPFElement {
 
     WPFTabControl() {
-        $this.SetNativeUI([System.Windows.Controls.TabControl]::new())
+        $this.SetNativeUI([TabControl]::new())
     }
 
 }

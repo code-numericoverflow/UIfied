@@ -51,6 +51,8 @@ function Set-UIOoui {
 class UIElement {
     hidden   [ScriptBlock]     $AddNativeUIChild    = { param ([UIElement] $element) }
     hidden   [ScriptBlock]     $RemoveNativeUIChild = { param ([UIElement] $element) }
+    hidden   [ScriptBlock]     $ShowError           = { param ([Object]    $errorObject) }
+    hidden   [int]             $MaxErrors           = 3
     hidden   [Object]          $NativeUI            = $null
              [List[UIElement]] $Children            = [List[UIElement]]::new()
              [WindowBase]      $Form                = $null
@@ -170,6 +172,19 @@ class UIElement {
 
     hidden [bool] IsValidName([String]$name) {
         return ($name -match '(^[a-zA-Z_$][a-zA-Z_$0-9]*$)')
+    }
+
+    [void] InvokeTrappableCommand([ScriptBlock] $ScriptBlock, [Object[]] $ArgumentList) {
+        try {
+            Invoke-Command -ScriptBlock $ScriptBlock -ArgumentList $ArgumentList
+        } catch {
+            $Global:SyncHash.Errors += $_
+            if ($Global:SyncHash.Errors.Count -le $this.MaxErrors) {
+                Invoke-Command -ScriptBlock $this.ShowError -ArgumentList $_
+            } else {
+                $this.Form.NativeUI.Close()
+            }
+        }
     }
 }
 

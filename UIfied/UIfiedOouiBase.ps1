@@ -16,16 +16,66 @@ class OouiElement : UIElement {
             param (
                 [OouiElement] $element
             )
-            $this.NativeUI.RemoveChild($element.NativeUI) | Out-Host
+            $this.NativeUI.RemoveChild($element.NativeUI) | Out-Null
         }
     }
 }
 
 class OouiHost : UIHost {
+    $Shared         = $true
+    $Port           = 8185
+    $CreateElement
 
-    [void] ShowFrame([WindowBase]$window) {
-        [UI]::Port = 8185
-        [UI]::Publish("/Form", $window.NativeUI)
+    [void] ShowFrame([ScriptBlock] $frameScriptBlock) {
+        #$Global:SyncHash = [HashTable]::Synchronized(@{
+        #    Window = $null
+        #    Errors = @()
+        #})
+
+        $this.CreateElement = $frameScriptBlock
+        if ($this.Shared) {
+            $this.ShowSharedFrame()
+        } else {
+            $this.ShowNotSharedFrame()
+        }
+    }
+
+    [void] ShowSharedFrame() {
+        $frame = Invoke-Command -ScriptBlock $this.CreateElement
+        [UI]::Port = $this.Port
+        [UI]::Publish("/Form", $frame.NativeUI)
+    }
+
+    [void] ShowNotSharedFrame() {
+        $notSharedForm = [NotSharedForm]::new()
+        $notSharedForm.CreateElement = $this.CreateElement
+        [UI]::Port = $this.Port
+        [UI]::Publish("/Form", $notSharedForm)
+    }
+}
+
+class NotSharedForm : Div {
+    [Anchor]    $Anchor
+    $CreateElement
+
+    NotSharedForm() {
+        $this.Anchor = [Anchor]::new()
+        $this.Anchor.Text = "Go to Not Shared Form"
+        $this.AppendChild($this.Anchor) | Out-Null
+
+        Register-ObjectEvent -InputObject $this.Anchor -EventName Click -MessageData $this -Action {
+            $this = $event.MessageData
+
+            $notSharedForm = [NotSharedForm]::new()
+            $notSharedForm.CreateElement = $this.CreateElement
+            [Ooui.UI]::Publish("/Form",  $notSharedForm)
+
+            $frame = Invoke-Command -ScriptBlock $this.CreateElement
+            $guid  = [Guid]::NewGuid().ToString()
+            [Ooui.UI]::Publish("/$guid", $frame.NativeUI)
+            $this.Document.Window.Location = "/$guid"
+        } | Out-Null
+
     }
 
 }

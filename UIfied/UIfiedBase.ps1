@@ -174,24 +174,28 @@ class UIElement {
         return ($name -match '(^[a-zA-Z_$][a-zA-Z_$0-9]*$)')
     }
 
-    [void] InvokeTrappableCommand([ScriptBlock] $ScriptBlock, [Object[]] $ArgumentList) {
+    hidden [void] InvokeTrappableCommand([ScriptBlock] $ScriptBlock, [Object[]] $ArgumentList) {
         try {
             Invoke-Command -ScriptBlock $ScriptBlock -ArgumentList $ArgumentList
         } catch {
             $Global:SyncHash.Errors += $_
-            if ($Global:SyncHash.Errors.Count -le $this.MaxErrors) {
-                Invoke-Command -ScriptBlock $this.ShowError -ArgumentList $_
-            } else {
-                $this.Form.NativeUI.Close()
+            Invoke-Command -ScriptBlock $this.ShowError -ArgumentList $_
+            if ($Global:SyncHash.Errors.Count -gt $this.MaxErrors) {
+                $this.Form.Close()
             }
         }
     }
+
 }
 
 class WindowBase : UIElement {
 
     WindowBase() {
         $this.Form = $this
+    }
+
+    [void] Close() {
+        $this.NativeUI.Close()
     }
 }
 

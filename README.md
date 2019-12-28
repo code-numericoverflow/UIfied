@@ -31,7 +31,7 @@ UIFied supports tree UI types
 Write once and use it accross differents UIs. You can switch the target UI framework by simply using a command.
 
     Set-UICF     # Switch to console UI
-    Set-UIWPF    # Switch to Windows Presentation Framework UI
+    Set-UIWPF    # Switch to Windows Presentation Foundation UI
     Set-UIOoui   # Switch to Web UI
 
 ![A simple sample running on different UIs](UIfied.Test/SimpleTest.gif)
@@ -42,7 +42,6 @@ We have implemented these controls:
 
 - Button
 - CheckBox
-- Host
 - Label
 - List
 - ListColumn
@@ -53,4 +52,3 @@ We have implemented these controls:
 - TabControl
 - TabItem
 - TextBox
-- Window

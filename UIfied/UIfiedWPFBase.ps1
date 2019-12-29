@@ -251,3 +251,30 @@ class WPFTabControl : WPFElement {
     }
 
 }
+  
+class WPFModal : WPFElement {
+
+    WPFModal() {
+        $windowNativeUI = [Window]::new()
+        $windowNativeUI.WindowStyle = [WindowStyle]::None
+        $windowNativeUI.SizeToContent = 'WidthAndHeight'
+        $windowNativeUI.Margin        = 10
+        $this.SetNativeUI($windowNativeUI)
+        #$this.WrapProperty("Caption", "Title")
+        $this.AddNativeUIChild = {
+            param (
+                [WPFElement] $element
+            )
+            $this.NativeUI.Content = $element.NativeUI
+        }
+    }
+
+    [void] Show() {
+        $this.NativeUI.WindowStartupLocation = "CenterOwner"
+        $this.NativeUI.ShowDialog()
+    }
+
+    [void] Hide() {
+        $this.NativeUI.Hide()
+    }
+}

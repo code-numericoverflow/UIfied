@@ -235,3 +235,29 @@ class CFTabControl : CFElement {
     }
 
 }
+
+class CFModal : CFElement {
+    $Window
+
+    CFModal() {
+        $this.Window = [Window]::new()
+        $this.SetNativeUI([Panel]::new())
+        #$this.WrapProperty("Caption", "Title")
+        $this.AddNativeUIChild = {
+            param (
+                [CFElement] $element
+            )
+            $this.Window.Content = $element.NativeUI
+        }
+    }
+
+    [void] Show() {
+        [WindowsHost] $windowsHost = [WindowsHost] [ConsoleFramework.ConsoleApplication]::Instance.RootControl
+        $windowsHost.ShowModal($this.Window)
+    }
+
+    [void] Hide() {
+        $this.Window.Close()
+    }
+
+}

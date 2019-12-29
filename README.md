@@ -52,3 +52,4 @@ We have implemented these controls:
 - TabControl
 - TabItem
 - TextBox
+- Modal

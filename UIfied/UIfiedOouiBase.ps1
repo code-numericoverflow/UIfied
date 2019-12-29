@@ -349,3 +349,39 @@ class OouiTabControl : OouiStackPanel {
     }
 
 }
+
+class OouiModal : OouiElement {
+    [Div]   $DialogDiv      = [Div]::new()
+    [Div]   $DocumentDiv    = [Div]::new()
+    [Div]   $ContentDiv     = [Div]::new()
+
+
+    OouiModal() {
+        $this.DialogDiv.ClassName = "modal"
+        $this.DialogDiv.Style.display = "none"
+        $this.DialogDiv.SetAttribute("role", "dialog")
+
+        $this.DocumentDiv.ClassName = "modal-dialog"
+        $this.DocumentDiv.SetAttribute("role", "document")
+        $this.DialogDiv.AppendChild($this.DocumentDiv)
+
+        $this.ContentDiv.ClassName = "modal-content"
+        $this.DocumentDiv.AppendChild($this.ContentDiv)
+
+        $this.SetNativeUI($this.DialogDiv)
+        $this.AddNativeUIChild = {
+            param (
+                [OouiElement] $element
+            )
+            $this.ContentDiv.AppendChild($element.NativeUI)
+        }
+    }
+
+    [void] Show() {
+        $this.DialogDiv.Style.display = "block"
+    }
+
+    [void] Hide() {
+        $this.DialogDiv.Style.display = "none"
+    }
+}

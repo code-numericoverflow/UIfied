@@ -186,6 +186,12 @@ class UIElement {
         }
     }
 
+    [void] AddNoteProperty([String]$propertyName, $value) {
+        if (-not $this.IsValidName($propertyName)) {
+            return
+        }
+        Add-Member -InputObject $this -Name $propertyName   -MemberType NoteProperty -Value $value
+    }
 }
 
 class WindowBase : UIElement {

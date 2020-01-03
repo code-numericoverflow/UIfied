@@ -5,7 +5,7 @@ using namespace ConsoleFramework.Controls
 class CFElement : UIElement {
 
     CFElement() {
-        $this.WrapProperty("Enable", "Focusable")
+        $this.WrapNegatedProperty("Enable", "Disabled")
         Add-Member -InputObject $this -Name Visible -MemberType ScriptProperty -Value {
             $this.NativeUI.Visibility -eq [Visibility]::Visible
         } -SecondValue {
@@ -56,6 +56,7 @@ class CFWindow : WindowBase {
     CFWindow() {
         $this.SetNativeUI([Window]::new())
         $this.WrapProperty("Caption", "Title")
+        $this.AddScriptBlockProperty("Loaded")
         $this.AddNativeUIChild = {
             param (
                 [CFElement] $element
@@ -66,6 +67,10 @@ class CFWindow : WindowBase {
     }
 
     [void] ShowDialog() {
+    }
+
+    [void] OnLoaded() {
+        Invoke-Command -ScriptBlock $this._Loaded -ArgumentList $this
     }
 
 }
@@ -260,4 +265,34 @@ class CFModal : CFElement {
         $this.Window.Close()
     }
 
+}
+
+class CFTimer : CFElement {
+    [System.Timers.Timer] $Timer
+    [Double] $Interval = 1000
+    
+    CFTimer() {
+        $label = [TextBlock]::new()
+        $label.Visibility = [Visibility]::Collapsed
+        $this.SetNativeUI($label)
+        $this.AddScriptBlockProperty("Elapsed")
+        $this.Timer = New-Object System.Timers.Timer
+        Register-ObjectEvent -InputObject $this.Timer -EventName Elapsed -MessageData $this -Action {
+            $this = $event.MessageData
+            $this.Control.OnElapsed()
+        }
+    }
+
+    [void] OnElapsed() {
+        Invoke-Command -ScriptBlock $this._Elapsed -ArgumentList $this
+    }
+    
+    [void] Start() {
+        $this.Timer.Interval = $this.Interval
+        $this.Timer.Start()
+    }
+
+    [void] Stop() {
+        $this.Timer.Stop()
+    }
 }

@@ -85,6 +85,7 @@ class OouiWindow : WindowBase {
     OouiWindow() {
         $this.SetNativeUI([Div]::new())
         $this.WrapProperty("Caption", "Title")
+        $this.AddScriptBlockProperty("Loaded")
         $this.AddNativeUIChild = {
             param (
                 [OouiElement] $element
@@ -96,6 +97,9 @@ class OouiWindow : WindowBase {
     [void] ShowDialog() {
     }
 
+    [void] OnLoaded() {
+        Invoke-Command -ScriptBlock $this._Loaded -ArgumentList $this
+    }
 }
 
 class OouiStackPanel : OouiElement {
@@ -383,5 +387,35 @@ class OouiModal : OouiElement {
 
     [void] Hide() {
         $this.DialogDiv.Style.display = "none"
+    }
+}
+
+class OouiTimer : OouiElement {
+    [System.Timers.Timer] $Timer
+    [Double] $Interval = 1000
+    
+    OouiTimer() {
+        $label = [Span]::new()
+        $label.IsHidden = $true
+        $this.SetNativeUI($label)
+        $this.AddScriptBlockProperty("Elapsed")
+        $this.Timer = New-Object System.Timers.Timer
+        Register-ObjectEvent -InputObject $this.Timer -EventName Elapsed -MessageData $this -Action {
+            $this = $event.MessageData
+            $this.Control.OnElapsed()
+        }
+    }
+
+    [void] OnElapsed() {
+        Invoke-Command -ScriptBlock $this._Elapsed -ArgumentList $this
+    }
+    
+    [void] Start() {
+        $this.Timer.Interval = $this.Interval
+        $this.Timer.Start()
+    }
+
+    [void] Stop() {
+        $this.Timer.Stop()
     }
 }

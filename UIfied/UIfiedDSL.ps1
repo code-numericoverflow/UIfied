@@ -1,8 +1,6 @@
 ﻿using namespace System.Collections.Generic
 using namespace System.Management.Automation.Language
 
-#region DSL
-
 function Get-Host {
     param (
         [UIType]       $UIType       = [UIConfig]::UIType
@@ -13,15 +11,18 @@ function Get-Host {
 function Get-Window {
     param (
         [UIType]       $UIType       = [UIConfig]::UIType,
+        [ScriptBlock]  $Loaded       = {},
         [ScriptBlock]  $Components   = {},
         [String]       $Caption      = ""
     )
     $window = New-Object ($UIType.ToString() + "Window")
+    $window.Loaded = $Loaded
     $window.Caption = $Caption
     $childElements = Invoke-Command -ScriptBlock $Components
     $childElements | ForEach-Object {
         $window.AddChild($_)
     }
+    $window.OnLoaded()
     $window
 }
 
@@ -220,4 +221,16 @@ function Get-Modal {
     $modal
 }
 
-#endregion
+function Get-Timer {
+    param (
+        [UIType]       $UIType       = [UIConfig]::UIType,
+        [ScriptBlock]  $Elapsed      = {},
+        [double]       $Interval     = 1000,
+        [String]       $Name         = ""
+    )
+    $timer = New-Object ($UIType.ToString() + "Timer")
+    $timer.Elapsed    = $Elapsed
+    $timer.Interval   = $Interval
+    $timer.Name       = $Name
+    $timer
+}

@@ -59,7 +59,7 @@ class WPFHost : UIHost {
         $script = [ScriptBlock]::Create("`$SyncHash.Window = " + $frameScriptBlock.ToString() + "; `$SyncHash.Window.ShowDialog()")
         $ps = $ps.AddScript($script)
         $ps.Runspace = $this.UIRunspace
-        $data = $ps.BeginInvoke()
+        $ps.BeginInvoke() | Out-Null
     }
 
 }
@@ -72,6 +72,7 @@ class WPFWindow : WindowBase {
         $windowNativeUI.Margin        = 10
         $this.SetNativeUI($windowNativeUI)
         $this.WrapProperty("Caption", "Title")
+        $this.AddScriptBlockProperty("Loaded")
         $this.AddNativeUIChild = {
             param (
                 [WPFElement] $element
@@ -82,6 +83,10 @@ class WPFWindow : WindowBase {
 
     [void] ShowDialog() {
         $this.NativeUI.ShowDialog()
+    }
+
+    [void] OnLoaded() {
+        Invoke-Command -ScriptBlock $this._Loaded -ArgumentList $this
     }
 
 }
@@ -276,5 +281,36 @@ class WPFModal : WPFElement {
 
     [void] Hide() {
         $this.NativeUI.Hide()
+    }
+}
+
+class WPFTimer : WPFElement {
+    [System.Windows.Threading.DispatcherTimer] $Timer
+    [Double] $Interval = 1000
+    
+    WPFTimer () {
+        $label = [Label]::new()
+        $label.Visibility = [Visibility]::Collapsed
+        $this.SetNativeUI($label)
+        $this.AddScriptBlockProperty("Elapsed")
+        $this.Timer = New-Object System.Windows.Threading.DispatcherTimer
+        Add-Member -InputObject $this.Timer -MemberType NoteProperty -Name Control -Value $this
+        $this.Timer.Add_Tick({
+            $this.Control.OnElapsed()
+            #[System.Windows.Input.CommandManager]::InvalidateRequerySuggested()
+        })
+    }
+
+    [void] OnElapsed() {
+        Invoke-Command -ScriptBlock $this._Elapsed -ArgumentList $this
+    }
+    
+    [void] Start() {
+        $this.Timer.Interval = [TimeSpan]::FromSeconds($this.Interval / 1000)
+        $this.Timer.Start()
+    }
+
+    [void] Stop() {
+        $this.Timer.Stop()
     }
 }

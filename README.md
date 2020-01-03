@@ -53,3 +53,4 @@ We have implemented these controls:
 - TabItem
 - TextBox
 - Modal
+- Timer

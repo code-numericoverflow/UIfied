@@ -234,3 +234,17 @@ function Get-Timer {
     $timer.Name       = $Name
     $timer
 }
+
+function Get-DatePicker {
+    param (
+        [UIType]       $UIType       = [UIConfig]::UIType,
+        [ScriptBlock]  $Change       = {},
+        [DateTime]     $Value        = [DateTime]::Today,
+        [String]       $Name         = ""
+    )
+    $datePicker = New-Object ($UIType.ToString() + "DatePicker")
+    $datePicker.Change     = $Change
+    $datePicker.Value      = $Value
+    $datePicker.Name       = $Name
+    $datePicker
+}

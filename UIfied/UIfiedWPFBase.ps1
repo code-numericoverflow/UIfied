@@ -314,3 +314,17 @@ class WPFTimer : WPFElement {
         $this.Timer.Stop()
     }
 }
+
+class WPFDatePicker : WPFElement {
+
+    WPFDatePicker() {
+        $this.SetNativeUI([DatePicker]::new())
+        $this.WrapProperty("Value", "SelectedDate")
+        $this.AddScriptBlockProperty("Change")
+        $this.NativeUI.Add_SelectedDateChanged({ $this.Control.OnChange() })
+    }
+
+    [void] OnChange() {
+        $this.InvokeTrappableCommand($this._Change, $this)
+    }
+}

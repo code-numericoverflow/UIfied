@@ -54,3 +54,4 @@ We have implemented these controls:
 - TextBox
 - Modal
 - Timer
+- DatePicker

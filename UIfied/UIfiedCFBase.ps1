@@ -296,3 +296,55 @@ class CFTimer : CFElement {
         $this.Timer.Stop()
     }
 }
+
+class CFDatePicker : CFElement {
+
+    CFDatePicker() {
+        $textBox = [TextBox]::new()
+        $textBox.Size = 10
+        $textBox.MaxLenght = 10
+        $this.SetNativeUI($textBox)
+        Add-Member -InputObject $this -Name Value -MemberType ScriptProperty -Value {
+            $this.GetTextDateTime()
+        } -SecondValue {
+            $this.NativeUI.Text = $args[0].ToShortDateString()
+        }
+        $this.AddScriptBlockProperty("Change")
+        $this.NativeUI.Add_PropertyChanged({
+            param (
+                [System.Object] $sender,
+                [System.ComponentModel.PropertyChangedEventArgs] $eventArgs
+            )
+            if ($this.Control.NativeUI.HasFocus -and $eventArgs.PropertyName -eq "Text") {
+                $this.Control.OnChange()
+            }
+        })
+        $this.AddScriptBlockProperty("LostFocus")
+        $this.NativeUI.Add_LostKeyboardFocus({
+            param (
+                $sender,
+                $eventArgs
+            )
+            $this.Control.OnLostFocus()
+        })
+    }
+
+    [void] OnChange() {
+        $this.InvokeTrappableCommand($this._Change, $this)
+    }
+
+    [void] OnLostFocus() {
+        $this.Value = $this.GetTextDateTime()
+        $this.InvokeTrappableCommand($this._LostFocus, $this)
+    }
+
+    hidden [DateTime] GetTextDateTime() {
+        [DateTime] $dateTime = [DateTime]::Today
+        if (-not [DateTime]::TryParse($this.NativeUI.Text, [ref] $dateTime)) {
+            return [DateTime]::Today
+        } else {
+            return $dateTime
+        }
+    }
+
+}

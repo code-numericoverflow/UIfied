@@ -153,7 +153,7 @@ class OouiButton : OouiElement {
 class OouiTextBox : OouiElement {
 
     OouiTextBox() {
-        $this.SetNativeUI([TextInput ]::new())
+        $this.SetNativeUI([TextInput]::new())
         $this.WrapProperty("Text", "Value")
         $this.AddScriptBlockProperty("Change")
         Register-ObjectEvent -InputObject $this.NativeUI -EventName Change -MessageData $this -Action {
@@ -169,7 +169,7 @@ class OouiTextBox : OouiElement {
 
 class OouiCheckBox : OouiElement {
     hidden [Div]   $ListNativeUI
-    hidden [Span] $LabelNativeUI
+    hidden [Span]  $LabelNativeUI
     hidden [Input] $CheckBoxNativeUI
 
     OouiCheckBox() {
@@ -418,4 +418,26 @@ class OouiTimer : OouiElement {
     [void] Stop() {
         $this.Timer.Stop()
     }
+}
+
+class OouiDatePicker : OouiElement {
+
+    OouiDatePicker() {
+        $this.SetNativeUI([Input]::new("Date"))
+        $this.AddScriptBlockProperty("Change")
+        Register-ObjectEvent -InputObject $this.NativeUI -EventName Change -MessageData $this -Action {
+            $this = $event.MessageData
+            $this.Control.OnChange()
+        } | Out-Null
+        Add-Member -InputObject $this -Name Value -MemberType ScriptProperty -Value {
+            [DateTime]::Parse($this.NativeUI.Value)
+        } -SecondValue {
+            $this.NativeUI.Value = $args[0].ToString("yyyy-MM-dd")
+        }
+    }
+
+    [void] OnChange() {
+        Invoke-Command -ScriptBlock $this._Change -ArgumentList $this
+    }
+
 }

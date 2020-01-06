@@ -55,3 +55,4 @@ We have implemented these controls:
 - Modal
 - Timer
 - DatePicker
+- TimePicker

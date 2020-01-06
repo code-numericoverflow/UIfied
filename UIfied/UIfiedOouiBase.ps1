@@ -441,3 +441,38 @@ class OouiDatePicker : OouiElement {
     }
 
 }
+
+class OouiTimePicker : OouiElement {
+
+    OouiTimePicker() {
+        $this.SetNativeUI([Input]::new("Time"))
+        $this.AddScriptBlockProperty("Change")
+        Register-ObjectEvent -InputObject $this.NativeUI -EventName Change -MessageData $this -Action {
+            $this = $event.MessageData
+            $this.Control.OnChange()
+        } | Out-Null
+        Add-Member -InputObject $this -Name Value -MemberType ScriptProperty -Value {
+            if ($this.IsTime($this.NativeUI.Value)) {
+                $this.NativeUI.Value
+            } else {
+                "00:00"
+            }
+        } -SecondValue {
+            if ($this.IsTime($args[0])) {
+                $this.NativeUI.Value = $args[0]
+            } else {
+                "00:00"
+            }
+        }
+    }
+
+    hidden [Boolean] IsTime([String] $timeText) {
+        [DateTime] $dateTime = [DateTime]::Today
+        return [DateTime]::TryParse( "2000-01-01 " + $timeText, [ref] $dateTime)
+    }
+
+    [void] OnChange() {
+        Invoke-Command -ScriptBlock $this._Change -ArgumentList $this
+    }
+
+}

@@ -328,3 +328,40 @@ class WPFDatePicker : WPFElement {
         $this.InvokeTrappableCommand($this._Change, $this)
     }
 }
+
+class WPFTimePicker : WPFElement {
+
+    WPFTimePicker() {
+        $textBox = [TextBox]::new()
+        $textBox.MaxLength = 5
+        $this.SetNativeUI($textBox)
+        Add-Member -InputObject $this -Name Value -MemberType ScriptProperty -Value {
+            $this.GetTextTime()
+        } -SecondValue {
+            $this.NativeUI.Text = $args[0]
+        }
+        $this.AddScriptBlockProperty("Change")
+        $this.NativeUI.Add_TextChanged({ $this.Control.OnChange() })
+        $this.AddScriptBlockProperty("LostFocus")
+        $this.NativeUI.Add_LostFocus({ $this.Control.OnLostFocus() })
+    }
+
+    [void] OnChange() {
+        $this.InvokeTrappableCommand($this._Change, $this)
+    }
+
+    [void] OnLostFocus() {
+        $this.Value = $this.GetTextTime()
+        $this.InvokeTrappableCommand($this._LostFocus, $this)
+    }
+
+    hidden [String] GetTextTime() {
+        [DateTime] $dateTime = [DateTime]::Today
+        if (-not [DateTime]::TryParse("2000-01-01 " + $this.NativeUI.Text, [ref] $dateTime)) {
+            return "00:00"
+        } else {
+            return $dateTime.ToShortTimeString()
+        }
+    }
+
+}

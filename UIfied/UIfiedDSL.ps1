@@ -248,3 +248,17 @@ function Get-DatePicker {
     $datePicker.Name       = $Name
     $datePicker
 }
+
+function Get-TimePicker {
+    param (
+        [UIType]       $UIType       = [UIConfig]::UIType,
+        [ScriptBlock]  $Change       = {},
+        [String]       $Value        = "00:00",
+        [String]       $Name         = ""
+    )
+    $timePicker = New-Object ($UIType.ToString() + "TimePicker")
+    $timePicker.Change     = $Change
+    $timePicker.Value      = $Value
+    $timePicker.Name       = $Name
+    $timePicker
+}

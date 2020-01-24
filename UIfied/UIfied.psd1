@@ -12,7 +12,7 @@
 RootModule = '.\UIfied.psm1'
 
 # Número de versión de este módulo.
-ModuleVersion = '0.0.1'
+ModuleVersion = '0.0.2'
 
 # PSEditions compatibles
 # CompatiblePSEditions = @()
@@ -69,7 +69,11 @@ PowerShellVersion = '5.1'
 # NestedModules = @()
 
 # Funciones para exportar desde este módulo; para conseguir el mejor rendimiento, no uses caracteres comodines ni elimines la entrada; usa una matriz vacía si no hay funciones que exportar.
-FunctionsToExport = '*'
+FunctionsToExport = 'Get-DatePicker', 'Get-Modal', 'Get-Timer', 'Get-Button', 'Get-Host', 
+               'Get-ListColumn', 'Get-ListItem', 'Get-RadioButton', 'Get-TimePicker', 
+               'Get-TabItem', 'Get-Window', 'Set-UIType', 'Set-UIOoui', 'Get-TextBox', 
+               'Set-UIWPF', 'Set-UICF', 'Get-CheckBox', 'Get-TabControl', 
+               'Get-RadioGroup', 'Get-Label', 'Get-List', 'Get-StackPannel'
 
 # Cmdlets para exportar desde este módulo; para conseguir el mejor rendimiento, no uses caracteres comodines ni elimines la entrada; usa una matriz vacía si no hay cmdlets que exportar.
 CmdletsToExport = @()

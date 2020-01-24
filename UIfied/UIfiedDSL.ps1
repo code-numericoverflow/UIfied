@@ -1,7 +1,7 @@
 ﻿using namespace System.Collections.Generic
 using namespace System.Management.Automation.Language
 
-function Get-Host {
+function Get-UIHost {
     param (
         [UIType]       $UIType       = [UIConfig]::UIType
     )

@@ -12,7 +12,7 @@ $sample = {
             }
         }
     }
-    $h = Get-Host
+    $h = Get-UIHost
     $h.ShowFrame($wsb)
 }
 

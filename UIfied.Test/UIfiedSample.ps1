@@ -102,7 +102,7 @@ $wsb = {
     }
 }
 
-Set-UIOoui
-$h = Get-Host
+Set-UIWpf
+$h = Get-UIHost
 $h.ShowFrame($wsb)
 

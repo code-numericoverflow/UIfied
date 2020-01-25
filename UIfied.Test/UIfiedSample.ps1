@@ -2,97 +2,97 @@
 Import-Module "$PSScriptRoot\..\UIfied"
 
 $wsb = {
-    Window -Caption "My Title" -Loaded {
+    UIWindow -Caption "My Title" -Loaded {
             param ($this)
             $this.Form.Caption = $this.Form.Caption + " Loaded => " + (Get-Date).ToString()
         } -Components {
-        StackPannel -Orientation Vertical -Components {
-            Get-Timer  -Name Timer -Elapsed {
+        UIStackPannel -Orientation Vertical -Components {
+            UITimer  -Name Timer -Elapsed {
                 param ($this)
                 $this.Form.TimerLabel.Caption = Get-Date
             }
-            Get-Label    -Caption "Label Sample"
-            TabControl -Components {
-                TabItem -Caption "Buttons" -Components {
-                    Get-Label    -Caption "Button" -Name ButtonLabel
-                    Button   -Caption "Change"  -Action {
+            UILabel    -Caption "Label Sample"
+            UITabControl -Components {
+                UITabItem -Caption "Buttons" -Components {
+                    UILabel    -Caption "Button" -Name ButtonLabel
+                    UIButton   -Caption "Change"  -Action {
                         param($this)
                         $this.Form.ButtonLabel.Caption = Get-Date
                     }
                 }
-                TabItem -Caption "TextBoxes" -Components {
-                    Get-Label    -Caption "TextBox Sample" -Name TextBoxLabel
-                    TextBox  -Change {
+                UITabItem -Caption "TextBoxes" -Components {
+                    UILabel    -Caption "TextBox Sample" -Name TextBoxLabel
+                    UITextBox  -Change {
                         param($this)
                         $this.Form.TextBoxLabel.Caption = $this.Control.Text
                     }
                 }
-                TabItem -Caption "Lists" -Components {
-                    List -Name Grid -Columns {
-                        ListColumn -Title "Column 1"
-                        ListColumn -Title "Column 2"
+                UITabItem -Caption "Lists" -Components {
+                    UIList -Name Grid -Columns {
+                        UIListColumn -Title "Column 1"
+                        UIListColumn -Title "Column 2"
                     } -Items {
-                        ListItem -Components {
-                            Get-Label -Caption "Cell 1,1"
-                            CheckBox -Caption "Cell 1,2"
+                        UIListItem -Components {
+                            UILabel -Caption "Cell 1,1"
+                            UICheckBox -Caption "Cell 1,2"
                         }
-                        ListItem -Components {
-                            Get-Label -Caption "Cell 2,1"
-                            CheckBox -Caption "Cell 2,2"
+                        UIListItem -Components {
+                            UILabel -Caption "Cell 2,1"
+                            UICheckBox -Caption "Cell 2,2"
                         }
-                        ListItem -Components {
-                            Get-Label -Caption "Cell 3,1"
-                            CheckBox -Caption "Cell 3,2"
+                        UIListItem -Components {
+                            UILabel -Caption "Cell 3,1"
+                            UICheckBox -Caption "Cell 3,2"
                         }
                     }
                 }
-                TabItem -Caption "Radios" -Components {
-                    RadioGroup -Components {
-                        RadioButton -Caption "Fish"
-                        RadioButton -Caption "Meat"
+                UITabItem -Caption "Radios" -Components {
+                    UIRadioGroup -Components {
+                        UIRadioButton -Caption "Fish"
+                        UIRadioButton -Caption "Meat"
                     }
                 }
-                TabItem -Caption "CheckBoxes" -Components {
-                    CheckBox -Caption "Ketchup"
-                    CheckBox -Caption "Mayo"
+                UITabItem -Caption "CheckBoxes" -Components {
+                    UICheckBox -Caption "Ketchup"
+                    UICheckBox -Caption "Mayo"
                 }
-                TabItem -Caption "Modal" -Components {
-                    Button   -Caption "Show"  -Action {
+                UITabItem -Caption "Modal" -Components {
+                    UIButton   -Caption "Show"  -Action {
                         param($this)
                         $this.Form.MyModal.Show()
                     }
-                    Modal -Name MyModal -Components {
-                        StackPannel -Orientation Vertical -Components {
-                            CheckBox -Caption "Ketchup"
-                            CheckBox -Caption "Mayo"
-                            Button   -Caption "Hide" -Action {
+                    UIModal -Name MyModal -Components {
+                        UIStackPannel -Orientation Vertical -Components {
+                            UICheckBox -Caption "Ketchup"
+                            UICheckBox -Caption "Mayo"
+                            UIButton   -Caption "Hide" -Action {
                                 param($this)
                                 $this.Form.MyModal.Hide()
                             }
                         }
                     }
                 }
-                TabItem -Caption "Timer" -Components {
-                    Get-Label    -Caption "TimerLabel" -Name "TimerLabel"
-                    Button   -Caption "Run" -Name TimerStart  -Action {
+                UITabItem -Caption "Timer" -Components {
+                    UILabel    -Caption "TimerLabel" -Name "TimerLabel"
+                    UIButton   -Caption "Run" -Name TimerStart  -Action {
                         param($this)
                         $this.Form.Timer.Start()
                         $this.Control.Enable = $false
                         $this.Form.TimerStop.Enable = $true
                     }
-                    Button   -Caption "Stop" -Name TimerStop -Action {
+                    UIButton   -Caption "Stop" -Name TimerStop -Action {
                         param($this)
                         $this.Form.Timer.Stop()
                         $this.Control.Enable = $false
                         $this.Form.TimerStart.Enable = $true
                     }
                 }
-                TabItem -Caption "Pikcers" -Components {
-                    Get-Label    -Caption "DatePicker"
-                    DatePicker -Value ([DateTime]::Today.AddDays(5)) -Name DatePicker
-                    Get-Label    -Caption "TimePicker"
-                    TimePicker -Value "15:27" -Name TimePicker
-                    Button   -Caption "Time" -Action {
+                UITabItem -Caption "Pickers" -Components {
+                    UILabel    -Caption "DatePicker"
+                    UIDatePicker -Value ([DateTime]::Today.AddDays(5)) -Name DatePicker
+                    UILabel    -Caption "TimePicker"
+                    UITimePicker -Value "15:27" -Name TimePicker
+                    UIButton   -Caption "Time" -Action {
                         param($this)
                         $this.Control.Caption = $this.Form.TimePicker.Value
                     }
@@ -102,8 +102,8 @@ $wsb = {
     }
 }
 
-Set-UICF
+Set-UIWpf
 $h = Get-UIHost
-cls
+#cls
 $h.ShowFrame($wsb)
 

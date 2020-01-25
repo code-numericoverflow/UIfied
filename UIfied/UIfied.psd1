@@ -3,7 +3,7 @@
 #
 # Generado por Code
 #
-# Generado el 24/01/2020
+# Generado el 25/01/2020
 #
 
 @{
@@ -12,7 +12,7 @@
 RootModule = '.\UIfied.psm1'
 
 # Número de versión de este módulo.
-ModuleVersion = '0.0.3'
+ModuleVersion = '0.0.4.0'
 
 # PSEditions compatibles
 # CompatiblePSEditions = @()
@@ -69,11 +69,11 @@ PowerShellVersion = '5.1'
 # NestedModules = @()
 
 # Funciones para exportar desde este módulo; para conseguir el mejor rendimiento, no uses caracteres comodines ni elimines la entrada; usa una matriz vacía si no hay funciones que exportar.
-FunctionsToExport = 'Get-DatePicker', 'Get-Modal', 'Get-Timer', 'Get-Button', 'Get-UIHost', 
-               'Get-ListColumn', 'Get-ListItem', 'Get-RadioButton', 'Get-TimePicker', 
-               'Get-TabItem', 'Get-Window', 'Set-UIType', 'Set-UIOoui', 'Get-TextBox', 
-               'Set-UIWPF', 'Set-UICF', 'Get-CheckBox', 'Get-TabControl', 
-               'Get-RadioGroup', 'Get-Label', 'Get-List', 'Get-StackPannel'
+FunctionsToExport = 'Get-UIDatePicker', 'Get-UIModal', 'Get-UITimer', 'Get-UIButton', 'Get-UIHost', 
+               'Get-UIListColumn', 'Get-UIListItem', 'Get-UIRadioButton', 'Get-UITimePicker', 
+               'Get-UITabItem', 'Get-UIWindow', 'Set-UIType', 'Set-UIOoui', 'Get-UITextBox', 
+               'Set-UIWPF', 'Set-UICF', 'Get-UICheckBox', 'Get-UITabControl', 
+               'Get-UIRadioGroup', 'Get-UILabel', 'Get-UIList', 'Get-UIStackPannel'
 
 # Cmdlets para exportar desde este módulo; para conseguir el mejor rendimiento, no uses caracteres comodines ni elimines la entrada; usa una matriz vacía si no hay cmdlets que exportar.
 CmdletsToExport = @()

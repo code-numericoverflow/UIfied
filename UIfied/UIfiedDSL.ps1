@@ -8,7 +8,7 @@ function Get-UIHost {
     New-Object ($UIType.ToString() + "Host")
 }
 
-function Get-Window {
+function Get-UIWindow {
     param (
         [UIType]       $UIType       = [UIConfig]::UIType,
         [ScriptBlock]  $Loaded       = {},
@@ -26,7 +26,7 @@ function Get-Window {
     $window
 }
 
-function Get-Button {
+function Get-UIButton {
     param (
         [UIType]       $UIType       = [UIConfig]::UIType,
         [ScriptBlock]  $Action       = {},
@@ -40,7 +40,7 @@ function Get-Button {
     $button
 }
 
-function Get-StackPannel {
+function Get-UIStackPannel {
     param (
         [UIType]       $UIType       = [UIConfig]::UIType,
         [Orientation]  $Orientation  = [Orientation]::Vertical,
@@ -55,7 +55,7 @@ function Get-StackPannel {
     $stackPanel
 }
 
-function Get-Label {
+function Get-UILabel {
     param (
         [UIType]       $UIType       = [UIConfig]::UIType,
         [String]       $Caption      = "",
@@ -67,7 +67,7 @@ function Get-Label {
     $label
 }
 
-function Get-TextBox {
+function Get-UITextBox {
     param (
         [UIType]       $UIType       = [UIConfig]::UIType,
         [ScriptBlock]  $Change       = {},
@@ -81,7 +81,7 @@ function Get-TextBox {
     $textBox
 }
 
-function Get-CheckBox {
+function Get-UICheckBox {
     param (
         [UIType]       $UIType       = [UIConfig]::UIType,
         [ScriptBlock]  $Click        = {},
@@ -97,7 +97,7 @@ function Get-CheckBox {
     $checkBox
 }
 
-function Get-RadioButton {
+function Get-UIRadioButton {
     param (
         [UIType]       $UIType       = [UIConfig]::UIType,
         [ScriptBlock]  $Click        = {},
@@ -113,7 +113,7 @@ function Get-RadioButton {
     $radioButton
 }
 
-function Get-RadioGroup {
+function Get-UIRadioGroup {
     param (
         [UIType]       $UIType       = [UIConfig]::UIType,
         [ScriptBlock]  $Components   = {},
@@ -128,7 +128,7 @@ function Get-RadioGroup {
     $radioGroup
 }
 
-function Get-List {
+function Get-UIList {
     param (
         [UIType]       $UIType       = [UIConfig]::UIType,
         [ScriptBlock]  $Columns      = {},
@@ -148,7 +148,7 @@ function Get-List {
     $list
 }
 
-function Get-ListColumn {
+function Get-UIListColumn {
     param (
         [UIType]       $UIType       = [UIConfig]::UIType,
         [String]       $Title        = "",
@@ -160,7 +160,7 @@ function Get-ListColumn {
     $listColumn
 }
 
-function Get-ListItem {
+function Get-UIListItem {
     param (
         [UIType]       $UIType       = [UIConfig]::UIType,
         [ScriptBlock]  $Components   = {},
@@ -174,7 +174,7 @@ function Get-ListItem {
     $listItem
 }
 
-function Get-TabItem {
+function Get-UITabItem {
     param (
         [UIType]       $UIType       = [UIConfig]::UIType,
         [ScriptBlock]  $Components   = {},
@@ -191,7 +191,7 @@ function Get-TabItem {
     $tabItem
 }
 
-function Get-TabControl {
+function Get-UITabControl {
     param (
         [UIType]       $UIType       = [UIConfig]::UIType,
         [ScriptBlock]  $Components   = {},
@@ -206,7 +206,7 @@ function Get-TabControl {
     $tabControl
 }
 
-function Get-Modal {
+function Get-UIModal {
     param (
         [UIType]       $UIType       = [UIConfig]::UIType,
         [ScriptBlock]  $Components   = {},
@@ -221,7 +221,7 @@ function Get-Modal {
     $modal
 }
 
-function Get-Timer {
+function Get-UITimer {
     param (
         [UIType]       $UIType       = [UIConfig]::UIType,
         [ScriptBlock]  $Elapsed      = {},
@@ -235,7 +235,7 @@ function Get-Timer {
     $timer
 }
 
-function Get-DatePicker {
+function Get-UIDatePicker {
     param (
         [UIType]       $UIType       = [UIConfig]::UIType,
         [ScriptBlock]  $Change       = {},
@@ -249,7 +249,7 @@ function Get-DatePicker {
     $datePicker
 }
 
-function Get-TimePicker {
+function Get-UITimePicker {
     param (
         [UIType]       $UIType       = [UIConfig]::UIType,
         [ScriptBlock]  $Change       = {},

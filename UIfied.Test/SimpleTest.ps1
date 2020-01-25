@@ -1,11 +1,11 @@
-Import-Module .\UIfied
+Import-Module UIfied
 
 $sample = {
     $wsb = {
-        Get-Window -Caption "Title" -Components {
-            Get-StackPannel -Orientation Vertical -Components {
-                Get-Label    -Caption "Hello"
-                Get-Button   -Caption "Button" -Action {
+        UIWindow -Caption "Title" -Components {
+            UIStackPannel -Orientation Vertical -Components {
+                UILabel    -Caption "Hello"
+                UIButton   -Caption "Button" -Action {
                     param($this)
                     $this.Control.Caption = Get-Date
                 }
@@ -19,8 +19,8 @@ $sample = {
 Set-UIWpf
 Invoke-Command -ScriptBlock $sample
 
-Set-UICF
-Invoke-Command -ScriptBlock $sample
-
-Set-UIOoui
-Invoke-Command -ScriptBlock $sample
+#Set-UICF
+#Invoke-Command -ScriptBlock $sample
+#
+#Set-UIOoui
+#Invoke-Command -ScriptBlock $sample

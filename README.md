@@ -6,19 +6,24 @@ A unified PowerShell DSL for multiple UIs.
 
 Write complex UIs the easy way with the UIfied DSL
 
-    $wsb = {
-        Get-Window -Caption "Title" -Components {
-            Get-StackPannel -Orientation Vertical -Components {
-                Get-Label    -Caption "Hello"
-                Get-Button   -Caption "Button" -Action {
-                    param($this)
-                    $this.Control.Caption = Get-Date
+    $sample = {
+        $wsb = {
+            UIWindow -Caption "Title" -Components {
+                UIStackPannel -Orientation Vertical -Components {
+                    UILabel    -Caption "Hello"
+                    UIButton   -Caption "Button" -Action {
+                        param($this)
+                        $this.Control.Caption = Get-Date
+                    }
                 }
             }
         }
+        $h = Get-UIHost
+        $h.ShowFrame($wsb)
     }
-    $h = Get-Host
-    $h.ShowFrame($wsb)
+
+Set-UIWpf
+Invoke-Command -ScriptBlock $sample
 
 ## Three UI types supported
 

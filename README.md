@@ -22,8 +22,8 @@ Write complex UIs the easy way with the UIfied DSL
         $h.ShowFrame($wsb)
     }
 
-Set-UIWpf
-Invoke-Command -ScriptBlock $sample
+    Set-UIWpf
+    Invoke-Command -ScriptBlock $sample
 
 ## Three UI types supported
 

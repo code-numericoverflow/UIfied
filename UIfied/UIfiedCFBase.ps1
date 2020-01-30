@@ -1,5 +1,7 @@
 using namespace System.Collections.Generic
 using namespace ConsoleFramework
+using namespace ConsoleFramework.Core
+using namespace ConsoleFramework.Native
 using namespace ConsoleFramework.Controls
 
 class CFElement : UIElement {
@@ -86,7 +88,8 @@ class CFStackPanel : CFElement {
 class CFLabel : CFElement {
 
     CFLabel() {
-        $this.SetNativeUI([TextBlock]::new())
+        $textBlock = [TextBlock]::new()
+        $this.SetNativeUI($textBlock)
         $this.WrapProperty("Caption", "Text")
     }
 }
@@ -179,8 +182,9 @@ class CFList : CFStackPanel {
     [void] AddColumn([CFListColumn] $listColumn) {
         $column = [CFStackPanel]::new()
         $column.Orientation           = [Orientation]::Vertical
-        $column.NativeUI.Margin       = [Core.Thickness]::new(1, 1, 0, 1)
+        $column.NativeUI.Margin       = [Thickness]::new(0, 0, 1, 0)
         $title = [CFLabel]::new()
+        $title.NativeUI.Color = [Color]::DarkGray
         $title.Caption = $listColumn.Title
         $column.AddChild($title)
         $this.AddChild($column)

@@ -22,9 +22,9 @@ class OouiElement : UIElement {
 }
 
 class OouiHost : UIHost {
-    $Shared         = $true
+    $Shared         = $false
     $Port           = 8185
-    $CreateElement
+    [ScriptBlock] $CreateElement
 
     [void] ShowFrame([ScriptBlock] $frameScriptBlock) {
         #$Global:SyncHash = [HashTable]::Synchronized(@{
@@ -47,37 +47,33 @@ class OouiHost : UIHost {
     }
 
     [void] ShowNotSharedFrame() {
-        $notSharedForm = [NotSharedForm]::new()
+        $notSharedForm = [NotSharedForm]::new($this.Port, "/Form")
         $notSharedForm.CreateElement = $this.CreateElement
-        [UI]::Port = $this.Port
-        [UI]::Publish("/Form", $notSharedForm)
+        $notSharedForm.Publish()
     }
 }
 
 class NotSharedForm : Div {
-    [Anchor]    $Anchor
-    $CreateElement
+    [Anchor]       $Anchor
+    [ScriptBlock]  $CreateElement
+    [int]          $Port
+    [string]       $Path
 
-    NotSharedForm() {
-        $this.Anchor = [Anchor]::new()
-        $this.Anchor.Text = "Go to Not Shared Form"
-        $this.AppendChild($this.Anchor) | Out-Null
-
-        Register-ObjectEvent -InputObject $this.Anchor -EventName Click -MessageData $this -Action {
-            $this = $event.MessageData
-
-            $notSharedForm = [NotSharedForm]::new()
-            $notSharedForm.CreateElement = $this.CreateElement
-            [Ooui.UI]::Publish("/Form",  $notSharedForm)
-
-            $frame = Invoke-Command -ScriptBlock $this.CreateElement
-            $guid  = [Guid]::NewGuid().ToString()
-            [Ooui.UI]::Publish("/$guid", $frame.NativeUI)
-            $this.Document.Window.Location = "/$guid"
-        } | Out-Null
-
+    NotSharedForm([int]$port, [string]$path) {
+        $this.Port = $port
+        $this.Path = $path
     }
 
+    Publish() {
+        $hostWrapper = [OouiWrapper.OouiWrapper]::new($this.Port, $this.Path)
+        $hostWrapper.Publish()
+        Add-Member -InputObject $hostWrapper -MemberType NoteProperty -Name sb -Value $this.CreateElement | Out-Null
+        Register-ObjectEvent -InputObject $hostWrapper -EventName OnPublish -MessageData $hostWrapper -Action {
+            param ($hostWrapper)
+            $window = Invoke-Command -ScriptBlock $event.MessageData.sb
+            $event.MessageData.Frame = $window.NativeUI
+        } | Out-Null
+    }
 }
 
 class OouiWindow : WindowBase {

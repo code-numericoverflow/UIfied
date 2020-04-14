@@ -61,3 +61,4 @@ We have implemented these controls:
 - Timer
 - DatePicker
 - TimePicker
+- Browser

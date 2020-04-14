@@ -94,10 +94,32 @@ class CFLabel : CFElement {
     }
 }
 
+class MyButton : Button {
+    [Size] MeasureOverride([Size] $availableSize) {
+        if (-not [System.string]::IsNullOrEmpty($this.Caption)) {
+            if ($this.MaxWidth -ge 20) {
+                $currentWidth = 10
+            } else {
+                $currentWidth = $this.MaxWidth
+            }
+            if ($this.MaxHeight -ge 20) {
+                $currentHeight = 2
+            } else {
+                $currentHeight = $this.MaxHeight
+            }
+            [Size] $minButtonSize = [Size]::new($currentWidth, $currentHeight)
+            return $minButtonSize;
+        } else {
+            return [Size]::(8, 2);
+        }
+    }
+
+}
+
 class CFButton : CFElement {
 
     CFButton() {
-        $this.SetNativeUI([Button]::new())
+        $this.SetNativeUI([MyButton]::new())
         $this.WrapProperty("Caption", "Caption")
         $this.AddScriptBlockProperty("Action")
         $this.NativeUI.Add_OnClick({ $this.Control.OnAction() })
@@ -209,6 +231,12 @@ class CFList : CFStackPanel {
             $cell = $listItem.Children.Item($columnIndex)
             $column.RemoveChild($cell)
             $columnIndex++
+        }
+    }
+
+    [void] Clear() {
+        $this.Items.ToArray() | ForEach-Object {
+            $this.RemoveItem($_)
         }
     }
 
@@ -401,6 +429,113 @@ class CFTimePicker : CFElement {
         } else {
             return $dateTime.ToShortTimeString()
         }
+    }
+
+}
+
+class CFBrowser : CFStackPanel {
+    [HashTable[]]         $Data                = [HashTable[]] @()
+    [int]                 $PageRows            = 10
+    [int]                 $CurrentPage         = 0
+    [CFListColumn[]]      $Columns             = [CFListColumn[]] @()
+                          
+    [CFList]              $List                = [CFList]::new()
+    [CFStackPanel]        $ButtonPanel         = [CFStackPanel]::new()
+    [CFButton]            $FirstButton         = [CFButton]::new()
+    [CFButton]            $PreviousButton      = [CFButton]::new()
+    [CFButton]            $NextButton          = [CFButton]::new()
+    [CFButton]            $LastButton          = [CFButton]::new()
+
+    CFBrowser() {
+        $this.AddChild($this.List)
+        $this.AddButtons()
+    }
+
+    hidden [void] AddButtons() {
+        $this.ButtonPanel = [CFStackPanel]::new()
+        $this.ButtonPanel.Orientation = "Horizontal"
+
+        $this.FirstButton.Caption        = "|<"
+        $this.PreviousButton.Caption     = "<<"
+        $this.NextButton.Caption         = ">>"
+        $this.LastButton.Caption         = ">|"
+
+        $this.FirstButton.NativeUI.MaxWidth     = 7
+        $this.PreviousButton.NativeUI.MaxWidth  = 7
+        $this.NextButton.NativeUI.MaxWidth      = 7
+        $this.LastButton.NativeUI.MaxWidth      = 7
+
+        $this.FirstButton.Action                 = { $this.Parent.Parent.OnMoveFirst()     }
+        $this.PreviousButton.Action              = { $this.Parent.Parent.OnMovePrevious()  }
+        $this.NextButton.Action                  = { $this.Parent.Parent.OnMoveNext()      }
+        $this.LastButton.Action                  = { $this.Parent.Parent.OnMoveLast()      }
+
+        $this.ButtonPanel.AddChild($this.FirstButton)
+        $this.ButtonPanel.AddChild($this.PreviousButton)
+        $this.ButtonPanel.AddChild($this.NextButton)
+        $this.ButtonPanel.AddChild($this.LastButton)
+        
+        $this.AddChild($this.ButtonPanel)
+    }
+
+    [void] AddColumn([CFListColumn] $listColumn) {
+        $this.Columns += $listColumn
+        $this.List.AddColumn($listColumn)
+    }
+
+    [void] Refresh() {
+        $this.List.Clear()
+        $this.GetSelectedData() | ForEach-Object {
+            $hash = $_
+            $listItem = [ListItem]::new()
+            $this.Columns | ForEach-Object {
+                $column = $_
+                $itemLabel = [CFLabel]::new()
+                $itemLabel.Caption = $hash."$($column.Name)"
+                $listItem.AddChild($itemLabel)
+            }
+            $this.List.AddItem($listItem)
+        }
+    }
+
+    hidden [HashTable[]] GetSelectedData() {
+        return $this.Data | Select-Object -Skip ($this.CurrentPage * $this.PageRows) -First $this.PageRows
+    }
+
+    hidden [int] GetLastPage() {
+        $lastPage =  [Math]::Truncate($this.Data.Count / $this.PageRows)
+        if (($this.Data.Count % $this.PageRows) -eq 0) {
+            $lastPage--
+        }
+        return $lastPage
+    }
+
+    [void] OnMoveFirst() {
+        $this.CurrentPage = 0
+        $this.Refresh()
+    }
+
+    [void] OnMovePrevious() {
+        if ($this.CurrentPage -gt 0) {
+            $this.CurrentPage--
+        }
+        $this.Refresh()
+    }
+
+    [void] OnMoveNext() {
+        if ($this.CurrentPage -lt $this.GetLastPage()) {
+            $this.CurrentPage++
+        }
+        $this.Refresh()
+    }
+
+    [void] OnMoveLast() {
+        $this.CurrentPage = $this.GetLastPage()
+        $this.Refresh()
+    }
+
+    [void] Clear() {
+        $this.List.Clear()
     }
 
 }

@@ -45,6 +45,10 @@ $wsb = {
                             UICheckBox -Caption "Cell 3,2"
                         }
                     }
+                    UIButton   -Caption "Clear"  -Action {
+                        param($this)
+                        $this.Form.Grid.Clear()
+                    }
                 }
                 UITabItem -Caption "Radios" -Components {
                     UIRadioGroup -Components {
@@ -97,12 +101,20 @@ $wsb = {
                         $this.Control.Caption = $this.Form.TimePicker.Value
                     }
                 }
+                UITabItem -Caption "Browsers" -Components {
+                    UIBrowser -Name Browser -Columns {
+                        UIListColumn -Title "Id" -Name Id
+                        UIListColumn -Title "Description" -Name Description
+                    } -Data @(
+                        1..203 | ForEach-Object { @{Id = $_; Description = "Desc $_"} }
+                    ) -PageRows 14
+                }
             }
         }
     }
 }
 
-Set-UIWpf
+Set-UICF
 $h = Get-UIHost
 #cls
 $h.ShowFrame($wsb)

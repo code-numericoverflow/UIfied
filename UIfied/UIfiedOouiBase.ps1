@@ -112,7 +112,8 @@ class OouiStackPanel : OouiElement {
             if ($this._Orientation -eq [Orientation]::Horizontal) {
                 $listItem.Style.float = "left"
             } else {
-                $listItem.Style.Display = ""
+                $listItem.Style.clear = "both"
+                #$listItem.Style.Display = ""
             }
             $this.NativeUI.AppendChild($listItem) | Out-Null
             $listItem.AppendChild($element.NativeUI) | Out-Null
@@ -283,6 +284,12 @@ class OouiList : OouiStackPanel {
         }
 
         $this.Items.Remove($listItem)
+    }
+
+    [void] Clear() {
+        $this.Items.ToArray() | ForEach-Object {
+            $this.RemoveItem($_)
+        }
     }
 
 }
@@ -469,6 +476,109 @@ class OouiTimePicker : OouiElement {
 
     [void] OnChange() {
         Invoke-Command -ScriptBlock $this._Change -ArgumentList $this
+    }
+
+}
+
+class OouiBrowser : OouiStackPanel {
+    [HashTable[]]           $Data                = [HashTable[]] @()
+    [int]                   $PageRows            = 10
+    [int]                   $CurrentPage         = 0
+    [OouiListColumn[]]      $Columns             = [OouiListColumn[]] @()
+                          
+    [OouiList]              $List                = [OouiList]::new()
+    [OouiStackPanel]        $ButtonPanel         = [OouiStackPanel]::new()
+    [OouiButton]            $FirstButton         = [OouiButton]::new()
+    [OouiButton]            $PreviousButton      = [OouiButton]::new()
+    [OouiButton]            $NextButton          = [OouiButton]::new()
+    [OouiButton]            $LastButton          = [OouiButton]::new()
+
+    OouiBrowser() : base() {
+        $this.Orientation = [Orientation]::Vertical
+        $this.AddChild($this.List)
+        $this.AddButtons()
+    }
+
+    hidden [void] AddButtons() {
+        $this.ButtonPanel = [OouiStackPanel]::new()
+        $this.ButtonPanel.Orientation = [Orientation]::Horizontal
+
+        $this.FirstButton.Caption        = "|<"
+        $this.PreviousButton.Caption     = "<<"
+        $this.NextButton.Caption         = ">>"
+        $this.LastButton.Caption         = ">|"
+
+        $this.FirstButton.Action                 = { $this.Parent.Parent.OnMoveFirst()     }
+        $this.PreviousButton.Action              = { $this.Parent.Parent.OnMovePrevious()  }
+        $this.NextButton.Action                  = { $this.Parent.Parent.OnMoveNext()      }
+        $this.LastButton.Action                  = { $this.Parent.Parent.OnMoveLast()      }
+
+        $this.ButtonPanel.AddChild($this.FirstButton)
+        $this.ButtonPanel.AddChild($this.PreviousButton)
+        $this.ButtonPanel.AddChild($this.NextButton)
+        $this.ButtonPanel.AddChild($this.LastButton)
+        
+        $this.AddChild($this.ButtonPanel)
+    }
+
+    [void] AddColumn([OouiListColumn] $listColumn) {
+        $this.Columns += $listColumn
+        $this.List.AddColumn($listColumn)
+    }
+
+    [void] Refresh() {
+        $this.List.Clear()
+        $this.GetSelectedData() | ForEach-Object {
+            $hash = $_
+            $listItem = [ListItem]::new()
+            $this.Columns | ForEach-Object {
+                $column = $_
+                $itemLabel = [OouiLabel]::new()
+                $itemLabel.Caption = $hash."$($column.Name)"
+                $listItem.AddChild($itemLabel)
+            }
+            $this.List.AddItem($listItem)
+        }
+    }
+
+    hidden [HashTable[]] GetSelectedData() {
+        return $this.Data | Select-Object -Skip ($this.CurrentPage * $this.PageRows) -First $this.PageRows
+    }
+
+    hidden [int] GetLastPage() {
+        $lastPage =  [Math]::Truncate($this.Data.Count / $this.PageRows)
+        if (($this.Data.Count % $this.PageRows) -eq 0) {
+            $lastPage--
+        }
+        return $lastPage
+    }
+
+    [void] OnMoveFirst() {
+        $this.CurrentPage = 0
+        $this.Refresh()
+    }
+
+    [void] OnMovePrevious() {
+        if ($this.CurrentPage -gt 0) {
+            $this.CurrentPage--
+        }
+        $this.Refresh()
+    }
+
+    [void] OnMoveNext() {
+        if ($this.CurrentPage -lt $this.GetLastPage()) {
+            $this.CurrentPage++
+        }
+        $this.Refresh()
+    }
+
+    [void] OnMoveLast() {
+        $this.CurrentPage = $this.GetLastPage()
+        $this.Refresh()
+    }
+
+    [void] Clear() {
+        $this.List.Clear()
     }
 
 }

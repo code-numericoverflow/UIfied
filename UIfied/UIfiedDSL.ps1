@@ -262,3 +262,23 @@ function Get-UITimePicker {
     $timePicker.Name       = $Name
     $timePicker
 }
+
+function Get-UIBrowser {
+    param (
+        [UIType]       $UIType       = [UIConfig]::UIType,
+        [ScriptBlock]  $Columns      = {},
+        [HashTable[]]  $Data         = [HashTable[]] @(),
+        [int]          $PageRows     = 10,
+        [String]       $Name         = ""
+    )
+    $browser = New-Object ($UIType.ToString() + "Browser")
+    $browser.Name       = $Name
+    $columnElements = Invoke-Command -ScriptBlock $Columns
+    $columnElements | ForEach-Object {
+        $browser.AddColumn($_)
+    }
+    $browser.Data = $Data
+    $browser.PageRows = $PageRows
+    $browser.Refresh()
+    $browser
+}

@@ -7,10 +7,11 @@ enum UIType {
     WPF
     CF
     Ooui
+    MaterialWPF
 }
 
 class UIConfig {
-    static [UIType] $UIType = [UIType]::WPF
+    static [UIType] $UIType = [UIType]::MaterialWPF
 }
 
 function Set-UIType {
@@ -42,6 +43,13 @@ function Set-UIOoui {
     param (
     )
     Set-UIType -Type ([UIType]::Ooui)
+}
+
+function Set-UIMaterialWPF {
+    [CmdletBinding(SupportsShouldProcess)]
+    param (
+    )
+    Set-UIType -Type ([UIType]::MaterialWPF)
 }
 
 #endregion

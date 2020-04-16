@@ -106,7 +106,7 @@ $wsb = {
                         UIListColumn -Title "Id" -Name Id
                         UIListColumn -Title "Description" -Name Description
                     } -Data @(
-                        1..203 | ForEach-Object { @{Id = $_; Description = "Desc $_"} }
+                        1..203 | ForEach-Object { @{Id = $_; Description = "Desc $_  jkdf kjafsd j fdas jfas jfas djaf sj fjsad jfsda jfsda fjsda fjdskafjd ks"} }
                     ) -PageRows 14
                 }
             }
@@ -114,7 +114,7 @@ $wsb = {
     }
 }
 
-Set-UICF
+Set-UIMaterialWPF
 $h = Get-UIHost
 #cls
 $h.ShowFrame($wsb)

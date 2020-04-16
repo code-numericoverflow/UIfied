@@ -383,8 +383,10 @@ class WPFBrowser : WPFStackPanel {
     [WPFButton]            $PreviousButton      = [WPFButton]::new()
     [WPFButton]            $NextButton          = [WPFButton]::new()
     [WPFButton]            $LastButton          = [WPFButton]::new()
+    [WPFButton]            $AddNewButton        = [WPFButton]::new()
 
     WPFBrowser() {
+        $this.AddScriptBlockProperty("AddNew")
         $this.AddChild($this.List)
         $this.AddButtons()
     }
@@ -397,23 +399,32 @@ class WPFBrowser : WPFStackPanel {
         $this.PreviousButton.Caption     = "<<"
         $this.NextButton.Caption         = ">>"
         $this.LastButton.Caption         = ">|"
+        $this.AddNewButton.Caption       = "+"
 
         $this.FirstButton.NativeUI.Margin        = 10
         $this.PreviousButton.NativeUI.Margin     = 10
         $this.NextButton.NativeUI.Margin         = 10
         $this.LastButton.NativeUI.Margin         = 10
+        $this.AddNewButton.NativeUI.Margin       = 10
 
         $this.FirstButton.Action                 = { $this.Parent.Parent.OnMoveFirst()     }
         $this.PreviousButton.Action              = { $this.Parent.Parent.OnMovePrevious()  }
         $this.NextButton.Action                  = { $this.Parent.Parent.OnMoveNext()      }
         $this.LastButton.Action                  = { $this.Parent.Parent.OnMoveLast()      }
+        $this.AddNewButton.Action                = { $this.Parent.Parent.OnAddNew()        }
 
         $this.ButtonPanel.AddChild($this.FirstButton)
         $this.ButtonPanel.AddChild($this.PreviousButton)
         $this.ButtonPanel.AddChild($this.NextButton)
         $this.ButtonPanel.AddChild($this.LastButton)
-        
+        $this.ButtonPanel.AddChild($this.AddNewButton)
+
+        $this.StyleComponents()
+
         $this.AddChild($this.ButtonPanel)
+    }
+
+    [void] StyleComponents() {
     }
 
     [void] AddColumn([WPFListColumn] $listColumn) {
@@ -422,17 +433,25 @@ class WPFBrowser : WPFStackPanel {
     }
 
     [void] Refresh() {
+        $index = 0
         $this.List.Clear()
         $this.GetSelectedData() | ForEach-Object {
             $hash = $_
             $listItem = [ListItem]::new()
+            if (($index % 2) -eq 0) {
+                $color = [Media.Brush] "#FFF3F3F3"
+            } else {
+                $color = [Media.Brushes]::Transparent
+            }
             $this.Columns | ForEach-Object {
                 $column = $_
                 $itemLabel = [WPFLabel]::new()
                 $itemLabel.Caption = $hash."$($column.Name)"
+                $itemLabel.NativeUI.Background = $color
                 $listItem.AddChild($itemLabel)
             }
             $this.List.AddItem($listItem)
+            $index++
         }
     }
 
@@ -470,6 +489,10 @@ class WPFBrowser : WPFStackPanel {
     [void] OnMoveLast() {
         $this.CurrentPage = $this.GetLastPage()
         $this.Refresh()
+    }
+
+    [void] OnAddNew() {
+        $this.InvokeTrappableCommand($this._AddNew, $this)
     }
 
     [void] Clear() {

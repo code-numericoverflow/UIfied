@@ -1,4 +1,4 @@
-using namespace System.Collections.Generic
+﻿using namespace System.Collections.Generic
 using namespace ConsoleFramework
 using namespace ConsoleFramework.Core
 using namespace ConsoleFramework.Native
@@ -95,6 +95,7 @@ class CFLabel : CFElement {
 }
 
 class MyButton : Button {
+
     [Size] MeasureOverride([Size] $availableSize) {
         if (-not [System.string]::IsNullOrEmpty($this.Caption)) {
             if ($this.MaxWidth -ge 20) {
@@ -113,7 +114,6 @@ class MyButton : Button {
             return [Size]::(8, 2);
         }
     }
-
 }
 
 class CFButton : CFElement {
@@ -434,47 +434,54 @@ class CFTimePicker : CFElement {
 }
 
 class CFBrowser : CFStackPanel {
-    [HashTable[]]         $Data                = [HashTable[]] @()
-    [int]                 $PageRows            = 10
-    [int]                 $CurrentPage         = 0
-    [CFListColumn[]]      $Columns             = [CFListColumn[]] @()
-                          
-    [CFList]              $List                = [CFList]::new()
-    [CFStackPanel]        $ButtonPanel         = [CFStackPanel]::new()
-    [CFButton]            $FirstButton         = [CFButton]::new()
-    [CFButton]            $PreviousButton      = [CFButton]::new()
-    [CFButton]            $NextButton          = [CFButton]::new()
-    [CFButton]            $LastButton          = [CFButton]::new()
+    [HashTable[]]            $Data            = [HashTable[]] @()
+    [int]                    $PageRows        = 10
+    [int]                    $CurrentPage     = 0
+    [Boolean]                $IsEditable      = $false
+    [HashTable]              $CurrentRow
 
+    #region Components Declaration
+
+    hidden [CFListColumn[]] $Columns         = [CFListColumn[]] @()
+    hidden [CFListColumn]   $EditionColumn
+    hidden [CFList]         $List            = [CFList]::new()
+    hidden [CFStackPanel]   $ButtonPanel     = [CFStackPanel]::new()
+    hidden [CFButton]       $FirstButton     = [CFButton]::new()
+    hidden [CFButton]       $PreviousButton  = [CFButton]::new()
+    hidden [CFButton]       $NextButton      = [CFButton]::new()
+    hidden [CFButton]       $LastButton      = [CFButton]::new()
+    hidden [CFButton]       $AddNewButton    = [CFButton]::new()
+
+    #endregion
+    
     CFBrowser() {
+        $this.AddScriptBlockProperty("AddNew")
+        $this.AddScriptBlockProperty("Edit")
+        $this.AddScriptBlockProperty("Delete")
         $this.AddChild($this.List)
         $this.AddButtons()
     }
+
+    #region Components Creation
 
     hidden [void] AddButtons() {
         $this.ButtonPanel = [CFStackPanel]::new()
         $this.ButtonPanel.Orientation = "Horizontal"
 
-        $this.FirstButton.Caption        = "|<"
-        $this.PreviousButton.Caption     = "<<"
-        $this.NextButton.Caption         = ">>"
-        $this.LastButton.Caption         = ">|"
-
-        $this.FirstButton.NativeUI.MaxWidth     = 7
-        $this.PreviousButton.NativeUI.MaxWidth  = 7
-        $this.NextButton.NativeUI.MaxWidth      = 7
-        $this.LastButton.NativeUI.MaxWidth      = 7
-
         $this.FirstButton.Action                 = { $this.Parent.Parent.OnMoveFirst()     }
         $this.PreviousButton.Action              = { $this.Parent.Parent.OnMovePrevious()  }
         $this.NextButton.Action                  = { $this.Parent.Parent.OnMoveNext()      }
         $this.LastButton.Action                  = { $this.Parent.Parent.OnMoveLast()      }
+        $this.AddNewButton.Action                = { $this.Parent.Parent.OnAddNew()        }
 
         $this.ButtonPanel.AddChild($this.FirstButton)
         $this.ButtonPanel.AddChild($this.PreviousButton)
         $this.ButtonPanel.AddChild($this.NextButton)
         $this.ButtonPanel.AddChild($this.LastButton)
-        
+        $this.ButtonPanel.AddChild($this.AddNewButton)
+
+        $this.StyleComponents()
+
         $this.AddChild($this.ButtonPanel)
     }
 
@@ -483,19 +490,55 @@ class CFBrowser : CFStackPanel {
         $this.List.AddColumn($listColumn)
     }
 
+    hidden [void] CreateEditionColumn() {
+        $this.EditionColumn = New-Object CFListColumn -Property @{Name  = "_Edition"; Title = " "}
+        $this.AddColumn($this.EditionColumn)
+    }
+
+    hidden [void] AddEditionButtons([HashTable] $hash, [ListItem] $listItem, [int] $rowIndex) {
+        $editionPanel = [CFStackPanel]::new()
+        $editionPanel.Orientation = "Horizontal"
+        $listItem.AddChild($editionPanel)
+
+        $editButton = [CFButton]::new()
+        Add-Member -InputObject $editButton -MemberType NoteProperty -Name CurrentRow -Value $hash
+        $editButton.Action = {
+            $this.Parent.Parent.Parent.Parent.CurrentRow = $this.CurrentRow
+            $this.Parent.Parent.Parent.Parent.OnEdit()
+        }
+        $editionPanel.AddChild($editButton)
+
+        $deleteButton = [CFButton]::new()
+        Add-Member -InputObject $deleteButton -MemberType NoteProperty -Name CurrentRow -Value $hash
+        $deleteButton.Action = {
+            $this.Parent.Parent.Parent.Parent.CurrentRow = $this.CurrentRow
+            $this.Parent.Parent.Parent.Parent.OnDelete()
+        }
+        $editionPanel.AddChild($deleteButton)
+        $this.StyleEditionButtons($editButton, $deleteButton, $rowIndex)
+    }
+
+    #endregion
+
+    #region Data show
+
     [void] Refresh() {
+        $this.RefreshEditable()
+        $rowIndex = 0
         $this.List.Clear()
         $this.GetSelectedData() | ForEach-Object {
             $hash = $_
-            $listItem = [ListItem]::new()
-            $this.Columns | ForEach-Object {
-                $column = $_
-                $itemLabel = [CFLabel]::new()
-                $itemLabel.Caption = $hash."$($column.Name)"
-                $listItem.AddChild($itemLabel)
-            }
+            $listItem = $this.GetDataListItem($hash, $rowIndex)
             $this.List.AddItem($listItem)
+            $rowIndex++
         }
+    }
+
+    hidden [void] RefreshEditable() {
+        if ($this.EditionColumn -eq $null -and $this.IsEditable) {
+            $this.CreateEditionColumn()
+        }
+        $this.AddNewButton.Visible = $this.IsEditable
     }
 
     hidden [HashTable[]] GetSelectedData() {
@@ -510,32 +553,105 @@ class CFBrowser : CFStackPanel {
         return $lastPage
     }
 
-    [void] OnMoveFirst() {
+    hidden [ListItem] GetDataListItem([HashTable] $hash, [int] $rowIndex) {
+        $listItem = [ListItem]::new()
+        $this.Columns | ForEach-Object {
+            $column = $_
+            if ($column -eq $this.EditionColumn -and $this.IsEditable) {
+                $this.AddEditionButtons($hash, $listItem, $rowIndex)
+            } else {
+                $this.AddCell($hash, $column.Name, $listItem, $rowIndex)
+            }
+        }
+        return $listItem
+    }
+
+    [void] AddCell([HashTable] $hash, [string] $columnName, [ListItem] $listItem, [int] $rowIndex) {
+        $itemLabel = [CFLabel]::new()
+        $itemLabel.Caption = $hash."$columnName"
+        $this.StyleCell($itemLabel, $rowIndex)
+        $listItem.AddChild($itemLabel)
+    }
+
+    #endregion
+
+    #region Style
+
+    [void] StyleComponents() {
+        $this.FirstButton.Caption        = "|<"
+        $this.PreviousButton.Caption     = "<<"
+        $this.NextButton.Caption         = ">>"
+        $this.LastButton.Caption         = ">|"
+        $this.AddNewButton.Caption       = "+"
+
+        $this.FirstButton.NativeUI.MaxWidth     = 7
+        $this.PreviousButton.NativeUI.MaxWidth  = 7
+        $this.NextButton.NativeUI.MaxWidth      = 7
+        $this.LastButton.NativeUI.MaxWidth      = 7
+        $this.AddNewButton.NativeUI.MaxWidth    = 7
+
+        $this.AddNewButton.NativeUI.MaxHeight   = 4
+        $this.AddNewButton.NativeUI.Margin      = [Thickness]::new(6, 0, 0, 0)
+    }
+
+    [void] StyleCell($cell, [int] $rowIndex) {
+        if ($this.IsEditable) {
+            $cell.NativeUI.Margin       = [Thickness]::new(0, 0, 0, 1)
+        }
+    }
+
+    [void] StyleEditionButtons([CFButton] $editButton, [CFButton] $deleteButton, [int] $rowIndex) {
+        $editButton.Caption       = "*"
+        $deleteButton.Caption     = "-"
+
+        $editButton.NativeUI.MaxWidth     = 5
+        $deleteButton.NativeUI.MaxWidth   = 5
+    }
+
+    #endregion
+
+    #region Move Events
+    
+    hidden [void] OnMoveFirst() {
         $this.CurrentPage = 0
         $this.Refresh()
     }
-
-    [void] OnMovePrevious() {
+    
+    hidden [void] OnMovePrevious() {
         if ($this.CurrentPage -gt 0) {
             $this.CurrentPage--
         }
         $this.Refresh()
     }
-
-    [void] OnMoveNext() {
+    
+    hidden [void] OnMoveNext() {
         if ($this.CurrentPage -lt $this.GetLastPage()) {
             $this.CurrentPage++
         }
         $this.Refresh()
     }
-
-    [void] OnMoveLast() {
+    
+    hidden [void] OnMoveLast() {
         $this.CurrentPage = $this.GetLastPage()
         $this.Refresh()
     }
 
-    [void] Clear() {
-        $this.List.Clear()
+    #endregion
+    
+    #region CRUD Events
+
+    hidden [void] OnAddNew() {
+        $this.InvokeTrappableCommand($this._AddNew, $this)
     }
+    
+    hidden [void] OnEdit() {
+        $this.InvokeTrappableCommand($this._Edit, $this)
+    }
+    
+    hidden [void] OnDelete() {
+        $this.InvokeTrappableCommand($this._Delete, $this)
+    }
+
+    #endregion
 
 }

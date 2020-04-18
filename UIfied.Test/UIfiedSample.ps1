@@ -105,8 +105,15 @@ $wsb = {
                     UIBrowser -Name Browser -Columns {
                         UIListColumn -Title "Id" -Name Id
                         UIListColumn -Title "Description" -Name Description
+                    } -Edit {
+                        param($this)
+                        $this.Form.ButtonLabel.Caption = $this.Control.CurrentRow | ConvertTo-Json
+                    } -AddNew {
+                        param($this)
+                        $this.Control.Data += @{Id = "dd"; Description = Get-Date }
+                        $this.Control.Refresh()
                     } -Data @(
-                        1..203 | ForEach-Object { @{Id = $_; Description = "Desc $_  jkdf kjafsd j fdas jfas jfas djaf sj fjsad jfsda jfsda fjsda fjdskafjd ks"} }
+                        1..203 | ForEach-Object { @{Id = $_; Description = "Desc $_  jkdf kjafsd j fdas jfas jfas djaf sj "} }
                     ) -PageRows 14
                 }
             }

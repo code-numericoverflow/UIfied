@@ -269,6 +269,9 @@ function Get-UIBrowser {
         [ScriptBlock]  $Columns      = {},
         [HashTable[]]  $Data         = [HashTable[]] @(),
         [int]          $PageRows     = 10,
+        [ScriptBlock]  $AddNew       = {},
+        [ScriptBlock]  $Edit         = {},
+        [ScriptBlock]  $Delete       = {},
         [String]       $Name         = ""
     )
     $browser = New-Object ($UIType.ToString() + "Browser")
@@ -280,5 +283,8 @@ function Get-UIBrowser {
     $browser.Data = $Data
     $browser.PageRows = $PageRows
     $browser.Refresh()
+    $browser.AddNew = $AddNew
+    $browser.Edit   = $Edit
+    $browser.Delete = $Delete
     $browser
 }

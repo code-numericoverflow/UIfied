@@ -481,43 +481,54 @@ class OouiTimePicker : OouiElement {
 }
 
 class OouiBrowser : OouiStackPanel {
-    [HashTable[]]           $Data                = [HashTable[]] @()
-    [int]                   $PageRows            = 10
-    [int]                   $CurrentPage         = 0
-    [OouiListColumn[]]      $Columns             = [OouiListColumn[]] @()
-                          
-    [OouiList]              $List                = [OouiList]::new()
-    [OouiStackPanel]        $ButtonPanel         = [OouiStackPanel]::new()
-    [OouiButton]            $FirstButton         = [OouiButton]::new()
-    [OouiButton]            $PreviousButton      = [OouiButton]::new()
-    [OouiButton]            $NextButton          = [OouiButton]::new()
-    [OouiButton]            $LastButton          = [OouiButton]::new()
+    [HashTable[]]            $Data            = [HashTable[]] @()
+    [int]                    $PageRows        = 10
+    [int]                    $CurrentPage     = 0
+    [Boolean]                $IsEditable      = $true
+    [HashTable]              $CurrentRow
 
-    OouiBrowser() : base() {
-        $this.Orientation = [Orientation]::Vertical
+    #region Components Declaration
+
+    hidden [OouiListColumn[]] $Columns         = [OouiListColumn[]] @()
+    hidden [OouiListColumn]   $EditionColumn
+    hidden [OouiList]         $List            = [OouiList]::new()
+    hidden [OouiStackPanel]   $ButtonPanel     = [OouiStackPanel]::new()
+    hidden [OouiButton]       $FirstButton     = [OouiButton]::new()
+    hidden [OouiButton]       $PreviousButton  = [OouiButton]::new()
+    hidden [OouiButton]       $NextButton      = [OouiButton]::new()
+    hidden [OouiButton]       $LastButton      = [OouiButton]::new()
+    hidden [OouiButton]       $AddNewButton    = [OouiButton]::new()
+
+    #endregion
+    
+    OouiBrowser() {
+        $this.AddScriptBlockProperty("AddNew")
+        $this.AddScriptBlockProperty("Edit")
+        $this.AddScriptBlockProperty("Delete")
         $this.AddChild($this.List)
         $this.AddButtons()
     }
 
+    #region Components Creation
+
     hidden [void] AddButtons() {
         $this.ButtonPanel = [OouiStackPanel]::new()
-        $this.ButtonPanel.Orientation = [Orientation]::Horizontal
-
-        $this.FirstButton.Caption        = "|<"
-        $this.PreviousButton.Caption     = "<<"
-        $this.NextButton.Caption         = ">>"
-        $this.LastButton.Caption         = ">|"
+        $this.ButtonPanel.Orientation = "Horizontal"
 
         $this.FirstButton.Action                 = { $this.Parent.Parent.OnMoveFirst()     }
         $this.PreviousButton.Action              = { $this.Parent.Parent.OnMovePrevious()  }
         $this.NextButton.Action                  = { $this.Parent.Parent.OnMoveNext()      }
         $this.LastButton.Action                  = { $this.Parent.Parent.OnMoveLast()      }
+        $this.AddNewButton.Action                = { $this.Parent.Parent.OnAddNew()        }
 
         $this.ButtonPanel.AddChild($this.FirstButton)
         $this.ButtonPanel.AddChild($this.PreviousButton)
         $this.ButtonPanel.AddChild($this.NextButton)
         $this.ButtonPanel.AddChild($this.LastButton)
-        
+        $this.ButtonPanel.AddChild($this.AddNewButton)
+
+        $this.StyleComponents()
+
         $this.AddChild($this.ButtonPanel)
     }
 
@@ -526,19 +537,55 @@ class OouiBrowser : OouiStackPanel {
         $this.List.AddColumn($listColumn)
     }
 
+    hidden [void] CreateEditionColumn() {
+        $this.EditionColumn = New-Object OouiListColumn -Property @{Name  = "_Edition"; Title = "_"}
+        $this.AddColumn($this.EditionColumn)
+    }
+
+    hidden [void] AddEditionButtons([HashTable] $hash, [ListItem] $listItem, [int] $rowIndex) {
+        $editionPanel = [OouiStackPanel]::new()
+        $editionPanel.Orientation = "Horizontal"
+        $listItem.AddChild($editionPanel)
+
+        $editButton = [OouiButton]::new()
+        Add-Member -InputObject $editButton -MemberType NoteProperty -Name CurrentRow -Value $hash
+        $editButton.Action = {
+            $this.Parent.Parent.Parent.Parent.CurrentRow = $this.CurrentRow
+            $this.Parent.Parent.Parent.Parent.OnEdit()
+        }
+        $editionPanel.AddChild($editButton)
+
+        $deleteButton = [OouiButton]::new()
+        Add-Member -InputObject $deleteButton -MemberType NoteProperty -Name CurrentRow -Value $hash
+        $deleteButton.Action = {
+            $this.Parent.Parent.Parent.Parent.CurrentRow = $this.CurrentRow
+            $this.Parent.Parent.Parent.Parent.OnDelete()
+        }
+        $editionPanel.AddChild($deleteButton)
+        $this.StyleEditionButtons($editButton, $deleteButton, $rowIndex)
+    }
+
+    #endregion
+
+    #region Data show
+
     [void] Refresh() {
+        $this.RefreshEditable()
+        $rowIndex = 0
         $this.List.Clear()
         $this.GetSelectedData() | ForEach-Object {
             $hash = $_
-            $listItem = [ListItem]::new()
-            $this.Columns | ForEach-Object {
-                $column = $_
-                $itemLabel = [OouiLabel]::new()
-                $itemLabel.Caption = $hash."$($column.Name)"
-                $listItem.AddChild($itemLabel)
-            }
+            $listItem = $this.GetDataListItem($hash, $rowIndex)
             $this.List.AddItem($listItem)
+            $rowIndex++
         }
+    }
+
+    hidden [void] RefreshEditable() {
+        if ($this.EditionColumn -eq $null -and $this.IsEditable) {
+            $this.CreateEditionColumn()
+        }
+        $this.AddNewButton.Visible = $this.IsEditable
     }
 
     hidden [HashTable[]] GetSelectedData() {
@@ -553,32 +600,94 @@ class OouiBrowser : OouiStackPanel {
         return $lastPage
     }
 
-    [void] OnMoveFirst() {
+    hidden [ListItem] GetDataListItem([HashTable] $hash, [int] $rowIndex) {
+        $listItem = [ListItem]::new()
+        $this.Columns | ForEach-Object {
+            $column = $_
+            if ($column -eq $this.EditionColumn -and $this.IsEditable) {
+                $this.AddEditionButtons($hash, $listItem, $rowIndex)
+            } else {
+                $this.AddCell($hash, $column.Name, $listItem, $rowIndex)
+            }
+        }
+        return $listItem
+    }
+
+    [void] AddCell([HashTable] $hash, [string] $columnName, [ListItem] $listItem, [int] $rowIndex) {
+        $itemLabel = [OouiLabel]::new()
+        $itemLabel.Caption = $hash."$columnName"
+        $this.StyleCell($itemLabel, $rowIndex)
+        $listItem.AddChild($itemLabel)
+    }
+
+    #endregion
+
+    #region Style
+
+    [void] StyleComponents() {
+        $this.FirstButton.Caption        = "|<"
+        $this.PreviousButton.Caption     = "<<"
+        $this.NextButton.Caption         = ">>"
+        $this.LastButton.Caption         = ">|"
+        $this.AddNewButton.Caption       = "+"
+    }
+
+    [void] StyleCell($cell, [int] $rowIndex) {
+        $cell.NativeUI.Style.FontSize     = 14
+    }
+
+    [void] StyleEditionButtons([OouiButton] $editButton, [OouiButton] $deleteButton, [int] $rowIndex) {
+        $editButton.Caption     = "/"
+        $deleteButton.Caption   = "X"
+
+        $editButton.NativeUI.Style.FontSize     = 7
+        $deleteButton.NativeUI.Style.FontSize   = 7
+    }
+
+    #endregion
+
+    #region Move Events
+    
+    hidden [void] OnMoveFirst() {
         $this.CurrentPage = 0
         $this.Refresh()
     }
-
-    [void] OnMovePrevious() {
+    
+    hidden [void] OnMovePrevious() {
         if ($this.CurrentPage -gt 0) {
             $this.CurrentPage--
         }
         $this.Refresh()
     }
-
-    [void] OnMoveNext() {
+    
+    hidden [void] OnMoveNext() {
         if ($this.CurrentPage -lt $this.GetLastPage()) {
             $this.CurrentPage++
         }
         $this.Refresh()
     }
-
-    [void] OnMoveLast() {
+    
+    hidden [void] OnMoveLast() {
         $this.CurrentPage = $this.GetLastPage()
         $this.Refresh()
     }
 
-    [void] Clear() {
-        $this.List.Clear()
+    #endregion
+    
+    #region CRUD Events
+
+    hidden [void] OnAddNew() {
+        $this.InvokeTrappableCommand($this._AddNew, $this)
     }
+    
+    hidden [void] OnEdit() {
+        $this.InvokeTrappableCommand($this._Edit, $this)
+    }
+    
+    hidden [void] OnDelete() {
+        $this.InvokeTrappableCommand($this._Delete, $this)
+    }
+
+    #endregion
 
 }

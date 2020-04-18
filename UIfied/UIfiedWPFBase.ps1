@@ -372,40 +372,39 @@ class WPFTimePicker : WPFElement {
 }
 
 class WPFBrowser : WPFStackPanel {
-    [HashTable[]]          $Data                = [HashTable[]] @()
-    [int]                  $PageRows            = 10
-    [int]                  $CurrentPage         = 0
-    [WPFListColumn[]]      $Columns             = [WPFListColumn[]] @()
-                          
-    [WPFList]              $List                = [WPFList]::new()
-    [WPFStackPanel]        $ButtonPanel         = [WPFStackPanel]::new()
-    [WPFButton]            $FirstButton         = [WPFButton]::new()
-    [WPFButton]            $PreviousButton      = [WPFButton]::new()
-    [WPFButton]            $NextButton          = [WPFButton]::new()
-    [WPFButton]            $LastButton          = [WPFButton]::new()
-    [WPFButton]            $AddNewButton        = [WPFButton]::new()
+    [HashTable[]]            $Data            = [HashTable[]] @()
+    [int]                    $PageRows        = 10
+    [int]                    $CurrentPage     = 0
+    [Boolean]                $IsEditable      = $true
+    [HashTable]              $CurrentRow
 
+    #region Components Declaration
+
+    hidden [WPFListColumn[]] $Columns         = [WPFListColumn[]] @()
+    hidden [WPFListColumn]   $EditionColumn
+    hidden [WPFList]         $List            = [WPFList]::new()
+    hidden [WPFStackPanel]   $ButtonPanel     = [WPFStackPanel]::new()
+    hidden [WPFButton]       $FirstButton     = [WPFButton]::new()
+    hidden [WPFButton]       $PreviousButton  = [WPFButton]::new()
+    hidden [WPFButton]       $NextButton      = [WPFButton]::new()
+    hidden [WPFButton]       $LastButton      = [WPFButton]::new()
+    hidden [WPFButton]       $AddNewButton    = [WPFButton]::new()
+
+    #endregion
+    
     WPFBrowser() {
         $this.AddScriptBlockProperty("AddNew")
+        $this.AddScriptBlockProperty("Edit")
+        $this.AddScriptBlockProperty("Delete")
         $this.AddChild($this.List)
         $this.AddButtons()
     }
 
+    #region Components Creation
+
     hidden [void] AddButtons() {
         $this.ButtonPanel = [WPFStackPanel]::new()
         $this.ButtonPanel.Orientation = "Horizontal"
-
-        $this.FirstButton.Caption        = "|<"
-        $this.PreviousButton.Caption     = "<<"
-        $this.NextButton.Caption         = ">>"
-        $this.LastButton.Caption         = ">|"
-        $this.AddNewButton.Caption       = "+"
-
-        $this.FirstButton.NativeUI.Margin        = 10
-        $this.PreviousButton.NativeUI.Margin     = 10
-        $this.NextButton.NativeUI.Margin         = 10
-        $this.LastButton.NativeUI.Margin         = 10
-        $this.AddNewButton.NativeUI.Margin       = 10
 
         $this.FirstButton.Action                 = { $this.Parent.Parent.OnMoveFirst()     }
         $this.PreviousButton.Action              = { $this.Parent.Parent.OnMovePrevious()  }
@@ -424,35 +423,60 @@ class WPFBrowser : WPFStackPanel {
         $this.AddChild($this.ButtonPanel)
     }
 
-    [void] StyleComponents() {
-    }
-
     [void] AddColumn([WPFListColumn] $listColumn) {
         $this.Columns += $listColumn
         $this.List.AddColumn($listColumn)
     }
 
+    hidden [void] CreateEditionColumn() {
+        $this.EditionColumn = New-Object WPFListColumn -Property @{Name  = "_Edition"; Title = " "}
+        $this.AddColumn($this.EditionColumn)
+    }
+
+    hidden [void] AddEditionButtons([HashTable] $hash, [ListItem] $listItem, [int] $rowIndex) {
+        $editionPanel = [WPFStackPanel]::new()
+        $editionPanel.Orientation = "Horizontal"
+        $listItem.AddChild($editionPanel)
+
+        $editButton = [WPFButton]::new()
+        Add-Member -InputObject $editButton -MemberType NoteProperty -Name CurrentRow -Value $hash
+        $editButton.Action = {
+            $this.Parent.Parent.Parent.Parent.CurrentRow = $this.CurrentRow
+            $this.Parent.Parent.Parent.Parent.OnEdit()
+        }
+        $editionPanel.AddChild($editButton)
+
+        $deleteButton = [WPFButton]::new()
+        Add-Member -InputObject $deleteButton -MemberType NoteProperty -Name CurrentRow -Value $hash
+        $deleteButton.Action = {
+            $this.Parent.Parent.Parent.Parent.CurrentRow = $this.CurrentRow
+            $this.Parent.Parent.Parent.Parent.OnDelete()
+        }
+        $editionPanel.AddChild($deleteButton)
+        $this.StyleEditionButtons($editButton, $deleteButton, $rowIndex)
+    }
+
+    #endregion
+
+    #region Data show
+
     [void] Refresh() {
-        $index = 0
+        $this.RefreshEditable()
+        $rowIndex = 0
         $this.List.Clear()
         $this.GetSelectedData() | ForEach-Object {
             $hash = $_
-            $listItem = [ListItem]::new()
-            if (($index % 2) -eq 0) {
-                $color = [Media.Brush] "#FFF3F3F3"
-            } else {
-                $color = [Media.Brushes]::Transparent
-            }
-            $this.Columns | ForEach-Object {
-                $column = $_
-                $itemLabel = [WPFLabel]::new()
-                $itemLabel.Caption = $hash."$($column.Name)"
-                $itemLabel.NativeUI.Background = $color
-                $listItem.AddChild($itemLabel)
-            }
+            $listItem = $this.GetDataListItem($hash, $rowIndex)
             $this.List.AddItem($listItem)
-            $index++
+            $rowIndex++
         }
+    }
+
+    hidden [void] RefreshEditable() {
+        if ($this.EditionColumn -eq $null -and $this.IsEditable) {
+            $this.CreateEditionColumn()
+        }
+        $this.AddNewButton.Visible = $this.IsEditable
     }
 
     hidden [HashTable[]] GetSelectedData() {
@@ -467,36 +491,110 @@ class WPFBrowser : WPFStackPanel {
         return $lastPage
     }
 
-    [void] OnMoveFirst() {
+    hidden [ListItem] GetDataListItem([HashTable] $hash, [int] $rowIndex) {
+        $listItem = [ListItem]::new()
+        $this.Columns | ForEach-Object {
+            $column = $_
+            if ($column -eq $this.EditionColumn -and $this.IsEditable) {
+                $this.AddEditionButtons($hash, $listItem, $rowIndex)
+            } else {
+                $this.AddCell($hash, $column.Name, $listItem, $rowIndex)
+            }
+        }
+        return $listItem
+    }
+
+    [void] AddCell([HashTable] $hash, [string] $columnName, [ListItem] $listItem, [int] $rowIndex) {
+        $itemLabel = [WPFLabel]::new()
+        $itemLabel.Caption = $hash."$columnName"
+        $this.StyleCell($itemLabel, $rowIndex)
+        $listItem.AddChild($itemLabel)
+    }
+
+    #endregion
+
+    #region Style
+
+    [Media.Brush]            $ShadowBrush     = ([Media.Brush] "#FFF3F3F3")
+
+    [Media.Brush] GetRowBackground([int] $rowIndex) {
+        if (($rowIndex % 2) -eq 0) {
+            return $this.ShadowBrush
+        } else {
+            return [Media.Brushes]::Transparent
+        }
+    }
+
+    [void] StyleComponents() {
+        $this.ButtonPanel.NativeUI.HorizontalAlignment = "Right"
+
+        $this.FirstButton.Caption        = "|<"
+        $this.PreviousButton.Caption     = "<<"
+        $this.NextButton.Caption         = ">>"
+        $this.LastButton.Caption         = ">|"
+        $this.AddNewButton.Caption       = "+"
+
+        $this.FirstButton.NativeUI.Margin        = 10
+        $this.PreviousButton.NativeUI.Margin     = 10
+        $this.NextButton.NativeUI.Margin         = 10
+        $this.LastButton.NativeUI.Margin         = 10
+        $this.AddNewButton.NativeUI.Margin       = 10
+    }
+
+    [void] StyleCell($cell, [int] $rowIndex) {
+        $cell.NativeUI.Background = $this.GetRowBackground($rowIndex)
+    }
+
+    [void] StyleEditionButtons([WPFButton] $editButton, [WPFButton] $deleteButton, [int] $rowIndex) {
+        $editButton.Caption = "/"
+        $deleteButton.Caption = "X"
+        $editButton.Parent.NativeUI.Background  = $this.GetRowBackground($rowIndex)
+    }
+
+    #endregion
+
+    #region Move Events
+    
+    hidden [void] OnMoveFirst() {
         $this.CurrentPage = 0
         $this.Refresh()
     }
-
-    [void] OnMovePrevious() {
+    
+    hidden [void] OnMovePrevious() {
         if ($this.CurrentPage -gt 0) {
             $this.CurrentPage--
         }
         $this.Refresh()
     }
-
-    [void] OnMoveNext() {
+    
+    hidden [void] OnMoveNext() {
         if ($this.CurrentPage -lt $this.GetLastPage()) {
             $this.CurrentPage++
         }
         $this.Refresh()
     }
-
-    [void] OnMoveLast() {
+    
+    hidden [void] OnMoveLast() {
         $this.CurrentPage = $this.GetLastPage()
         $this.Refresh()
     }
 
-    [void] OnAddNew() {
+    #endregion
+    
+    #region CRUD Events
+
+    hidden [void] OnAddNew() {
         $this.InvokeTrappableCommand($this._AddNew, $this)
     }
-
-    [void] Clear() {
-        $this.List.Clear()
+    
+    hidden [void] OnEdit() {
+        $this.InvokeTrappableCommand($this._Edit, $this)
     }
+    
+    hidden [void] OnDelete() {
+        $this.InvokeTrappableCommand($this._Delete, $this)
+    }
+
+    #endregion
 
 }

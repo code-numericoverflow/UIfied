@@ -25,19 +25,21 @@ Write complex UIs the easy way with the UIfied DSL
     Set-UIWpf
     Invoke-Command -ScriptBlock $sample
 
-## Three UI types supported
+## Four UI types supported
 
-UIFied supports tree UI types
+UIFied supports four UI flavors
 
 - Windows: UIfied creates WPF UIs.
 - Console: UIfied uses [ConsoleFramework](https://github.com/elw00d/consoleframework) for console UIs.
 - Web: UIfied web support is based on [Ooui](https://github.com/praeclarum/Ooui).
+- Material Windows: WPF with Material Design flavor based on [MaterialDesignInXamlToolkit](https://github.com/MaterialDesignInXAML/MaterialDesignInXamlToolkit).
 
 Write once and use it accross differents UIs. You can switch the target UI framework by simply using a command.
 
-    Set-UICF     # Switch to console UI
-    Set-UIWPF    # Switch to Windows Presentation Foundation UI
-    Set-UIOoui   # Switch to Web UI
+    Set-UICF              # Switch to console UI
+    Set-UIWPF             # Switch to Windows Presentation Foundation UI
+    Set-UIOoui            # Switch to Web UI
+    Set-UIMaterialWPF     # Switch to Material Design WPF UI
 
 ![A simple sample running on different UIs](UIfied.Test/SimpleTest.gif)
 

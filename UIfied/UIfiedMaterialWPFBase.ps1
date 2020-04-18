@@ -196,16 +196,37 @@ class MaterialWPFTimePicker : WPFElement {
 class MaterialWPFBrowser : WPFBrowser {
 
     [void] StyleComponents() {
-        $this.StyleButton($this.FirstButton,     "ArrowCompressLeft",   "MaterialDesignFloatingActionMiniButton")
-        $this.StyleButton($this.PreviousButton,  "ArrowLeft",           "MaterialDesignFloatingActionMiniButton")
-        $this.StyleButton($this.NextButton,      "ArrowForward",        "MaterialDesignFloatingActionMiniButton")
-        $this.StyleButton($this.LastButton,      "ArrowCompressRight",  "MaterialDesignFloatingActionMiniButton")
+        $this.StyleButton($this.FirstButton,     "ArrowCompressLeft",   "MaterialDesignIconButton")
+        $this.StyleButton($this.PreviousButton,  "ArrowLeft",           "MaterialDesignIconButton")
+        $this.StyleButton($this.NextButton,      "ArrowForward",        "MaterialDesignIconButton")
+        $this.StyleButton($this.LastButton,      "ArrowCompressRight",  "MaterialDesignIconButton")
 
         $this.StyleButton($this.AddNewButton,    "Plus",                "MaterialDesignFloatingActionAccentButton")
+
+        $this.FirstButton.Parent.NativeUI.Margin = "0 -10 0 10"
+        $this.AddNewButton.NativeUI.Margin = "100 10 10 10"
     }
 
     [void] StyleButton($button, $iconKind, $styleName) {
         $button.NativeUI.Content = New-Object PackIcon -Property @{ Kind = $iconKind }
+        $button.NativeUI.Margin       = 0
         $button.NativeUI.SetResourceReference([Control]::StyleProperty, $styleName)
     }
+
+    [void] StyleEditionButtons([WPFButton] $editButton, [WPFButton] $deleteButton, [int] $rowIndex) {
+        $editButton.Parent.NativeUI.Background  = $this.GetRowBackground($rowIndex)
+
+        $this.StyleButton($editButton,      "ModeEdit",        "MaterialDesignIconMiniButton")
+        $this.StyleButton($deleteButton,    "WindowClose",     "MaterialDesignIconMiniButton")
+
+        $editButton.NativeUI.Background      = [System.Windows.Media.Brushes]::Transparent
+        $deleteButton.NativeUI.Background    = [System.Windows.Media.Brushes]::Transparent
+        
+        $editButton.NativeUI.Foreground      = [System.Windows.Media.Brushes]::Green
+        $deleteButton.NativeUI.Foreground    = [System.Windows.Media.Brushes]::Red
+        
+        $editButton.NativeUI.BorderThickness     = 0
+        $deleteButton.NativeUI.BorderThickness   = 0
+    }
+
 }

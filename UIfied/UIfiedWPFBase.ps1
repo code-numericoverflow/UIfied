@@ -598,3 +598,39 @@ class WPFBrowser : WPFStackPanel {
     #endregion
 
 }
+
+class WPFMenuItem : WPFElement {
+
+    WPFMenuItem() {
+        $this.SetNativeUI([MenuItem]::new())
+        $this.WrapProperty("Caption", "Header")
+        $this.AddScriptBlockProperty("Action")
+        $this.NativeUI.Add_Click({ $this.Control.OnAction() })
+    }
+
+    [void] OnAction() {
+        $this.InvokeTrappableCommand($this._Action, $this)
+    }
+}
+
+class WPFDropDownMenu : WPFButton {
+
+    WPFDropDownMenu() {
+        $this.NativeUI.ContextMenu = [ContextMenu]::new()
+        $this.AddNativeUIChild = {
+            param (
+                [WPFElement] $element
+            )
+            $this.NativeUI.ContextMenu.Items.Add($element.NativeUI)
+        }
+        
+        $this.Action = {
+            param($this)
+            $this.NativeUI.ContextMenu.IsOpen = -not $this.NativeUI.ContextMenu.IsOpen
+
+        }
+    }
+    
+}
+
+

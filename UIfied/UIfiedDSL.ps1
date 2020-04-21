@@ -40,7 +40,7 @@ function Get-UIButton {
     $button
 }
 
-function Get-UIStackPannel {
+function Get-UIStackPanel {
     param (
         [UIType]       $UIType       = [UIConfig]::UIType,
         [Orientation]  $Orientation  = [Orientation]::Vertical,
@@ -287,4 +287,35 @@ function Get-UIBrowser {
     $browser.Edit   = $Edit
     $browser.Delete = $Delete
     $browser
+}
+
+function Get-UIMenuItem {
+    param (
+        [UIType]       $UIType       = [UIConfig]::UIType,
+        [ScriptBlock]  $Action       = {},
+        [String]       $Caption      = "",
+        [String]       $Name         = ""
+    )
+    $menuItem = New-Object ($UIType.ToString() + "MenuItem")
+    $menuItem.Action     = $Action
+    $menuItem.Caption    = $Caption
+    $menuItem.Name       = $Name
+    $menuItem
+}
+
+function Get-UIDropDownMenu {
+    param (
+        [UIType]       $UIType       = [UIConfig]::UIType,
+        [String]       $Caption      = "",
+        [ScriptBlock]  $Components   = {},
+        [String]       $Name         = ""
+    )
+    $dropDownMenu = New-Object ($UIType.ToString() + "DropDownMenu")
+    $dropDownMenu.Caption    = $Caption
+    $dropDownMenu.Name       = $Name
+    $childElements = Invoke-Command -ScriptBlock $Components
+    $childElements | ForEach-Object {
+        $dropDownMenu.AddChild($_)
+    }
+    $dropDownMenu
 }

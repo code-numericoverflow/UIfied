@@ -230,3 +230,12 @@ class MaterialWPFBrowser : WPFBrowser {
     }
 
 }
+
+
+class MaterialWPFMenuItem : WPFMenuItem {
+}
+
+class MaterialWPFDropDownMenu : WPFDropDownMenu {   
+}
+
+

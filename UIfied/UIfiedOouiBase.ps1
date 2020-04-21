@@ -1,6 +1,9 @@
 using namespace System.Collections.Generic
 using namespace Ooui
 
+# Bootstrap Version: 3.3.7
+#    Review styles in https://getbootstrap.com/docs/3.3/components
+
 class OouiElement : UIElement {
 
     OouiElement() {
@@ -689,5 +692,65 @@ class OouiBrowser : OouiStackPanel {
     }
 
     #endregion
+
+}
+
+class OouiMenuItem : OouiButton {
+
+    [void] OnAction() {
+        ([OouiButton]$this).OnAction()
+        $this.Parent.ToogleMenu()
+    }
+
+}
+
+class OouiDropDownMenu : OouiStackPanel {
+
+    [OOuiButton]    $DropDownToogle      = [OOuiButton]::new()
+    [List]          $DropDownMenu        = [List]::new()
+    
+    OouiDropDownMenu() {
+        $dropDown = [Div]::new()
+        $dropDown.SetAttribute("class",          "dropdown")
+        $this.NativeUI.AppendChild($dropDown)
+
+        $this.DropDownToogle = [OOuiButton]::new()
+        $this.DropDownToogle.NativeUI.SetAttribute("class",          "btn btn-default dropdown-toggle")
+        $this.DropDownToogle.NativeUI.SetAttribute("data-toggle",    "dropdown")
+        $this.DropDownToogle.NativeUI.SetAttribute("aria-expanded",  "true")
+        $this.DropDownToogle.NativeUI.SetAttribute("aria-haspopup",  "true")
+        Add-Member -InputObject $this.DropDownToogle -MemberType NoteProperty -Name ParentControl -Value $this
+        $this.DropDownToogle.Action = {
+            param ($this)
+            $this.Control.ParentControl.ToogleMenu()
+        }
+        $dropDown.AppendChild($this.DropDownToogle.NativeUI)
+        
+        $this.DropDownMenu.SetAttribute("class",          "dropdown-menu")
+        $dropDown.AppendChild($this.DropDownMenu)
+
+        $this.AddNativeUIChild = {
+            param (
+                [OouiElement] $element
+            )
+            $menuItem = [Ooui.ListItem]::new()
+            $element.NativeUI.SetAttribute("class",  "btn btn-default")
+            $element.NativeUI.Style.Width = "100%"
+            $element.NativeUI.Style.BorderColor = "transparent"
+            $menuItem.AppendChild($element.NativeUI) | Out-Null
+            $this.DropDownMenu.AppendChild($menuItem) | Out-Null
+        }
+        Add-Member -InputObject $this -Name "Caption" -MemberType ScriptProperty                `
+                    -Value          ([ScriptBlock]::Create("`$this.DropDownToogle.NativeUI.Text"))           `
+                    -SecondValue    ([ScriptBlock]::Create("`$this.DropDownToogle.NativeUI.Text = `$args[0]"))
+    }
+
+    [void] ToogleMenu() {
+        if ($this.DropDownMenu.ClassName.Contains("show")) {
+            $this.DropDownMenu.ClassName = $this.DropDownMenu.ClassName.Replace(" show", "")
+        } else {
+            $this.DropDownMenu.ClassName = $this.DropDownMenu.ClassName + " show"
+        }
+    }
 
 }

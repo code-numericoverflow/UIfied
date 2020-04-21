@@ -437,7 +437,7 @@ class CFBrowser : CFStackPanel {
     [HashTable[]]            $Data            = [HashTable[]] @()
     [int]                    $PageRows        = 10
     [int]                    $CurrentPage     = 0
-    [Boolean]                $IsEditable      = $false
+    [Boolean]                $IsEditable      = $true
     [HashTable]              $CurrentRow
 
     #region Components Declaration
@@ -654,4 +654,40 @@ class CFBrowser : CFStackPanel {
 
     #endregion
 
+}
+
+class CFMenuItem : CFElement {
+
+    CFMenuItem() {
+        $this.SetNativeUI([MenuItem]::new())
+        $this.WrapProperty("Caption", "Title")
+        $this.AddScriptBlockProperty("Action")
+        $this.NativeUI.Add_Click({ $this.Control.OnAction() })
+    }
+
+    [void] OnAction() {
+        $this.InvokeTrappableCommand($this._Action, $this)
+    }
+}
+
+class CFDropDownMenu : CFButton {
+
+    CFDropDownMenu() {
+        $this.NativeUI.ContextMenu = [ContextMenu]::new()
+        $this.AddNativeUIChild = {
+            param (
+                [CFElement] $element
+            )
+            $this.NativeUI.ContextMenu.Items.Add($element.NativeUI)
+        }
+        
+        $this.Action = {
+            param($this)
+            [WindowsHost] $windowsHost = [WindowsHost] [ConsoleFramework.ConsoleApplication]::Instance.RootControl
+            $point = [Control]::TranslatePoint($this.NativeUI, [Point]::new(0, 0), $windowsHost)
+            $this.NativeUI.ContextMenu.OpenMenu($windowsHost, $point)
+
+        }
+    }
+    
 }

@@ -1,6 +1,7 @@
 using namespace System.Collections.Generic
 using namespace System.Windows
 using namespace System.Windows.Controls
+using namespace System.Windows.Input
 
 class WPFElement : UIElement {
 
@@ -627,10 +628,49 @@ class WPFDropDownMenu : WPFButton {
         $this.Action = {
             param($this)
             $this.NativeUI.ContextMenu.IsOpen = -not $this.NativeUI.ContextMenu.IsOpen
-
         }
     }
     
 }
 
+class WPFAutoComplete : WPFTextBox {
+
+    WPFAutoComplete() {
+        $this.NativeUI.ContextMenu = [ContextMenu]::new()
+        $this.NativeUI.ContextMenu.PlacementTarget = $this.NativeUI
+        $this.NativeUI.ContextMenu.Placement = [System.Windows.Controls.Primitives.PlacementMode]::Bottom
+
+        $this.NativeUI.Add_KeyUp({
+            if ($_.Key -eq [Key]::Down) {
+                $this.Control.AddItems()
+                $this.Control.NativeUI.ContextMenu.IsOpen = $true
+                $this.Control.NativeUI.ContextMenu.Focus()
+            }
+        })
+
+        $this.AddScriptBlockProperty("ItemsRequested")
+    }
+    
+    [void] AddItems() {
+        $this.OnItemsRequested()
+    }
+    
+    [void] OnItemsRequested() {
+        [AutoCompleteItem[]] $items = Invoke-Command -ScriptBlock $this._ItemsRequested -ArgumentList $this | Select-Object -First 20
+        $this.NativeUI.ContextMenu.Items.Clear()
+        0..($items.Count - 1) | ForEach-Object {
+            $menuItem = [WPFMenuItem]::new()
+            $menuItem.Caption = $items[$_].Text
+            Add-Member -InputObject $menuItem -MemberType NoteProperty -Name AutoCompleteTextBox -Value $this
+            Add-Member -InputObject $menuItem -MemberType NoteProperty -Name AutoCompleteId      -Value $items[$_].Id
+            $menuItem.Action = {
+                param ($this)
+                $this.AutoCompleteTextBox.Text = $this.AutoCompleteId
+                $this.AutoCompleteTextBox.NativeUI.ContextMenu.IsOpen = $false
+            }
+            $this.NativeUI.ContextMenu.Items.Add($menuItem.NativeUI)
+        }
+        #$this.NativeUI.ContextMenu.MinWidth = $this.NativeUI.Width
+    }
+}
 

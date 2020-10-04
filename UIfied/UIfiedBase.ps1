@@ -240,4 +240,9 @@ class ListItem {
     }
 }
 
+class AutoCompleteItem {
+    [String] $Id
+    [String] $Text
+}
+
 #endregion

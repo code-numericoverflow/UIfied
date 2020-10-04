@@ -714,7 +714,6 @@ class OouiDropDownMenu : OouiStackPanel {
         $dropDown.SetAttribute("class",          "dropdown")
         $this.NativeUI.AppendChild($dropDown)
 
-        $this.DropDownToogle = [OOuiButton]::new()
         $this.DropDownToogle.NativeUI.SetAttribute("class",          "btn btn-default dropdown-toggle")
         $this.DropDownToogle.NativeUI.SetAttribute("data-toggle",    "dropdown")
         $this.DropDownToogle.NativeUI.SetAttribute("aria-expanded",  "true")
@@ -741,8 +740,8 @@ class OouiDropDownMenu : OouiStackPanel {
             $this.DropDownMenu.AppendChild($menuItem) | Out-Null
         }
         Add-Member -InputObject $this -Name "Caption" -MemberType ScriptProperty                `
-                    -Value          ([ScriptBlock]::Create("`$this.DropDownToogle.NativeUI.Text"))           `
-                    -SecondValue    ([ScriptBlock]::Create("`$this.DropDownToogle.NativeUI.Text = `$args[0]"))
+                    -Value          { $this.DropDownToogle.NativeUI.Text }                      `
+                    -SecondValue    { $this.DropDownToogle.NativeUI.Text = $args[0] }
     }
 
     [void] ToogleMenu() {
@@ -750,6 +749,92 @@ class OouiDropDownMenu : OouiStackPanel {
             $this.DropDownMenu.ClassName = $this.DropDownMenu.ClassName.Replace(" show", "")
         } else {
             $this.DropDownMenu.ClassName = $this.DropDownMenu.ClassName + " show"
+        }
+    }
+
+}
+
+class OouiAutoComplete : OouiStackPanel {
+
+    [OouiTextBox]   $TextBox             = [OouiTextBox]::new()
+    [List]          $DropDownMenu        = [List]::new()
+    
+    OouiAutoComplete() {
+        $dropDown = [Div]::new()
+        $dropDown.SetAttribute("class",          "dropdown")
+        $this.NativeUI.AppendChild($dropDown)
+
+        $this.TextBox.NativeUI.SetAttribute("class",          "dropdown-toggle")
+        $this.TextBox.NativeUI.SetAttribute("data-toggle",    "dropdown")
+        $this.TextBox.NativeUI.SetAttribute("aria-expanded",  "true")
+        $this.TextBox.NativeUI.SetAttribute("aria-haspopup",  "true")
+        Add-Member -InputObject $this.TextBox -MemberType NoteProperty -Name ParentControl -Value $this
+        $this.TextBox.Change = {
+            param ($this)
+            $this.Control.ParentControl.ClearDropDown()
+        }
+        Register-ObjectEvent -InputObject $this.TextBox.NativeUI -EventName KeyDown -MessageData $this -Action {
+            $this = $event.MessageData
+            #$this.Control.TextBox.Text = $event.SourceArgs[1]
+        } | Out-Null
+        Register-ObjectEvent -InputObject $this.TextBox.NativeUI -EventName KeyUp -MessageData $this -Action {
+            $this = $event.MessageData
+            $this.Control.ShowDropDown()
+        } | Out-Null
+        $dropDown.AppendChild($this.TextBox.NativeUI)
+        
+        $this.DropDownMenu.SetAttribute("class",          "dropdown-menu")
+        $dropDown.AppendChild($this.DropDownMenu)
+
+        $this.AddNativeUIChild = {
+            param (
+                [OouiElement] $element
+            )
+            $menuItem = [Ooui.ListItem]::new()
+            $element.NativeUI.SetAttribute("class",  "btn btn-default")
+            $element.NativeUI.Style.Width = "100%"
+            $element.NativeUI.Style.BorderColor = "transparent"
+            $menuItem.AppendChild($element.NativeUI) | Out-Null
+            $this.DropDownMenu.AppendChild($menuItem) | Out-Null
+        }
+        Add-Member -InputObject $this -Name "Text" -MemberType ScriptProperty      `
+                    -Value          { $this.TextBox.Text }                         `
+                    -SecondValue    { $this.TextBox.Text = $args[0] }
+        $this.AddScriptBlockProperty("ItemsRequested")
+    }
+
+    [void] ShowDropDown() {
+        $this.ClearDropDown()
+        $this.AddItems()
+        if (-not $this.DropDownMenu.ClassName.Contains("show")) {
+            $this.DropDownMenu.ClassName = $this.DropDownMenu.ClassName + " show"
+        }
+    }
+
+    [void] ClearDropDown() {
+        $this.DropDownMenu.Children | ForEach-Object {
+            $this.DropDownMenu.RemoveChild($_)
+        }
+        if ($this.DropDownMenu.ClassName.Contains("show")) {
+            $this.DropDownMenu.ClassName = $this.DropDownMenu.ClassName.Replace(" show", "")
+        }
+    }
+
+    [void] AddItems() {
+        $this.OnItemsRequested()
+    }
+
+    [void] OnItemsRequested() {
+        [AutoCompleteItem[]] $items = Invoke-Command -ScriptBlock $this._ItemsRequested -ArgumentList $this
+        $items | ForEach-Object {
+            [OOuiButton] $button = [OOuiButton] @{ Caption = $_.Text }
+            Add-Member -InputObject $button -MemberType NoteProperty -Name AutoCompleteTextBox -Value $this.TextBox
+            Add-Member -InputObject $button -MemberType NoteProperty -Name AutoCompleteId      -Value $_.Id
+            $button.Action = {
+                param ($this)
+                $this.Control.AutoCompleteTextBox.Text = $this.Control.AutoCompleteId
+            }
+            $this.AddChild($button)
         }
     }
 

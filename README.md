@@ -64,3 +64,4 @@ We have implemented these controls:
 - DatePicker
 - TimePicker
 - Browser
+- Autocomplete

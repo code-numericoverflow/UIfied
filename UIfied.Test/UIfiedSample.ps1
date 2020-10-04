@@ -6,7 +6,7 @@ $wsb = {
             param ($this)
             $this.Form.Caption = $this.Form.Caption + " Loaded => " + (Get-Date).ToString()
         } -Components {
-        UIStackPannel -Orientation Vertical -Components {
+        UIStackPanel -Orientation Vertical -Components {
             UITimer  -Name Timer -Elapsed {
                 param ($this)
                 $this.Form.TimerLabel.Caption = Get-Date
@@ -66,7 +66,7 @@ $wsb = {
                         $this.Form.MyModal.Show()
                     }
                     UIModal -Name MyModal -Components {
-                        UIStackPannel -Orientation Vertical -Components {
+                        UIStackPanel -Orientation Vertical -Components {
                             UICheckBox -Caption "Ketchup"
                             UICheckBox -Caption "Mayo"
                             UIButton   -Caption "Hide" -Action {
@@ -116,12 +116,34 @@ $wsb = {
                         1..203 | ForEach-Object { @{Id = $_; Description = "Desc $_  jkdf kjafsd j fdas jfas jfas djaf sj "} }
                     ) -PageRows 14
                 }
+                UITabItem -Caption "DropDownMenus" -Components {
+                    UIDropDownMenu -Caption "my menu" -Components {
+                        UIMenuItem   -Caption "Menu 1" -Action {
+                            param($this)
+                            $this.Control.Caption = Get-Date
+                        }
+                        UIMenuItem   -Caption "Menu 2" -Action {
+                            param($this)
+                            $this.Control.Caption = Get-Date
+                        }
+                    }
+                }
+                UITabItem -Caption "AutoCompletes" -Components {
+                    UIAutoComplete -Text "AB" -ItemsRequested {
+                        param($this)
+                        Get-UIAutoCompleteItem -Id "id2" -Text ($this.Text + " adios")
+                        Get-UIAutoCompleteItem -Id "id1" -Text ([DateTime]::Now.ToString())
+                        Get-UIAutoCompleteItem -Id "id3" -Text ($this.Text + " afd adios")
+                        Get-UIAutoCompleteItem -Id "id4" -Text ([DateTime]::Now.ToString())
+                    }
+                }
             }
         }
     }
 }
 
-Set-UIMaterialWPF
+Set-UICF
+
 $h = Get-UIHost
 #cls
 $h.ShowFrame($wsb)

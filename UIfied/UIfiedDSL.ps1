@@ -319,3 +319,25 @@ function Get-UIDropDownMenu {
     }
     $dropDownMenu
 }
+
+function Get-UIAutoComplete {
+    param (
+        [UIType]       $UIType         = [UIConfig]::UIType,
+        [ScriptBlock]  $ItemsRequested = {param($this) "sample" },
+        [String]       $Text           = "",
+        [String]       $Name           = ""
+    )
+    $autoComplete = New-Object ($UIType.ToString() + "AutoComplete")
+    #$autoComplete.Text                = $Text
+    $autoComplete.Name                 = $Name
+    $autoComplete.ItemsRequested       = $ItemsRequested
+    $autoComplete
+}
+
+function Get-UIAutoCompleteItem {
+    param (
+        [String]  $Id,
+        [String]  $Text
+    )
+    [AutoCompleteItem] @{ Id = $Id; Text = $Text }
+}

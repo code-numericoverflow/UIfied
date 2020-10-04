@@ -1,8 +1,10 @@
 ﻿using namespace System.Collections.Generic
+using namespace System.Reflection
 using namespace ConsoleFramework
 using namespace ConsoleFramework.Core
 using namespace ConsoleFramework.Native
 using namespace ConsoleFramework.Controls
+using namespace ConsoleFramework.Events
 
 class CFElement : UIElement {
 
@@ -94,7 +96,7 @@ class CFLabel : CFElement {
     }
 }
 
-class MyButton : Button {
+class CFCustomButton : Button {
 
     [Size] MeasureOverride([Size] $availableSize) {
         if (-not [System.string]::IsNullOrEmpty($this.Caption)) {
@@ -119,7 +121,7 @@ class MyButton : Button {
 class CFButton : CFElement {
 
     CFButton() {
-        $this.SetNativeUI([MyButton]::new())
+        $this.SetNativeUI([CFCustomButton]::new())
         $this.WrapProperty("Caption", "Caption")
         $this.AddScriptBlockProperty("Action")
         $this.NativeUI.Add_OnClick({ $this.Control.OnAction() })
@@ -686,8 +688,74 @@ class CFDropDownMenu : CFButton {
             [WindowsHost] $windowsHost = [WindowsHost] [ConsoleFramework.ConsoleApplication]::Instance.RootControl
             $point = [Control]::TranslatePoint($this.NativeUI, [Point]::new(0, 0), $windowsHost)
             $this.NativeUI.ContextMenu.OpenMenu($windowsHost, $point)
-
         }
     }
     
+}
+
+class CFAutoComplete : CFTextBox {
+
+    CFAutoComplete() {
+        $this.NativeUI.ContextMenu = [ContextMenu]::new()
+
+        $this.NativeUI.Add_KeyDown({
+            if ($_.wVirtualScanCode -eq 80) {
+                $this.Control.ShowDropDown()
+            }
+        })
+
+        $this.AddScriptBlockProperty("ItemsRequested")
+
+        $this.CreateMenuItems()
+    }
+
+    [void] CreateMenuItems() {
+        0..19 | ForEach-Object {
+            [MenuItem] $menuItem = [MenuItem] @{ Title = $_ }
+            Add-Member -InputObject $menuItem -MemberType NoteProperty -Name AutoCompleteTextBox -Value $this
+            Add-Member -InputObject $menuItem -MemberType NoteProperty -Name AutoCompleteId      -Value $_
+            $menuItem.Add_Click({
+                $this.AutoCompleteTextBox.Text = $this.AutoCompleteId
+                $this.AutoCompleteTextBox.SetCursor()
+            })
+            $this.NativeUI.ContextMenu.Items.Add($menuItem)
+        }
+    }
+
+    [void] SetCursor() {
+        $position = $this.Text.Length
+        $prop = $this.NativeUI.GetType().GetProperty("CursorPosition", [BindingFlags]::NonPublic -bor [BindingFlags]::Instance)
+        $prop.SetValue($this.NativeUI, [Point]::new($position, 0), $null)
+        $prop = $this.NativeUI.GetType().GetField("cursorPosition", [BindingFlags]::NonPublic -bor [BindingFlags]::Instance)
+        $prop.SetValue($this.NativeUI, $position)
+        $this.NativeUI.Invalidate()
+    }
+
+    [void] ShowDropDown() {
+        $this.ClearDropDown()
+        $this.AddItems()
+        [WindowsHost] $windowsHost = [WindowsHost] [ConsoleFramework.ConsoleApplication]::Instance.RootControl
+        $point = [Control]::TranslatePoint($this.NativeUI, [Point]::new(0, 0), $windowsHost)
+        $this.NativeUI.ContextMenu.OpenMenu($windowsHost, $point)
+    }
+    
+    [void] ClearDropDown() {
+        $this.NativeUI.ContextMenu.Items | ForEach-Object {
+            $_.Visibility = [Visibility]::Collapsed
+        }
+    }
+    
+    [void] AddItems() {
+        $this.OnItemsRequested()
+    }
+    
+    [void] OnItemsRequested() {
+        [AutoCompleteItem[]] $items = Invoke-Command -ScriptBlock $this._ItemsRequested -ArgumentList $this | Select-Object -First 20
+        0..($items.Count - 1) | ForEach-Object {
+            $this.NativeUI.ContextMenu.Items.Item($_).Title            = $items[$_].Text
+            $this.NativeUI.ContextMenu.Items.Item($_).AutoCompleteId   = $items[$_].Id
+            $this.NativeUI.ContextMenu.Items.Item($_).Visibility       = [Visibility]::Visible
+        }
+    }
+
 }

@@ -209,11 +209,13 @@ function Get-UITabControl {
 function Get-UIModal {
     param (
         [UIType]       $UIType       = [UIConfig]::UIType,
+        [String]       $Title        = "",
         [ScriptBlock]  $Components   = {},
         [String]       $Name         = ""
     )
     $modal = New-Object ($UIType.ToString() + "Modal")
     $modal.Name       = $Name
+    $modal.Title      = $Title
     $childElements = Invoke-Command -ScriptBlock $Components
     $childElements | ForEach-Object {
         $modal.AddChild($_)

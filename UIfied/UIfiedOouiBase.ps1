@@ -3,6 +3,8 @@ using namespace Ooui
 
 # Bootstrap Version: 3.3.7
 #    Review styles in https://getbootstrap.com/docs/3.3/components
+# Default Style Reference
+#    UI.HeadHtml = "<link rel=""stylesheet"" href=""https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/css/bootstrap.min.css"" />"
 
 class OouiElement : UIElement {
 
@@ -136,6 +138,7 @@ class OouiButton : OouiElement {
 
     OouiButton() {
         $nativeUI = [Button]::new("NotSet")
+        $nativeUI.ClassName = "btn btn-primary"
         $this.SetNativeUI($nativeUI)
         $this.WrapProperty("Caption", "Text")
         $this.AddScriptBlockProperty("Action")
@@ -196,7 +199,7 @@ class OouiCheckBox : OouiElement {
 
 class OouiRadioButton : OouiElement {
     hidden [Div]           $ListNativeUI
-    hidden [Span]         $LabelNativeUI
+    hidden [Span]          $LabelNativeUI
     hidden [Input]         $RadioButtonNativeUI
 
     OouiRadioButton() {
@@ -310,7 +313,6 @@ class OouiTabControl : OouiStackPanel {
     [Ooui.List]     $List     = [Ooui.List]::new()
 
     OouiTabControl() {
-        $this.List.ClassName = "nav nav-tabs"
         $this.NativeUI.AppendChild($this.List)
         $this.AddNativeUIChild = {
             param (
@@ -334,10 +336,15 @@ class OouiTabControl : OouiStackPanel {
             $firstTab = $this.GetTabs() | Select-Object -First 1
             $this.SelectTab($firstTab.Caption)
         }
+        $this.RefreshStyle()
+    }
+
+    RefreshStyle() {
+        $this.List.ClassName = "nav nav-pills"
     }
 
     [OOuiTabItem[]] GetTabs() {
-        return $this.Children | Where-Object { $_.GetType() -eq [OOuiTabItem] }
+        return $this.Children
     }
 
     [void] SelectTab([String] $tabCaption) {
@@ -351,9 +358,11 @@ class OouiTabControl : OouiStackPanel {
         $this.List.Children | ForEach-Object {
             $anchor = $_.FirstChild
             if ($anchor.Text -eq $tabCaption) {
-                $_.ClassName = "nav-link active"
+                $_.ClassName      = "nav-item active"
+                $anchor.ClassName = "nav-link active"
             } else {
-                $_.ClassName = "nav-link"
+                $_.ClassName      = "nav-item"
+                $anchor.ClassName = "nav-link"
             }
         }
     }
@@ -361,10 +370,12 @@ class OouiTabControl : OouiStackPanel {
 }
 
 class OouiModal : OouiElement {
-    [Div]   $DialogDiv      = [Div]::new()
-    [Div]   $DocumentDiv    = [Div]::new()
-    [Div]   $ContentDiv     = [Div]::new()
-
+    [Div]     $DialogDiv      = [Div]::new()
+    [Div]     $DocumentDiv    = [Div]::new()
+    [Div]     $ContentDiv     = [Div]::new()
+    [Div]     $HeaderDiv      = [Div]::new()
+    [Heading] $TitleHeading   = [Heading]::new(5)
+    [Div]     $BodyDiv        = [Div]::new()
 
     OouiModal() {
         $this.DialogDiv.ClassName = "modal"
@@ -378,13 +389,23 @@ class OouiModal : OouiElement {
         $this.ContentDiv.ClassName = "modal-content"
         $this.DocumentDiv.AppendChild($this.ContentDiv)
 
+        $this.HeaderDiv.ClassName = "modal-header"
+        $this.ContentDiv.AppendChild($this.HeaderDiv)
+
+        $this.TitleHeading.ClassName = "modal-title"
+        $this.HeaderDiv.AppendChild($this.TitleHeading)
+
+        $this.BodyDiv.ClassName = "modal-body"
+        $this.ContentDiv.AppendChild($this.BodyDiv)
+
         $this.SetNativeUI($this.DialogDiv)
         $this.AddNativeUIChild = {
             param (
                 [OouiElement] $element
             )
-            $this.ContentDiv.AppendChild($element.NativeUI)
+            $this.BodyDiv.AppendChild($element.NativeUI)
         }
+        $this.WrapProperty("Title", "Text", "TitleHeading")
     }
 
     [void] Show() {
@@ -714,7 +735,7 @@ class OouiDropDownMenu : OouiStackPanel {
         $dropDown.SetAttribute("class",          "dropdown")
         $this.NativeUI.AppendChild($dropDown)
 
-        $this.DropDownToogle.NativeUI.SetAttribute("class",          "btn btn-default dropdown-toggle")
+        $this.DropDownToogle.NativeUI.SetAttribute("class",          "btn btn-primary dropdown-toggle")
         $this.DropDownToogle.NativeUI.SetAttribute("data-toggle",    "dropdown")
         $this.DropDownToogle.NativeUI.SetAttribute("aria-expanded",  "true")
         $this.DropDownToogle.NativeUI.SetAttribute("aria-haspopup",  "true")
@@ -733,7 +754,7 @@ class OouiDropDownMenu : OouiStackPanel {
                 [OouiElement] $element
             )
             $menuItem = [Ooui.ListItem]::new()
-            $element.NativeUI.SetAttribute("class",  "btn btn-default")
+            $element.NativeUI.SetAttribute("class",  "dropdown-item")
             $element.NativeUI.Style.Width = "100%"
             $element.NativeUI.Style.BorderColor = "transparent"
             $menuItem.AppendChild($element.NativeUI) | Out-Null
@@ -791,7 +812,8 @@ class OouiAutoComplete : OouiStackPanel {
                 [OouiElement] $element
             )
             $menuItem = [Ooui.ListItem]::new()
-            $element.NativeUI.SetAttribute("class",  "btn btn-default")
+            #$element.NativeUI.SetAttribute("class",  "btn btn-default")
+            $element.NativeUI.SetAttribute("class",  "dropdown-item")
             $element.NativeUI.Style.Width = "100%"
             $element.NativeUI.Style.BorderColor = "transparent"
             $menuItem.AppendChild($element.NativeUI) | Out-Null

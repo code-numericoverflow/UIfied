@@ -114,10 +114,11 @@ class MaterialWPFModal : WPFElement {
         $this.SetNativeUI($this.Stack)
 
         $this.ModalWindow = [Window]::new()
-        $this.ModalWindow.WindowStyle = [WindowStyle]::None
+        $this.ModalWindow.WindowStyle = [WindowStyle]::SingleBorderWindow
         $this.ModalWindow.SizeToContent = 'WidthAndHeight'
         $this.ModalWindow.Margin        = 10
         $this.ModalWindow.Content       = [StackPanel]::new()
+        $this.WrapProperty("Title", "Title", "ModalWindow")
 
         $this.AddNativeUIChild = {
             param (

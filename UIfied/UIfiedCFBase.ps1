@@ -281,7 +281,7 @@ class CFModal : CFElement {
     CFModal() {
         $this.Window = [Window]::new()
         $this.SetNativeUI([Panel]::new())
-        #$this.WrapProperty("Caption", "Title")
+        $this.WrapProperty("Title", "Title", "Window")
         $this.AddNativeUIChild = {
             param (
                 [CFElement] $element

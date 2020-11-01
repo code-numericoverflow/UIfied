@@ -267,11 +267,11 @@ class WPFModal : WPFElement {
 
     WPFModal() {
         $windowNativeUI = [Window]::new()
-        $windowNativeUI.WindowStyle = [WindowStyle]::None
+        $windowNativeUI.WindowStyle = [WindowStyle]::SingleBorderWindow
         $windowNativeUI.SizeToContent = 'WidthAndHeight'
         $windowNativeUI.Margin        = 10
         $this.SetNativeUI($windowNativeUI)
-        #$this.WrapProperty("Caption", "Title")
+        $this.WrapProperty("Title", "Title")
         $this.AddNativeUIChild = {
             param (
                 [WPFElement] $element

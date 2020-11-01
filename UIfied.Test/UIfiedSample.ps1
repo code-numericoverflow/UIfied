@@ -65,7 +65,7 @@ $wsb = {
                         param($this)
                         $this.Form.MyModal.Show()
                     }
-                    UIModal -Name MyModal -Components {
+                    UIModal -Name MyModal -Title "MY TITLE" -Components {
                         UIStackPanel -Orientation Vertical -Components {
                             UICheckBox -Caption "Ketchup"
                             UICheckBox -Caption "Mayo"
@@ -117,7 +117,7 @@ $wsb = {
                     ) -PageRows 14
                 }
                 UITabItem -Caption "DropDownMenus" -Components {
-                    UIDropDownMenu -Caption "my menu" -Components {
+                    UIDropDownMenu -Caption "my dropdown" -Components {
                         UIMenuItem   -Caption "Menu 1" -Action {
                             param($this)
                             $this.Control.Caption = Get-Date
@@ -142,7 +142,7 @@ $wsb = {
     }
 }
 
-Set-UICF
+Set-UIMaterialOoui
 
 $h = Get-UIHost
 #cls

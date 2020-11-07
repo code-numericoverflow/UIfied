@@ -31,6 +31,12 @@ class OouiHost : UIHost {
     $Port           = 8185
     [ScriptBlock] $CreateElement
 
+    OouiHost() {
+        [UI]::HeadHtml = '
+            <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/css/bootstrap.min.css" />
+        '
+    }
+
     [void] ShowFrame([ScriptBlock] $frameScriptBlock) {
         #$Global:SyncHash = [HashTable]::Synchronized(@{
         #    Window = $null
@@ -247,10 +253,12 @@ class OouiRadioGroup : OouiElement {
 }
 
 class OouiList : OouiStackPanel {
-    [List[ListItem]] $Items = [List[ListItem]]::new()
+    [List[ListItem]] $Items        = [List[ListItem]]::new()
+    [String]         $LineHeight   = "30px"
 
     OouiList() {
-        $this.Orientation   = [Orientation]::Horizontal
+        $this.Orientation          = [Orientation]::Horizontal
+        $this.NativeUI.ClassName   = "UIList"
     }
 
     [void] AddColumn([OouiListColumn] $listColumn) {
@@ -269,8 +277,13 @@ class OouiList : OouiStackPanel {
             $column = $_
             $cell = $listItem.Children.Item($columnIndex)
             $column.AddChild($cell)
+            $this.StyleCell($cell)
             $columnIndex++
         }
+    }
+
+    [void] StyleCell($cell) {
+        $cell.NativeUI.Style.LineHeight   = $this.LineHeight
     }
 
     [void] RemoveItem([ListItem] $listItem) {
@@ -561,9 +574,36 @@ class OouiBrowser : OouiStackPanel {
         $this.List.AddColumn($listColumn)
     }
 
-    hidden [void] CreateEditionColumn() {
-        $this.EditionColumn = New-Object OouiListColumn -Property @{Name  = "_Edition"; Title = "_"}
-        $this.AddColumn($this.EditionColumn)
+    [void] CreateList() {
+        $this.List.Clear()
+        $this.CreateEditable()
+        0..($this.PageRows - 1) | ForEach-Object {
+            $listItem = $this.GetInitialListItem($_)
+            $this.List.AddItem($listItem)
+        }
+    }
+
+    hidden [ListItem] GetInitialListItem([int] $rowIndex) {
+        $hash = $this.GetInitialHash()
+        $listItem = [ListItem]::new()
+        $this.Columns | ForEach-Object {
+            $column = $_
+            if ($column -eq $this.EditionColumn -and $this.IsEditable) {
+                $this.AddEditionButtons($hash, $listItem, $rowIndex)
+            } else {
+                $this.AddCell($hash, $column.Name, $listItem, $rowIndex)
+            }
+        }
+        return $listItem
+    }
+
+    hidden [HashTable] GetInitialHash() {
+        $hash = @{}
+        $this.Columns | ForEach-Object {
+            $column = $_
+            $hash += @{ "$($column.Name)" = "" }
+        }
+        return $hash
     }
 
     hidden [void] AddEditionButtons([HashTable] $hash, [ListItem] $listItem, [int] $rowIndex) {
@@ -589,27 +629,66 @@ class OouiBrowser : OouiStackPanel {
         $this.StyleEditionButtons($editButton, $deleteButton, $rowIndex)
     }
 
+    hidden [void] AddCell([HashTable] $hash, [string] $columnName, [ListItem] $listItem, [int] $rowIndex) {
+        $itemLabel = [OouiLabel]::new()
+        $itemLabel.Caption = $hash."$columnName"
+        $listItem.AddChild($itemLabel)
+        $this.StyleCell($itemLabel, $rowIndex)
+    }
+
+    hidden [void] CreateEditable() {
+        if ($this.EditionColumn -eq $null -and $this.IsEditable) {
+            $this.CreateEditionColumn()
+        }
+        $this.AddNewButton.Visible = $this.IsEditable
+    }
+
+    hidden [void] CreateEditionColumn() {
+        $this.EditionColumn = New-Object OouiListColumn -Property @{Name  = "_Edition"; Title = "_"}
+        $this.AddColumn($this.EditionColumn)
+    }
+
     #endregion
 
     #region Data show
 
     [void] Refresh() {
-        $this.RefreshEditable()
+        # Fill Rows
         $rowIndex = 0
-        $this.List.Clear()
-        $this.GetSelectedData() | ForEach-Object {
+        $selectedData = $this.GetSelectedData()
+        $selectedData | ForEach-Object {
             $hash = $_
-            $listItem = $this.GetDataListItem($hash, $rowIndex)
-            $this.List.AddItem($listItem)
+            $columnIndex = 0
+            $this.Columns | Select-Object -First ($this.Columns.Count) | ForEach-Object {
+                $column = $_
+                if ($this.EditionColumn -ne $column) {
+                    $this.List.Children.Item($columnIndex).Children.Item($rowIndex + 1).Caption = $hash."$($column.Name)"
+                } else {
+                    $buttons = $this.List.Children.Item($columnIndex).Children.Item($rowIndex + 1).Children
+                    $buttons.Item(0).CurrentRow = $hash
+                    $buttons.Item(1).CurrentRow = $hash
+                    $buttons.Item(0).Visible    = $true
+                    $buttons.Item(1).Visible    = $true
+                }
+                $columnIndex++
+            }
             $rowIndex++
         }
-    }
-
-    hidden [void] RefreshEditable() {
-        if ($this.EditionColumn -eq $null -and $this.IsEditable) {
-            $this.CreateEditionColumn()
+        # EmptyRows
+        for ($rowIndex = $selectedData.Count + 1; $rowIndex -le $this.PageRows; $rowIndex++) {
+            $columnIndex = 0
+            $this.Columns | Select-Object -First ($this.Columns.Count) | ForEach-Object {
+                $column = $_
+                if ($this.EditionColumn -ne $column) {
+                    $this.List.Children.Item($columnIndex).Children.Item($rowIndex).Caption = ""
+                } else {
+                    $buttons = $this.List.Children.Item($columnIndex).Children.Item($rowIndex).Children
+                    $buttons.Item(0).Visible    = $false
+                    $buttons.Item(1).Visible    = $false
+                }
+                $columnIndex++
+            }
         }
-        $this.AddNewButton.Visible = $this.IsEditable
     }
 
     hidden [HashTable[]] GetSelectedData() {
@@ -624,36 +703,25 @@ class OouiBrowser : OouiStackPanel {
         return $lastPage
     }
 
-    hidden [ListItem] GetDataListItem([HashTable] $hash, [int] $rowIndex) {
-        $listItem = [ListItem]::new()
-        $this.Columns | ForEach-Object {
-            $column = $_
-            if ($column -eq $this.EditionColumn -and $this.IsEditable) {
-                $this.AddEditionButtons($hash, $listItem, $rowIndex)
-            } else {
-                $this.AddCell($hash, $column.Name, $listItem, $rowIndex)
-            }
-        }
-        return $listItem
-    }
-
-    [void] AddCell([HashTable] $hash, [string] $columnName, [ListItem] $listItem, [int] $rowIndex) {
-        $itemLabel = [OouiLabel]::new()
-        $itemLabel.Caption = $hash."$columnName"
-        $this.StyleCell($itemLabel, $rowIndex)
-        $listItem.AddChild($itemLabel)
-    }
-
     #endregion
 
     #region Style
 
     [void] StyleComponents() {
+        $this.List.LineHeight = "32px"
+
         $this.FirstButton.Caption        = "|<"
         $this.PreviousButton.Caption     = "<<"
         $this.NextButton.Caption         = ">>"
         $this.LastButton.Caption         = ">|"
         $this.AddNewButton.Caption       = "+"
+
+        $this.FirstButton.NativeUI.ClassName    = "btn btn-primary btn-link btn-lg"
+        $this.PreviousButton.NativeUI.ClassName = "btn btn-primary btn-link btn-lg"
+        $this.NextButton.NativeUI.ClassName     = "btn btn-primary btn-link btn-lg"
+        $this.LastButton.NativeUI.ClassName     = "btn btn-primary btn-link btn-lg"
+        $this.AddNewButton.NativeUI.ClassName   = "btn btn-warning btn-fab btn-round btn-lg"
+        $this.AddNewButton.NativeUI.Style.BackgroundColor   = "lime"
     }
 
     [void] StyleCell($cell, [int] $rowIndex) {
@@ -664,8 +732,9 @@ class OouiBrowser : OouiStackPanel {
         $editButton.Caption     = "/"
         $deleteButton.Caption   = "X"
 
-        $editButton.NativeUI.Style.FontSize     = 7
-        $deleteButton.NativeUI.Style.FontSize   = 7
+        $editButton.NativeUI.ClassName          = "btn btn-primary btn-link btn-sm"
+        $deleteButton.NativeUI.ClassName        = "btn btn-danger  btn-link btn-sm"
+        $deleteButton.NativeUI.Style.Color      = "red"
     }
 
     #endregion

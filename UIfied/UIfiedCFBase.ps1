@@ -492,9 +492,36 @@ class CFBrowser : CFStackPanel {
         $this.List.AddColumn($listColumn)
     }
 
-    hidden [void] CreateEditionColumn() {
-        $this.EditionColumn = New-Object CFListColumn -Property @{Name  = "_Edition"; Title = " "}
-        $this.AddColumn($this.EditionColumn)
+    [void] CreateList() {
+        $this.List.Clear()
+        $this.CreateEditable()
+        0..($this.PageRows - 1) | ForEach-Object {
+            $listItem = $this.GetInitialListItem($_)
+            $this.List.AddItem($listItem)
+        }
+    }
+
+    hidden [ListItem] GetInitialListItem([int] $rowIndex) {
+        $hash = $this.GetInitialHash()
+        $listItem = [ListItem]::new()
+        $this.Columns | ForEach-Object {
+            $column = $_
+            if ($column -eq $this.EditionColumn -and $this.IsEditable) {
+                $this.AddEditionButtons($hash, $listItem, $rowIndex)
+            } else {
+                $this.AddCell($hash, $column.Name, $listItem, $rowIndex)
+            }
+        }
+        return $listItem
+    }
+
+    hidden [HashTable] GetInitialHash() {
+        $hash = @{}
+        $this.Columns | ForEach-Object {
+            $column = $_
+            $hash += @{ "$($column.Name)" = "" }
+        }
+        return $hash
     }
 
     hidden [void] AddEditionButtons([HashTable] $hash, [ListItem] $listItem, [int] $rowIndex) {
@@ -520,27 +547,66 @@ class CFBrowser : CFStackPanel {
         $this.StyleEditionButtons($editButton, $deleteButton, $rowIndex)
     }
 
+    hidden [void] AddCell([HashTable] $hash, [string] $columnName, [ListItem] $listItem, [int] $rowIndex) {
+        $itemLabel = [CFLabel]::new()
+        $itemLabel.Caption = $hash."$columnName"
+        $listItem.AddChild($itemLabel)
+        $this.StyleCell($itemLabel, $rowIndex)
+    }
+
+    hidden [void] CreateEditable() {
+        if ($this.EditionColumn -eq $null -and $this.IsEditable) {
+            $this.CreateEditionColumn()
+        }
+        $this.AddNewButton.Visible = $this.IsEditable
+    }
+
+    hidden [void] CreateEditionColumn() {
+        $this.EditionColumn = New-Object CFListColumn -Property @{Name  = "_Edition"; Title = "_"}
+        $this.AddColumn($this.EditionColumn)
+    }
+
     #endregion
 
     #region Data show
 
     [void] Refresh() {
-        $this.RefreshEditable()
+        # Fill Rows
         $rowIndex = 0
-        $this.List.Clear()
-        $this.GetSelectedData() | ForEach-Object {
+        $selectedData = $this.GetSelectedData()
+        $selectedData | ForEach-Object {
             $hash = $_
-            $listItem = $this.GetDataListItem($hash, $rowIndex)
-            $this.List.AddItem($listItem)
+            $columnIndex = 0
+            $this.Columns | Select-Object -First ($this.Columns.Count) | ForEach-Object {
+                $column = $_
+                if ($this.EditionColumn -ne $column) {
+                    $this.List.Children.Item($columnIndex).Children.Item($rowIndex + 1).Caption = $hash."$($column.Name)"
+                } else {
+                    $buttons = $this.List.Children.Item($columnIndex).Children.Item($rowIndex + 1).Children
+                    $buttons.Item(0).CurrentRow = $hash
+                    $buttons.Item(1).CurrentRow = $hash
+                    $buttons.Item(0).Visible    = $true
+                    $buttons.Item(1).Visible    = $true
+                }
+                $columnIndex++
+            }
             $rowIndex++
         }
-    }
-
-    hidden [void] RefreshEditable() {
-        if ($this.EditionColumn -eq $null -and $this.IsEditable) {
-            $this.CreateEditionColumn()
+        # EmptyRows
+        for ($rowIndex = $selectedData.Count + 1; $rowIndex -le $this.PageRows; $rowIndex++) {
+            $columnIndex = 0
+            $this.Columns | Select-Object -First ($this.Columns.Count) | ForEach-Object {
+                $column = $_
+                if ($this.EditionColumn -ne $column) {
+                    $this.List.Children.Item($columnIndex).Children.Item($rowIndex).Caption = ""
+                } else {
+                    $buttons = $this.List.Children.Item($columnIndex).Children.Item($rowIndex).Children
+                    $buttons.Item(0).Visible    = $false
+                    $buttons.Item(1).Visible    = $false
+                }
+                $columnIndex++
+            }
         }
-        $this.AddNewButton.Visible = $this.IsEditable
     }
 
     hidden [HashTable[]] GetSelectedData() {
@@ -553,26 +619,6 @@ class CFBrowser : CFStackPanel {
             $lastPage--
         }
         return $lastPage
-    }
-
-    hidden [ListItem] GetDataListItem([HashTable] $hash, [int] $rowIndex) {
-        $listItem = [ListItem]::new()
-        $this.Columns | ForEach-Object {
-            $column = $_
-            if ($column -eq $this.EditionColumn -and $this.IsEditable) {
-                $this.AddEditionButtons($hash, $listItem, $rowIndex)
-            } else {
-                $this.AddCell($hash, $column.Name, $listItem, $rowIndex)
-            }
-        }
-        return $listItem
-    }
-
-    [void] AddCell([HashTable] $hash, [string] $columnName, [ListItem] $listItem, [int] $rowIndex) {
-        $itemLabel = [CFLabel]::new()
-        $itemLabel.Caption = $hash."$columnName"
-        $this.StyleCell($itemLabel, $rowIndex)
-        $listItem.AddChild($itemLabel)
     }
 
     #endregion

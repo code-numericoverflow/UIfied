@@ -114,7 +114,7 @@ $wsb = {
                         $this.Control.Refresh()
                     } -Data @(
                         1..203 | ForEach-Object { @{Id = $_; Description = "Desc $_  jkdf kjafsd j fdas jfas jfas djaf sj "} }
-                    ) -PageRows 14
+                    ) -PageRows 15
                 }
                 UITabItem -Caption "DropDownMenus" -Components {
                     UIDropDownMenu -Caption "my dropdown" -Components {
@@ -142,7 +142,7 @@ $wsb = {
     }
 }
 
-Set-UIMaterialOoui
+Set-UICF
 
 $h = Get-UIHost
 #cls

@@ -20,9 +20,17 @@ class MaterialOouiHost : OouiHost {
                     padding: 10px 15px;
                 }
                 .nav-pills .nav-item .nav-link.active {
-                    color: #fff;
-                    background-color: #9c27b0;
+                    color: black;
+                    background-color: lime;
                     box-shadow: 0px 4px 20px 0px rgba(0,0,0,0.14), 0px 7px 10px -5px rgba(156,39,176,0.4);
+                }
+                .UIList .form-check {
+                    margin-bottom: 0px;
+                }
+                .UIList .form-check .form-check-label {
+                    white-space: nowrap;
+                    position: relative;
+                    vertical-align: top;
                 }
             </style>
         '
@@ -182,6 +190,24 @@ class MaterialOouiTimePicker : OouiTimePicker {
 }
 
 class MaterialOouiBrowser : OouiBrowser {
+
+    [void] StyleComponents() {
+        ([OouiBrowser] $this).StyleComponents()
+        $this.List.LineHeight = "41px"
+    }
+
+    [void] StyleCell($cell, [int] $rowIndex) {
+        $cell.NativeUI.Style.FontSize     = 14
+    }
+
+    [void] StyleEditionButtons([OouiButton] $editButton, [OouiButton] $deleteButton, [int] $rowIndex) {
+        $editButton.Caption     = "/"
+        $deleteButton.Caption   = "X"
+
+        $editButton.NativeUI.ClassName = "btn btn-primary btn-link btn-sm"
+        $deleteButton.NativeUI.ClassName = "btn btn-danger btn-link btn-sm"
+    }
+
 }
 
 class MaterialOouiMenuItem : OouiMenuItem {

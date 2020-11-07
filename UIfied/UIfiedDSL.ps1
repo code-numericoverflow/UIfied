@@ -284,6 +284,7 @@ function Get-UIBrowser {
     }
     $browser.Data = $Data
     $browser.PageRows = $PageRows
+    $browser.CreateList()
     $browser.Refresh()
     $browser.AddNew = $AddNew
     $browser.Edit   = $Edit

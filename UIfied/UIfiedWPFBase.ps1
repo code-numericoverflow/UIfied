@@ -108,6 +108,31 @@ class WPFLabel : WPFElement {
     }
 }
 
+class WPFIcon : WPFLabel {
+    hidden  [String] $KindName
+
+    WPFIcon() {
+        Add-Member -InputObject $this -Name Kind -MemberType ScriptProperty -Value {
+            $this.KindName
+        } -SecondValue {
+            $this.KindName = $args[0]
+            $this.RefreshCaption()
+        }
+    }
+
+    [void] RefreshCaption() {
+        $this.Caption = $this.ToString()
+    }
+
+    [String] ToString() {
+        $result = switch ($this.KindName) {
+            addbox     { "+" }
+            default    { "_" }
+        }
+        return $result
+    }
+}
+
 class WPFButton : WPFElement {
 
     WPFButton() {

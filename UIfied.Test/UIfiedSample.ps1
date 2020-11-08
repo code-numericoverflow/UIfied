@@ -19,6 +19,7 @@ $wsb = {
                         param($this)
                         $this.Form.ButtonLabel.Caption = Get-Date
                     }
+                    UIIcon -Kind "addbox"
                 }
                 UITabItem -Caption "TextBoxes" -Components {
                     UILabel    -Caption "TextBox Sample" -Name TextBoxLabel
@@ -142,7 +143,7 @@ $wsb = {
     }
 }
 
-Set-UICF
+Set-UIMaterialWPF
 
 $h = Get-UIHost
 #cls

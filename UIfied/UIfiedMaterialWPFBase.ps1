@@ -63,6 +63,18 @@ class MaterialWPFWindow : WindowBase {
 class MaterialWPFStackPanel : WPFStackPanel {
 }
 
+class MaterialWPFIcon : WPFElement {
+
+    MaterialWPFIcon() {
+        $this.NativeUI = [MaterialDesignThemes.Wpf.PackIcon]::new()
+        Add-Member -InputObject $this -Name Kind -MemberType ScriptProperty -Value {
+            $this.NativeUI.Kind
+        } -SecondValue {
+            $this.NativeUI.Kind = $args[0]
+        }
+    }
+}
+
 class MaterialWPFLabel : WPFLabel {
 }
 

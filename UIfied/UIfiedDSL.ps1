@@ -26,6 +26,18 @@ function Get-UIWindow {
     $window
 }
 
+function Get-UIIcon {
+    param (
+        [UIType]       $UIType       = [UIConfig]::UIType,
+        [String]       $Kind         = "",
+        [String]       $Name         = ""
+    )
+    $icon = New-Object ($UIType.ToString() + "Icon")
+    $icon.Kind       = $Kind
+    #$icon.Name       = $Name
+    $icon
+}
+
 function Get-UIButton {
     param (
         [UIType]       $UIType       = [UIConfig]::UIType,

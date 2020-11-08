@@ -96,12 +96,37 @@ class CFLabel : CFElement {
     }
 }
 
+class CFIcon : CFLabel {
+    hidden  [String] $KindName
+
+    CFIcon() {
+        Add-Member -InputObject $this -Name Kind -MemberType ScriptProperty -Value {
+            $this.KindName
+        } -SecondValue {
+            $this.KindName = $args[0]
+            $this.RefreshCaption()
+        }
+    }
+
+    [void] RefreshCaption() {
+        $this.Caption = $this.ToString()
+    }
+
+    [String] ToString() {
+        $result = switch ($this.KindName) {
+            addbox     { "+" }
+            default    { "_" }
+        }
+        return $result
+    }
+}
+
 class CFCustomButton : Button {
 
     [Size] MeasureOverride([Size] $availableSize) {
         if (-not [System.string]::IsNullOrEmpty($this.Caption)) {
             if ($this.MaxWidth -ge 20) {
-                $currentWidth = 10
+                $currentWidth = $this.Caption.Length + 5
             } else {
                 $currentWidth = $this.MaxWidth
             }
@@ -119,12 +144,29 @@ class CFCustomButton : Button {
 }
 
 class CFButton : CFElement {
+    [String]  $CaptionText   = ""
+    [String]  $IconText      = ""
 
     CFButton() {
         $this.SetNativeUI([CFCustomButton]::new())
-        $this.WrapProperty("Caption", "Caption")
+        Add-Member -InputObject $this -Name Caption -MemberType ScriptProperty -Value {
+            $this.CaptionText
+        } -SecondValue {
+            $this.CaptionText = $args[0]
+            $this.RefreshCaption()
+        }
+        Add-Member -InputObject $this -Name Icon -MemberType ScriptProperty -Value {
+            $this.IconText
+        } -SecondValue {
+            $this.IconText = $args[0]
+            $this.RefreshCaption()
+        }
         $this.AddScriptBlockProperty("Action")
         $this.NativeUI.Add_OnClick({ $this.Control.OnAction() })
+    }
+
+    [void] RefreshCaption() {
+        $this.NativeUI.Caption = ($this.IconText + " " + $this.CaptionText).Trim()
     }
 
     [void] OnAction() {

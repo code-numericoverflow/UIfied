@@ -67,3 +67,4 @@ We have implemented these controls:
 - TimePicker
 - Browser
 - Autocomplete
+- Icon

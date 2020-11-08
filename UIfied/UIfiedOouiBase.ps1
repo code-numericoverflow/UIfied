@@ -34,6 +34,7 @@ class OouiHost : UIHost {
     OouiHost() {
         [UI]::HeadHtml = '
             <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/css/bootstrap.min.css" />
+            <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" rel="stylesheet" type="text/css" />
         '
     }
 
@@ -131,6 +132,31 @@ class OouiStackPanel : OouiElement {
         }
     }
 }
+
+class Icon : Element {
+    
+    Icon() : base("i") {
+    }
+    
+    Icon([String] $text) {
+        $this.Text = $text
+    }
+
+}
+
+class OouiIcon : OouiElement {
+
+    OouiIcon() {
+        $this.NativeUI = [Icon]::new()
+        $this.NativeUI.ClassName = "material-icons"
+        Add-Member -InputObject $this -Name Kind -MemberType ScriptProperty -Value {
+            $this.NativeUI.Text
+        } -SecondValue {
+            $this.NativeUI.Text = $args[0]
+        }
+    }
+}
+
 
 class OouiLabel : OouiElement {
 

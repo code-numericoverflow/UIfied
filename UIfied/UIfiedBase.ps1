@@ -254,3 +254,28 @@ class AutoCompleteItem {
 }
 
 #endregion
+
+#region UI Icons
+
+class IconStrinfy {
+    static [bool]  $ShowIcon = $true
+    
+    hidden static $Icons = @{
+        menu               = [string] [char] 02261 # 62542
+        add                = [string] [char] 62541
+        delete             = [string] [char] 62606
+        clear              = [string] [char] 62567
+        calendar_today     = [string] [char] 62957
+        query_builder      = [string] [char] 63055
+    }
+
+    static [String] ToIconString([String] $kindName) {
+        if ([IconStrinfy]::ShowIcon) {
+            return [IconStrinfy]::Icons."$kindName"
+        } else {
+            return ""
+        }
+    }
+}
+
+#endregion

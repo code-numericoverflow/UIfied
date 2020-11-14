@@ -111,7 +111,7 @@ class WPFLabel : WPFElement {
 class WPFIcon : WPFLabel {
     hidden  [String] $KindName
 
-    WPFIcon() {
+    CFIcon() {
         Add-Member -InputObject $this -Name Kind -MemberType ScriptProperty -Value {
             $this.KindName
         } -SecondValue {
@@ -121,25 +121,39 @@ class WPFIcon : WPFLabel {
     }
 
     [void] RefreshCaption() {
-        $this.Caption = $this.ToString()
-    }
-
-    [String] ToString() {
-        $result = switch ($this.KindName) {
-            addbox     { "+" }
-            default    { "_" }
-        }
-        return $result
+        $this.Caption = [IconStrinfy]::ToIconString($this.KindName)
     }
 }
 
 class WPFButton : WPFElement {
+    hidden [String]  $CaptionText   = ""
+    hidden [String]  $IconText      = ""
 
     WPFButton() {
         $this.SetNativeUI([Button]::new())
-        $this.WrapProperty("Caption", "Content")
+        Add-Member -InputObject $this -Name Caption -MemberType ScriptProperty -Value {
+            $this.CaptionText
+        } -SecondValue {
+            $this.CaptionText = $args[0]
+            $this.RefreshCaption()
+        }
+        Add-Member -InputObject $this -Name Icon -MemberType ScriptProperty -Value {
+            $this.IconText
+        } -SecondValue {
+            if ($args[0] -ne $null) {
+                $this.IconText = [IconStrinfy]::ToIconString($args[0].Kind)
+                $this.RefreshCaption()
+            } else {
+                $this.IconText = ""
+                $this.RefreshCaption()
+            }
+        }
         $this.AddScriptBlockProperty("Action")
         $this.NativeUI.Add_Click({ $this.Control.OnAction() })
+    }
+
+    [void] RefreshCaption() {
+        $this.NativeUI.Content = ($this.IconText + " " + $this.CaptionText).Trim()
     }
 
     [void] OnAction() {

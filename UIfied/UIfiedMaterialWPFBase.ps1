@@ -64,25 +64,65 @@ class MaterialWPFStackPanel : WPFStackPanel {
 }
 
 class MaterialWPFIcon : WPFElement {
+    hidden [String]  $KindName
+    hidden           $TextInfo
 
     MaterialWPFIcon() {
+        $this.TextInfo = ([System.Globalization.CultureInfo]::new("en-US",$false)).TextInfo
         $this.NativeUI = [MaterialDesignThemes.Wpf.PackIcon]::new()
         Add-Member -InputObject $this -Name Kind -MemberType ScriptProperty -Value {
-            $this.NativeUI.Kind
+            $this.KindName
         } -SecondValue {
-            $this.NativeUI.Kind = $args[0]
+            $this.KindName = $args[0]
+            $this.NativeUI.Kind = $this.TextInfo.ToTitleCase($this.KindName).Replace("_", [String]::Empty)
         }
     }
 }
 
-class MaterialWPFLabel : WPFLabel {
-}
+class MaterialWPFLabel : WPFLabel {}
 
-class MaterialWPFButton : WPFButton {
+class MaterialWPFButton : WPFElement {
+    hidden  [stackpanel]         $StackPanel    = [StackPanel]::new()
+    hidden  [MaterialWPFIcon]    $CurrentIcon   = $null
+    hidden  [String]             $CaptionText   = ""
 
     MaterialWPFButton() {
+        $this.SetNativeUI([Button]::new())
         $this.NativeUI.SetResourceReference([Control]::StyleProperty, "MaterialDesignRaisedButton")
+        $this.StackPanel.Orientation = [Orientation]::Horizontal
+        $this.NativeUI.Content = $this.StackPanel
+        Add-Member -InputObject $this -Name Caption -MemberType ScriptProperty -Value {
+            $this.CaptionText
+        } -SecondValue {
+            $this.CaptionText = $args[0]
+            $this.RefreshCaption()
+        }
+        Add-Member -InputObject $this -Name Icon -MemberType ScriptProperty -Value {
+            $this.CurrentIcon
+        } -SecondValue {
+            $this.CurrentIcon = $args[0]
+            $this.RefreshCaption()
+        }
+        $this.AddScriptBlockProperty("Action")
+        $this.NativeUI.Add_Click({ $this.Control.OnAction() })
     }
+
+    [void] RefreshCaption() {
+        $this.StackPanel.Children.Clear()
+        if ($this.CurrentIcon -ne $null) {
+            $this.StackPanel.AddChild($this.CurrentIcon.NativeUI)
+        }
+        if ($this.CaptionText -ne "") {
+            $label = [TextBlock]::new()
+            $label.Text = $this.CaptionText
+            $this.StackPanel.AddChild($label)
+        }
+    }
+
+    [void] OnAction() {
+        $this.InvokeTrappableCommand($this._Action, $this)
+    }
+
 }
 
 class MaterialWPFTextBox : WPFTextBox {

@@ -34,7 +34,7 @@ function Get-UIIcon {
     )
     $icon = New-Object ($UIType.ToString() + "Icon")
     $icon.Kind       = $Kind
-    #$icon.Name       = $Name
+    $icon.Name       = $Name
     $icon
 }
 
@@ -42,11 +42,13 @@ function Get-UIButton {
     param (
         [UIType]       $UIType       = [UIConfig]::UIType,
         [ScriptBlock]  $Action       = {},
+                       $Icon         = $null,
         [String]       $Caption      = "",
         [String]       $Name         = ""
     )
     $button = New-Object ($UIType.ToString() + "Button")
     $button.Action     = $Action
+    $button.Icon       = $Icon
     $button.Caption    = $Caption
     $button.Name       = $Name
     $button

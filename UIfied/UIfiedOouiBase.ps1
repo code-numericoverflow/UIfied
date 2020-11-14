@@ -157,7 +157,6 @@ class OouiIcon : OouiElement {
     }
 }
 
-
 class OouiLabel : OouiElement {
 
     OouiLabel() {
@@ -167,17 +166,53 @@ class OouiLabel : OouiElement {
 }
 
 class OouiButton : OouiElement {
+    hidden  [OOuiIcon]    $CurrentIcon   = $null
+    hidden  [span]        $CurrentSpan   = $null
+    hidden  [String]      $CaptionText   = ""
 
     OouiButton() {
-        $nativeUI = [Button]::new("NotSet")
+        $nativeUI = [Button]::new("")
         $nativeUI.ClassName = "btn btn-primary"
         $this.SetNativeUI($nativeUI)
-        $this.WrapProperty("Caption", "Text")
+        Add-Member -InputObject $this -Name Caption -MemberType ScriptProperty -Value {
+            $this.CaptionText
+        } -SecondValue {
+            $this.RemoveChildren()
+            $this.CaptionText = $args[0]
+            $this.RefreshCaption()
+        }
+        Add-Member -InputObject $this -Name Icon -MemberType ScriptProperty -Value {
+            $this.CurrentIcon
+        } -SecondValue {
+            $this.RemoveChildren()
+            $this.CurrentIcon = $args[0]
+            $this.RefreshCaption()
+        }
         $this.AddScriptBlockProperty("Action")
         Register-ObjectEvent -InputObject $this.NativeUI -EventName Click -MessageData $this -Action {
             $this = $event.MessageData
             $this.Control.OnAction()
         } | Out-Null
+    }
+
+    [void] RemoveChildren() {
+        if ($this.CurrentSpan -ne $null) {
+            $this.NativeUI.RemoveChild($this.CurrentSpan)
+        }
+        if ($this.CurrentIcon -ne $null) {
+            $this.NativeUI.RemoveChild($this.CurrentIcon.NativeUI)
+        }
+    }
+
+    [void] RefreshCaption() {
+        if ($this.CurrentIcon -ne $null) {
+            $this.NativeUI.AppendChild($this.CurrentIcon.NativeUI)
+        }
+        if ($this.CaptionText -ne "") {
+            $this.CurrentSpan = [Span]::new()
+            $this.CurrentSpan.Text = $this.CaptionText
+            $this.NativeUI.AppendChild($this.CurrentSpan)
+        }
     }
 
     [void] OnAction() {

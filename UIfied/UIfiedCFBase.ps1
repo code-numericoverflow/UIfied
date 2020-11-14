@@ -5,6 +5,7 @@ using namespace ConsoleFramework.Core
 using namespace ConsoleFramework.Native
 using namespace ConsoleFramework.Controls
 using namespace ConsoleFramework.Events
+using namespace ConsoleFramework.Rendering
 
 class CFElement : UIElement {
 
@@ -79,6 +80,20 @@ class CFWindow : WindowBase {
 
 }
 
+#class CFCustomPanel : Panel {
+#    
+#    [void] Render([RenderingBuffer] $buffer) {
+#        for ([int] $x = 0; $x -lt $this.ActualWidth; $x++) {
+#            for ([int] $y = 0; $y -lt $this.ActualHeight; $y++) {
+#                $buffer.SetPixel($x, $y, ' ', [colors]::Blend([color]::Magenta, [color]::White));
+#                $buffer.SetOpacity( $x, $y, 4 );
+#            }
+#        }
+#    }
+#}
+
+# Font Creation https://www.calligraphr.com/
+
 class CFStackPanel : CFElement {
 
     CFStackPanel() {
@@ -109,15 +124,7 @@ class CFIcon : CFLabel {
     }
 
     [void] RefreshCaption() {
-        $this.Caption = $this.ToString()
-    }
-
-    [String] ToString() {
-        $result = switch ($this.KindName) {
-            addbox     { "+" }
-            default    { "_" }
-        }
-        return $result
+        $this.Caption = [IconStrinfy]::ToIconString($this.KindName)
     }
 }
 
@@ -144,8 +151,8 @@ class CFCustomButton : Button {
 }
 
 class CFButton : CFElement {
-    [String]  $CaptionText   = ""
-    [String]  $IconText      = ""
+    hidden [String]  $CaptionText   = ""
+    hidden [String]  $IconText      = ""
 
     CFButton() {
         $this.SetNativeUI([CFCustomButton]::new())
@@ -158,8 +165,13 @@ class CFButton : CFElement {
         Add-Member -InputObject $this -Name Icon -MemberType ScriptProperty -Value {
             $this.IconText
         } -SecondValue {
-            $this.IconText = $args[0]
-            $this.RefreshCaption()
+            if ($args[0] -ne $null) {
+                $this.IconText = [IconStrinfy]::ToIconString($args[0].Kind)
+                $this.RefreshCaption()
+            } else {
+                $this.IconText = ""
+                $this.RefreshCaption()
+            }
         }
         $this.AddScriptBlockProperty("Action")
         $this.NativeUI.Add_OnClick({ $this.Control.OnAction() })

@@ -20,9 +20,13 @@ class MaterialOouiHost : OouiHost {
                     padding: 10px 15px;
                 }
                 .nav-pills .nav-item .nav-link.active {
-                    color: black;
-                    background-color: lime;
-                    box-shadow: 0px 4px 20px 0px rgba(0,0,0,0.14), 0px 7px 10px -5px rgba(156,39,176,0.4);
+                    border-radius: unset;
+                    background-color: transparent;
+                    padding-bottom: 0px;
+                    border-bottom-width: 4px;
+                    border-bottom-style: solid;
+                    border-bottom-color: lime;
+                    margin-bottom: 7px;
                 }
                 .UIList .form-check {
                     margin-bottom: 0px;

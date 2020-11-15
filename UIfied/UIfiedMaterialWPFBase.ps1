@@ -151,10 +151,54 @@ class MaterialWPFList : WPFList {
 class MaterialWPFListColumn : WPFListColumn {
 }
 
-class MaterialWPFTabItem : WPFTabItem {
+class MaterialWPFTabItem : MaterialWPFStackPanel {
+    [MaterialWPFRadioButton]   $HeaderRadioButton   = ([MaterialWPFRadioButton]  @{ Caption     = ""     })
+
+    MaterialWPFTabItem() {
+        Add-Member -InputObject $this.HeaderRadioButton -Name Tab -Value $this -MemberType NoteProperty
+        $this.WrapProperty("Caption", "Caption", "HeaderRadioButton")
+        $this.HeaderRadioButton.NativeUI.SetResourceReference([Control]::StyleProperty, "MaterialDesignTabRadioButton")
+        $this.Visible = $false
+        $this.HeaderRadioButton.Click = {
+            $this.Control.Tab.Parent.HideTabs()
+            $this.Control.Tab.Visible = $this.Control.IsChecked
+        }
+    }
 }
 
-class MaterialWPFTabControl : WPFTabControl {
+class MaterialWPFTabControl : MaterialWPFStackPanel {
+    hidden [MaterialWPFStackPanel]  $HeadersStackPanel  = ([MaterialWPFStackPanel] @{ Orientation = [Orientation]::Horizontal })
+    hidden [MaterialWPFStackPanel]  $TabsStackPanel     = ([MaterialWPFStackPanel] @{ Orientation = [Orientation]::Horizontal })
+    hidden                          $TabItems           = [List[MaterialWPFTabItem]]::new()
+
+    MaterialWPFTabControl() {
+        $this.Orientation = [Orientation]::Vertical
+        $this.AddChild($this.HeadersStackPanel)
+        $this.AddChild($this.TabsStackPanel)
+        $this.AddNativeUIChild = {
+            param (
+                [MaterialWPFTabItem] $element
+            )
+            $this.TabItems.Add($element)
+            $this.HeadersStackPanel.AddChild($element.HeaderRadioButton)    | Out-Null
+            $this.TabsStackPanel.NativeUI.AddChild($element.NativeUI)       | Out-Null
+        }
+        $this.RemoveNativeUIChild = {
+            param (
+                [MaterialWPFTabItem] $element
+            )
+            $this.TabItems.Remove($element)
+            $this.HeadersStackPanel.RemoveChild($element.HeaderRadioButton)    | Out-Null
+            $this.TabsStackPanel.NativeUI.Children.Remove($element.NativeUI)   | Out-Null
+        }
+    }
+
+    [void] HideTabs() {
+        $this.TabItems | ForEach-Object {
+            $_.Visible = $false
+        }
+    }
+
 }
 
 class MaterialWPFModal : WPFElement {

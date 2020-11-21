@@ -358,3 +358,22 @@ function Get-UIAutoCompleteItem {
     )
     [AutoCompleteItem] @{ Id = $Id; Text = $Text }
 }
+
+function Get-UICard {
+    param (
+        [UIType]       $UIType       = [UIConfig]::UIType,
+                       $Icon         = $null,
+        [String]       $Caption      = "",
+        [ScriptBlock]  $Components   = {},
+        [String]       $Name         = ""
+    )
+    $card = New-Object ($UIType.ToString() + "Card")
+    $card.Icon       = $Icon
+    $card.Caption    = $Caption
+    $card.Name       = $Name
+    $childElements = Invoke-Command -ScriptBlock $Components
+    $childElements | ForEach-Object {
+        $card.AddChild($_)
+    }
+    $card
+}

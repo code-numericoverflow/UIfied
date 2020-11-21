@@ -36,6 +36,9 @@ class MaterialOouiHost : OouiHost {
                     position: relative;
                     vertical-align: top;
                 }
+                .card {
+                    width: max-content;
+                }
             </style>
         '
     }
@@ -224,4 +227,7 @@ class MaterialOouiDropDownMenu : OouiDropDownMenu {
 }
 
 class MaterialOouiAutoComplete : OouiAutoComplete {
+}
+
+class MaterialOouiCard : OouiCard {
 }

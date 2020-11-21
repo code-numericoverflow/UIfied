@@ -15,11 +15,12 @@ $wsb = {
             UITabControl -Components {
                 UITabItem -Caption "Buttons" -Components {
                     UILabel    -Caption "Button" -Name ButtonLabel
-                    UIButton   -Caption "Change"  -Action {
+                    UIButton   -Caption "" -Name MyButton -Action {
                         param($this)
                         $this.Form.ButtonLabel.Caption = Get-Date
-                    }
-                    UIIcon -Kind "addbox"
+                        $this.Form.MyButton.Icon = (Get-UIIcon -Kind "add")
+                    } -Icon (UIIcon -Kind "delete")
+                    UIIcon -Kind "query_builder"
                 }
                 UITabItem -Caption "TextBoxes" -Components {
                     UILabel    -Caption "TextBox Sample" -Name TextBoxLabel
@@ -138,12 +139,22 @@ $wsb = {
                         Get-UIAutoCompleteItem -Id "id4" -Text ([DateTime]::Now.ToString())
                     }
                 }
+                UITabItem -Caption "Cards" -Components {
+                    UICard -Caption MyTitle -Name MyCard -Icon (UIIcon -Kind delete) -Components {
+                        UILabel  -Caption "Card body content here"
+                        UIButton -Caption "Change" -Action {
+                            param($this)
+                            $this.Form.MyCard.Caption = "Hello Card"
+                            $this.Form.MyCard.Icon = (Get-UIIcon -Kind add)
+                        }
+                    }
+                }
             }
         }
     }
 }
 
-Set-UIMaterialWPF
+Set-UIWPF
 
 $h = Get-UIHost
 #cls

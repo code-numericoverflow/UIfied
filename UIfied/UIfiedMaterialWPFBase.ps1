@@ -336,3 +336,14 @@ class MaterialWPFDropDownMenu : WPFDropDownMenu {
 
 class MaterialWPFAutoComplete : WPFAutoComplete {
 }
+
+class MaterialWPFCard : WPFCard {
+    hidden $CurrentIcon        = [MaterialWPFIcon]::new()
+
+    [void] StyleComponents() {
+        ([WPFCard] $this).StyleComponents()
+        $this.NativeUI.SetResourceReference([Control]::StyleProperty, "MaterialDesignCardGroupBox")
+        $this.NativeUI.Foreground = [System.Windows.Media.Brushes]::White
+        $this.HeaderTextBlock.SetResourceReference([Control]::StyleProperty, "MaterialDesignSubHeadingTextBlock")
+    }
+}

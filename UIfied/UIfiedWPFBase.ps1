@@ -111,7 +111,7 @@ class WPFLabel : WPFElement {
 class WPFIcon : WPFLabel {
     hidden  [String] $KindName
 
-    CFIcon() {
+    WPFIcon() {
         Add-Member -InputObject $this -Name Kind -MemberType ScriptProperty -Value {
             $this.KindName
         } -SecondValue {
@@ -759,3 +759,44 @@ class WPFAutoComplete : WPFTextBox {
     }
 }
 
+class WPFCard : WPFElement {
+    hidden  [GroupBox]          $CardGroupBox       = [GroupBox]::new()
+    hidden  [StackPanel]        $HeaderStackPanel   = [StackPanel]::new()
+    hidden  [TextBlock]         $HeaderTextBlock    = [TextBlock]::new()
+    hidden  [StackPanel]        $BodyStackPanel     = [StackPanel]::new()
+    hidden                      $CurrentIcon        = [WPFIcon]::new()
+
+    WPFCard() {
+        $this.SetNativeUI($this.CardGroupBox)
+        $this.CardGroupBox.Header = $this.HeaderStackPanel
+        $this.HeaderStackPanel.AddChild($this.CurrentIcon.NativeUI)
+        $this.HeaderStackPanel.AddChild($this.HeaderTextBlock)
+        $this.CardGroupBox.Content = $this.BodyStackPanel
+
+        $this.WrapProperty("Caption", "Text", "HeaderTextBlock")
+        Add-Member -InputObject $this -Name Icon -MemberType ScriptProperty -Value {
+            $this.CurrentIcon
+        } -SecondValue {
+            $this.HeaderStackPanel.Children.Remove($this.CurrentIcon.NativeUI)
+            $this.HeaderStackPanel.Children.Remove($this.HeaderTextBlock)
+            $this.CurrentIcon = $args[0]
+            $this.HeaderStackPanel.AddChild($this.CurrentIcon.NativeUI)
+            $this.HeaderStackPanel.AddChild($this.HeaderTextBlock)
+            $this.StyleComponents()
+        }
+        $this.AddNativeUIChild = {
+            param (
+                [WPFElement] $element
+            )
+            $this.BodyStackPanel.AddChild($element.NativeUI) | Out-Null
+        }
+        $this.StyleComponents()
+    }
+
+    [void] StyleComponents() {
+        $this.CardGroupBox.Margin           = "16"
+        $this.HeaderStackPanel.Orientation  = [Orientation]::Horizontal
+        $this.BodyStackPanel.Orientation    = [Orientation]::Vertical
+    }
+
+}

@@ -7,6 +7,8 @@ using namespace ConsoleFramework.Controls
 using namespace ConsoleFramework.Events
 using namespace ConsoleFramework.Rendering
 
+# Font Creation https://www.calligraphr.com/
+
 class CFElement : UIElement {
 
     CFElement() {
@@ -80,19 +82,22 @@ class CFWindow : WindowBase {
 
 }
 
-#class CFCustomPanel : Panel {
-#    
-#    [void] Render([RenderingBuffer] $buffer) {
-#        for ([int] $x = 0; $x -lt $this.ActualWidth; $x++) {
-#            for ([int] $y = 0; $y -lt $this.ActualHeight; $y++) {
-#                $buffer.SetPixel($x, $y, ' ', [colors]::Blend([color]::Magenta, [color]::White));
-#                $buffer.SetOpacity( $x, $y, 4 );
-#            }
-#        }
-#    }
-#}
+class CFCustomPanel : Panel {
+    [color] $ForegroundColor = [color]::Black
+    [color] $BackgroundColor = [color]::Gray
+    [char]  $Pattern         = ' '
 
-# Font Creation https://www.calligraphr.com/
+    
+    [void] Render([RenderingBuffer] $buffer) {
+        $buffer.FillRectangle( 0, 0, $this.ActualWidth, $this.ActualHeight, $this.Pattern, [colors]::Blend($this.ForegroundColor, $this.BackgroundColor));
+        #for ([int] $x = 0; $x -lt $this.ActualWidth; $x++) {
+        #    for ([int] $y = 0; $y -lt $this.ActualHeight; $y++) {
+        #        $buffer.SetPixel($x, $y, $this.Pattern, [colors]::Blend($this.ForegroundColor, $this.BackgroundColor));
+        #        $buffer.SetOpacity( $x, $y, 4 );
+        #    }
+        #}
+    }
+}
 
 class CFStackPanel : CFElement {
 
@@ -858,4 +863,49 @@ class CFAutoComplete : CFTextBox {
         }
     }
 
+}
+
+class CFCard : CFElement {
+    hidden  [GroupBox]          $CardGroupBox       = [GroupBox]::new()
+    hidden  [CFCustomPanel]     $BodyPanel          = [CFCustomPanel]::new()
+    hidden                      $CurrentIcon        = [CFIcon]::new()
+    hidden  [String]            $Title              = ""
+
+    CFCard() {
+        $this.SetNativeUI($this.CardGroupBox)
+        $this.CardGroupBox.Content = $this.BodyPanel
+
+        Add-Member -InputObject $this -Name Caption -MemberType ScriptProperty -Value {
+            $this.Title
+        } -SecondValue {
+            $this.Title = $args[0]
+            $this.Render()
+        }
+        Add-Member -InputObject $this -Name Icon -MemberType ScriptProperty -Value {
+            $this.CurrentIcon
+        } -SecondValue {
+            $this.CurrentIcon = $args[0]
+            $this.Render()
+        }
+        $this.AddNativeUIChild = {
+            param (
+                [CFElement] $element
+            )
+            $this.BodyPanel.xChildren.Add($element.NativeUI) | Out-Null
+        }
+        $this.Render()
+    }
+
+    [void] Render() {
+        if ($this.CurrentIcon -ne $null) {
+            $this.CardGroupBox.Title = $this.CurrentIcon.Caption + " " + $this.Title
+        } else {
+            $this.CardGroupBox.Title = $this.Title
+        }
+        $this.StyleComponents()
+    }
+
+    [void] StyleComponents() {
+        $this.BodyPanel.Margin          = [Thickness]::new(1, 1, 1, 0)
+    }
 }

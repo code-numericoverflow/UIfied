@@ -1,8 +1,8 @@
 using namespace System.Collections.Generic
 using namespace Ooui
 
-# Bootstrap Version: 3.3.7
-#    Review styles in https://getbootstrap.com/docs/3.3/components
+# Bootstrap Version: 4.5.0
+#    Review styles in https://getbootstrap.com/docs/4.5/components
 # Default Style Reference
 #    UI.HeadHtml = "<link rel=""stylesheet"" href=""https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/css/bootstrap.min.css"" />"
 
@@ -33,8 +33,16 @@ class OouiHost : UIHost {
 
     OouiHost() {
         [UI]::HeadHtml = '
-            <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/css/bootstrap.min.css" />
+            <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/bootstrap/4.5.0/css/bootstrap.min.css" />
             <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" rel="stylesheet" type="text/css" />
+            <style>
+                .card {
+                    width: max-content;
+                }
+                .card-icon {
+                    float: left;
+                }
+            </style>
         '
     }
 
@@ -141,20 +149,21 @@ class Icon : Element {
     Icon([String] $text) {
         $this.Text = $text
     }
-
 }
 
 class OouiIcon : OouiElement {
 
     OouiIcon() {
-        $this.NativeUI = [Icon]::new()
-        $this.NativeUI.ClassName = "material-icons"
+        $nativeUI = [Icon]::new()
+        $nativeUI.ClassName = "material-icons"
+        $this.SetNativeUI($nativeUI)
         Add-Member -InputObject $this -Name Kind -MemberType ScriptProperty -Value {
             $this.NativeUI.Text
         } -SecondValue {
             $this.NativeUI.Text = $args[0]
         }
     }
+
 }
 
 class OouiLabel : OouiElement {
@@ -990,4 +999,73 @@ class OouiAutoComplete : OouiStackPanel {
         }
     }
 
+}
+
+class OouiCard : OouiElement {
+
+#  <div class="card">
+#    <div class="card-header card-header-icon card-header-rose">
+#        <div class="card-icon">
+#        <i class="material-icons">language</i>
+#        </div>
+#        <h4 class="card-title">Here is the Icon ads adfa fda </h4>
+#    </div>
+#    <div class="card-body">
+#        The place is close to Barceloneta Beach and bus stop just 2 min by walk and near to "Naviglio" where you can enjoy the main night life in Barcelona...
+#    </div>
+#  </div>
+
+    hidden  [div]               $CardContainerDiv   = [div]::new()
+    hidden  [div]               $CardHeaderDiv      = [div]::new()
+    hidden  [div]               $CardIconDiv        = [div]::new()
+    hidden  [OouiStackPanel]    $CardBodyDiv        = [OouiStackPanel]::new()
+    hidden  [icon]              $CardIcon           = [icon]::new()
+    hidden  [Heading]           $Header             = [Heading]::new(4)
+    
+    hidden  [OOuiIcon]    $CurrentIcon        = $null
+
+    OouiCard() {
+        $this.SetNativeUI($this.CardContainerDiv)
+        $this.CardContainerDiv.AppendChild($this.CardHeaderDiv)
+        $this.CardContainerDiv.AppendChild($this.CardBodyDiv.NativeUI)
+        $this.CardHeaderDiv.AppendChild($this.CardIconDiv)
+        $this.CardHeaderDiv.AppendChild($this.Header)
+        $this.CardIconDiv.AppendChild($this.CardIcon)
+        
+        $this.WrapProperty("Caption", "Text", "Header")
+        Add-Member -InputObject $this -Name Icon -MemberType ScriptProperty -Value {
+            $this.CurrentIcon
+        } -SecondValue {
+            $this.CurrentIcon = $args[0]
+            if ($this.CurrentIcon -ne $null) {
+                $this.CardIcon.Text = $this.CurrentIcon.NativeUI.Text
+            } else {
+                $this.CardIcon.Text = ""
+            }
+        }
+        $this.AddNativeUIChild = {
+            param (
+                [OouiElement] $element
+            )
+            $listItem = [Div]::new()
+            if ($this.CardBodyDiv.Orientation -eq [Orientation]::Horizontal) {
+                $listItem.Style.float = "left"
+            } else {
+                $listItem.Style.clear = "both"
+            }
+            $this.CardBodyDiv.NativeUI.AppendChild($listItem) | Out-Null
+            $listItem.AppendChild($element.NativeUI) | Out-Null
+        }
+        $this.StyleComponents()
+    }
+
+    [void] StyleComponents() {
+        $this.CardContainerDiv.ClassName     = "card"
+        $this.Header.ClassName               = "card-title"
+        $this.CardHeaderDiv.ClassName        = "card-header card-header-icon "
+        $this.CardIconDiv.ClassName          = "card-icon"
+        $this.CardIcon.ClassName             = "material-icons"
+        $this.CardBodyDiv.NativeUI.ClassName = "card-body"
+        $this.CardBodyDiv.Orientation        = [Orientation]::Vertical
+    }
 }

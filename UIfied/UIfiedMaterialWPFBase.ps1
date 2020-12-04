@@ -293,15 +293,15 @@ class MaterialWPFTimePicker : WPFElement {
 class MaterialWPFBrowser : WPFBrowser {
 
     [void] StyleComponents() {
-        $this.StyleButton($this.FirstButton,     "ArrowCompressLeft",   "MaterialDesignIconButton")
-        $this.StyleButton($this.PreviousButton,  "ArrowLeft",           "MaterialDesignIconButton")
-        $this.StyleButton($this.NextButton,      "ArrowForward",        "MaterialDesignIconButton")
-        $this.StyleButton($this.LastButton,      "ArrowCompressRight",  "MaterialDesignIconButton")
+        $this.StyleButton($this.FirstButton,     "FirstPage",     "MaterialDesignIconButton")
+        $this.StyleButton($this.PreviousButton,  "ChevronLeft",   "MaterialDesignIconButton")
+        $this.StyleButton($this.NextButton,      "ChevronRight",  "MaterialDesignIconButton")
+        $this.StyleButton($this.LastButton,      "LastPage",      "MaterialDesignIconButton")
 
-        $this.StyleButton($this.AddNewButton,    "Plus",                "MaterialDesignFloatingActionAccentButton")
+        $this.StyleButton($this.AddNewButton,    "Add",           "MaterialDesignFloatingActionAccentButton")
 
-        $this.FirstButton.Parent.NativeUI.Margin = "0 -10 0 10"
-        $this.AddNewButton.NativeUI.Margin = "100 10 10 10"
+        $this.FirstButton.Parent.NativeUI.Margin  = "0 -10 0 10"
+        $this.AddNewButton.NativeUI.Margin        = "100 10 10 10"
     }
 
     [void] StyleButton($button, $iconKind, $styleName) {

@@ -1,10 +1,51 @@
 using namespace System.Collections.Generic
 using namespace Ooui
 
-# Bootstrap Version: 4.5.0
-#    Review styles in https://getbootstrap.com/docs/4.5/components
-# Default Style Reference
-#    UI.HeadHtml = "<link rel=""stylesheet"" href=""https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/css/bootstrap.min.css"" />"
+#region Ooui missing elements
+
+class Icon : Element {
+    
+    Icon() : base("i") {
+    }
+}
+
+class Table : Element {
+
+    Table() : base("table") {
+    }
+}
+
+class TableHeader : Element {
+
+    TableHeader() : base("thead") {
+    }
+}
+
+class TableBody : Element {
+
+    TableBody() : base("tbody") {
+    }
+}
+
+class TableRow : Element {
+
+    TableRow() : base("tr") {
+    }
+}
+
+class TableHeaderCell : Element {
+
+    TableHeaderCell() : base("th") {
+    }
+}
+
+class TableDataCell : Element {
+
+    TableDataCell() : base("td") {
+    }
+}
+
+#endregion
 
 class OouiElement : UIElement {
 
@@ -32,6 +73,7 @@ class OouiHost : UIHost {
     [ScriptBlock] $CreateElement
 
     OouiHost() {
+        # Style documentation in https://getbootstrap.com/docs/4.5/components
         [UI]::HeadHtml = '
             <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/bootstrap/4.5.0/css/bootstrap.min.css" />
             <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" rel="stylesheet" type="text/css" />
@@ -138,16 +180,6 @@ class OouiStackPanel : OouiElement {
             $this.NativeUI.AppendChild($listItem) | Out-Null
             $listItem.AppendChild($element.NativeUI) | Out-Null
         }
-    }
-}
-
-class Icon : Element {
-    
-    Icon() : base("i") {
-    }
-    
-    Icon([String] $text) {
-        $this.Text = $text
     }
 }
 
@@ -322,56 +354,59 @@ class OouiRadioGroup : OouiElement {
     }
 }
 
-class OouiList : OouiStackPanel {
-    [List[ListItem]] $Items        = [List[ListItem]]::new()
-    [String]         $LineHeight   = "30px"
+class OouiList : OouiElement {
+    [List[ListItem]]           $Items          = [List[ListItem]]::new()
+    [List[OouiListColumn]]     $Columns        = [List[OouiListColumn]]::new()
+
+    hidden   [Table]                    $Table          = [Table]::new()
+    hidden   [TableHeader]              $TableHeader    = [TableHeader]::new()
+    hidden   [TableRow]                 $HeaderRow      = [TableRow]::new()
+    hidden   [List[TableHeaderCell]]    $HeaderCells    = [List[TableHeaderCell]]::new()
+    hidden   [TableBody]                $TableBody      = [TableBody]::new()
+    hidden   [List[TableRow]]           $BodyRows       = [List[TableRow]]::new()
 
     OouiList() {
-        $this.Orientation          = [Orientation]::Horizontal
+        $this.SetNativeUI($this.Table)
         $this.NativeUI.ClassName   = "UIList"
+        $this.Table.AppendChild($this.TableHeader)
+        $this.TableHeader.AppendChild($this.HeaderRow)
+        $this.Table.AppendChild($this.TableBody)
     }
 
     [void] AddColumn([OouiListColumn] $listColumn) {
-        $column = [OouiStackPanel]::new()
-        $column.Orientation           = [Orientation]::Vertical
-        $title = [OouiLabel]::new()
-        $title.Caption = $listColumn.Title
-        $column.AddChild($title)
-        $this.AddChild($column)
+        $this.Columns.Add($listColumn)
+        $cell   = [TableHeaderCell]::new()
+        $cell.Text = $listColumn.Title
+        $this.HeaderRow.AppendChild($cell)
+        $this.HeaderCells.Add($cell)
     }
 
     [void] AddItem([ListItem] $listItem) {
         $this.Items.Add($listItem)
-        $columnIndex = 0
-        $this.Children | ForEach-Object {
-            $column = $_
-            $cell = $listItem.Children.Item($columnIndex)
-            $column.AddChild($cell)
-            $this.StyleCell($cell)
-            $columnIndex++
+        $row = [TableRow]::new()
+        $this.BodyRows.Add($row)
+        $listItem.Children | ForEach-Object {
+            $cell = [TableDataCell]::new()
+            Add-Member -InputObject $_.NativeUI -Name Form   -MemberType NoteProperty -Value $this.Form
+            Add-Member -InputObject $_.NativeUI -Name Parent -MemberType NoteProperty -Value $this
+            $cell.AppendChild($_.NativeUI)
+            $row.AppendChild($cell)
         }
+        $this.TableBody.AppendChild($row)
+    }
+
+    [void] StyleComponents() {
     }
 
     [void] StyleCell($cell) {
-        $cell.NativeUI.Style.LineHeight   = $this.LineHeight
+        #$cell.NativeUI.Style.LineHeight   = $this.LineHeight
     }
 
     [void] RemoveItem([ListItem] $listItem) {
-        $itemIndex = $this.Items.IndexOf($listItem) + 1
-        $this.Children | ForEach-Object {
-            $column = $_
-            $cell = $column.NativeUI.Children.Item($itemIndex)
-            $column.NativeUI.RemoveChild($cell)
-        }
-
-        $columnIndex = 0
-        $this.Children | ForEach-Object {
-            $column = $_
-            $cell = $listItem.Children.Item($columnIndex)
-            $column.Children.Remove($cell)
-            $columnIndex++
-        }
-
+        $itemIndex = $this.Items.IndexOf($listItem)
+        $row = $this.BodyRows.Item($itemIndex)
+        $this.BodyRows.Remove($row)
+        $this.TableBody.RemoveChild($row)
         $this.Items.Remove($listItem)
     }
 
@@ -381,6 +416,11 @@ class OouiList : OouiStackPanel {
         }
     }
 
+    [TableDataCell] GetCell([int] $RowIndex, [int] $ColumnIndex) {
+        $row = $this.BodyRows.Item($RowIndex)
+        $cell = $row.Children.Item($ColumnIndex)
+        return $cell
+    }
 }
 
 class OouiListColumn {
@@ -683,17 +723,19 @@ class OouiBrowser : OouiStackPanel {
 
         $editButton = [OouiButton]::new()
         Add-Member -InputObject $editButton -MemberType NoteProperty -Name CurrentRow -Value $hash
+        Add-Member -InputObject $editButton -MemberType NoteProperty -Name Container  -Value $this
         $editButton.Action = {
-            $this.Parent.Parent.Parent.Parent.CurrentRow = $this.CurrentRow
-            $this.Parent.Parent.Parent.Parent.OnEdit()
+            $this.Container.CurrentRow = $this.Control.CurrentRow
+            $this.Container.OnEdit()
         }
         $editionPanel.AddChild($editButton)
 
         $deleteButton = [OouiButton]::new()
         Add-Member -InputObject $deleteButton -MemberType NoteProperty -Name CurrentRow -Value $hash
+        Add-Member -InputObject $deleteButton -MemberType NoteProperty -Name Container  -Value $this
         $deleteButton.Action = {
-            $this.Parent.Parent.Parent.Parent.CurrentRow = $this.CurrentRow
-            $this.Parent.Parent.Parent.Parent.OnDelete()
+            $this.Container.CurrentRow = $this.Control.CurrentRow
+            $this.Container.OnDelete()
         }
         $editionPanel.AddChild($deleteButton)
         $this.StyleEditionButtons($editButton, $deleteButton, $rowIndex)
@@ -731,14 +773,17 @@ class OouiBrowser : OouiStackPanel {
             $columnIndex = 0
             $this.Columns | Select-Object -First ($this.Columns.Count) | ForEach-Object {
                 $column = $_
+                $cell = $this.List.GetCell($rowIndex, $columnIndex)
                 if ($this.EditionColumn -ne $column) {
-                    $this.List.Children.Item($columnIndex).Children.Item($rowIndex + 1).Caption = $hash."$($column.Name)"
+                    $cell.Children.Item(0).Text = $hash."$($column.Name)"
                 } else {
-                    $buttons = $this.List.Children.Item($columnIndex).Children.Item($rowIndex + 1).Children
-                    $buttons.Item(0).CurrentRow = $hash
-                    $buttons.Item(1).CurrentRow = $hash
-                    $buttons.Item(0).Visible    = $true
-                    $buttons.Item(1).Visible    = $true
+                    $cell.IsHidden    = $false
+                    #$buttons = $this.List.Children.Item($columnIndex).Children.Item($rowIndex + 1).Children
+                    #$buttons.Item(0).CurrentRow = $hash
+                    #$buttons.Item(1).CurrentRow = $hash
+                    $stack = $cell.Children.Item(0)
+                    $stack.Control.Children.Item(0).CurrentRow = $hash
+                    $stack.Control.Children.Item(1).CurrentRow = $hash
                 }
                 $columnIndex++
             }
@@ -748,13 +793,12 @@ class OouiBrowser : OouiStackPanel {
         for ($rowIndex = $selectedData.Count + 1; $rowIndex -le $this.PageRows; $rowIndex++) {
             $columnIndex = 0
             $this.Columns | Select-Object -First ($this.Columns.Count) | ForEach-Object {
+                $cell = $this.List.GetCell($rowIndex - 1, $columnIndex)
                 $column = $_
                 if ($this.EditionColumn -ne $column) {
-                    $this.List.Children.Item($columnIndex).Children.Item($rowIndex).Caption = ""
+                    $cell.Children.Item(0).Text = ""
                 } else {
-                    $buttons = $this.List.Children.Item($columnIndex).Children.Item($rowIndex).Children
-                    $buttons.Item(0).Visible    = $false
-                    $buttons.Item(1).Visible    = $false
+                    $cell.IsHidden    = $true
                 }
                 $columnIndex++
             }
@@ -778,33 +822,30 @@ class OouiBrowser : OouiStackPanel {
     #region Style
 
     [void] StyleComponents() {
-        $this.List.LineHeight = "32px"
+        $this.List.NativeUI.ClassName   = "UIList table"
 
-        $this.FirstButton.Caption        = "|<"
-        $this.PreviousButton.Caption     = "<<"
-        $this.NextButton.Caption         = ">>"
-        $this.LastButton.Caption         = ">|"
-        $this.AddNewButton.Caption       = "+"
+        $this.FirstButton.Icon        = [OouiIcon] @{ Kind = "first_page"    }
+        $this.PreviousButton.Icon     = [OouiIcon] @{ Kind = "chevron_left"  }
+        $this.NextButton.Icon         = [OouiIcon] @{ Kind = "chevron_right" }
+        $this.LastButton.Icon         = [OouiIcon] @{ Kind = "last_page"     }
+        $this.AddNewButton.Icon       = [OouiIcon] @{ Kind = "add"           }
 
-        $this.FirstButton.NativeUI.ClassName    = "btn btn-primary btn-link btn-lg"
-        $this.PreviousButton.NativeUI.ClassName = "btn btn-primary btn-link btn-lg"
-        $this.NextButton.NativeUI.ClassName     = "btn btn-primary btn-link btn-lg"
-        $this.LastButton.NativeUI.ClassName     = "btn btn-primary btn-link btn-lg"
-        $this.AddNewButton.NativeUI.ClassName   = "btn btn-warning btn-fab btn-round btn-lg"
-        $this.AddNewButton.NativeUI.Style.BackgroundColor   = "lime"
+        $this.FirstButton.NativeUI.ClassName        = "btn btn-link"
+        $this.PreviousButton.NativeUI.ClassName     = "btn btn-link"
+        $this.NextButton.NativeUI.ClassName         = "btn btn-link"
+        $this.LastButton.NativeUI.ClassName         = "btn btn-link"
+        $this.AddNewButton.NativeUI.ClassName       = "btn btn-link"
     }
 
     [void] StyleCell($cell, [int] $rowIndex) {
-        $cell.NativeUI.Style.FontSize     = 14
     }
 
     [void] StyleEditionButtons([OouiButton] $editButton, [OouiButton] $deleteButton, [int] $rowIndex) {
-        $editButton.Caption     = "/"
-        $deleteButton.Caption   = "X"
-
-        $editButton.NativeUI.ClassName          = "btn btn-primary btn-link btn-sm"
-        $deleteButton.NativeUI.ClassName        = "btn btn-danger  btn-link btn-sm"
-        $deleteButton.NativeUI.Style.Color      = "red"
+        $editButton.Icon     = [OouiIcon] @{ Kind = "edit"  }
+        $deleteButton.Icon   = [OouiIcon] @{ Kind = "close" }
+        
+        $editButton.NativeUI.ClassName          = "btn btn-success td-actions btn-sm"
+        $deleteButton.NativeUI.ClassName        = "btn btn-danger  td-actions btn-sm"
     }
 
     #endregion
@@ -1002,19 +1043,6 @@ class OouiAutoComplete : OouiStackPanel {
 }
 
 class OouiCard : OouiElement {
-
-#  <div class="card">
-#    <div class="card-header card-header-icon card-header-rose">
-#        <div class="card-icon">
-#        <i class="material-icons">language</i>
-#        </div>
-#        <h4 class="card-title">Here is the Icon ads adfa fda </h4>
-#    </div>
-#    <div class="card-body">
-#        The place is close to Barceloneta Beach and bus stop just 2 min by walk and near to "Naviglio" where you can enjoy the main night life in Barcelona...
-#    </div>
-#  </div>
-
     hidden  [div]               $CardContainerDiv   = [div]::new()
     hidden  [div]               $CardHeaderDiv      = [div]::new()
     hidden  [div]               $CardIconDiv        = [div]::new()

@@ -686,8 +686,8 @@ class CFBrowser : CFStackPanel {
 
     [void] StyleComponents() {
         $this.FirstButton.Caption        = "|<"
-        $this.PreviousButton.Caption     = "<<"
-        $this.NextButton.Caption         = ">>"
+        $this.PreviousButton.Caption     = "<"
+        $this.NextButton.Caption         = ">"
         $this.LastButton.Caption         = ">|"
         $this.AddNewButton.Caption       = "+"
 

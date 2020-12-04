@@ -202,20 +202,30 @@ class MaterialOouiTimePicker : OouiTimePicker {
 class MaterialOouiBrowser : OouiBrowser {
 
     [void] StyleComponents() {
-        ([OouiBrowser] $this).StyleComponents()
-        $this.List.LineHeight = "41px"
-    }
+        $this.List.NativeUI.ClassName   = "UIList table"
 
-    [void] StyleCell($cell, [int] $rowIndex) {
-        $cell.NativeUI.Style.FontSize     = 14
+        $this.FirstButton.Icon        = [OouiIcon] @{ Kind = "first_page"    }
+        $this.PreviousButton.Icon     = [OouiIcon] @{ Kind = "chevron_left"  }
+        $this.NextButton.Icon         = [OouiIcon] @{ Kind = "chevron_right" }
+        $this.LastButton.Icon         = [OouiIcon] @{ Kind = "last_page"     }
+        $this.AddNewButton.Icon       = [OouiIcon] @{ Kind = "add"           }
+
+        $this.FirstButton.NativeUI.ClassName        = "btn btn-primary btn-link"
+        $this.PreviousButton.NativeUI.ClassName     = "btn btn-primary btn-link"
+        $this.NextButton.NativeUI.ClassName         = "btn btn-primary btn-link"
+        $this.LastButton.NativeUI.ClassName         = "btn btn-primary btn-link"
+        $this.AddNewButton.NativeUI.ClassName       = "btn btn-fab btn-round btn-lg"
+
+        $this.AddNewButton.NativeUI.Style.BackgroundColor = "lime"
     }
 
     [void] StyleEditionButtons([OouiButton] $editButton, [OouiButton] $deleteButton, [int] $rowIndex) {
-        $editButton.Caption     = "/"
-        $deleteButton.Caption   = "X"
-
-        $editButton.NativeUI.ClassName = "btn btn-primary btn-link btn-sm"
-        $deleteButton.NativeUI.ClassName = "btn btn-danger btn-link btn-sm"
+        $editButton.Icon     = [MaterialOouiIcon] @{ Kind = "edit"  }
+        $deleteButton.Icon   = [MaterialOouiIcon] @{ Kind = "close" }
+        
+        $editButton.NativeUI.ClassName          = "btn btn-success btn-link btn-sm"
+        $deleteButton.NativeUI.ClassName        = "btn btn-danger  btn-link btn-sm"
+        $editButton.Parent.NativeUI.ClassName   = "td-actions"
     }
 
 }

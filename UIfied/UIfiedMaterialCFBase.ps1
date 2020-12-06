@@ -148,6 +148,10 @@ class MaterialCFBrowser : CFBrowser {
 }
 
 class MaterialCFMenuItem : CFMenuItem {
+
+    MaterialCFMenuItem() {
+        $this.NativeUI.BackgroundColor = [Color]::Magenta
+    }
 }
 
 class MaterialCFDropDownMenu : CFDropDownMenu {
@@ -161,6 +165,10 @@ class MaterialCFAutoComplete : CFAutoComplete {
 
     MaterialCFAutoComplete() {
         $this.NativeUI.Style = "Flat"
+    }
+
+    [void] StyleMenuItem($menuItem) {
+        $menuItem.BackgroundColor = [Color]::Magenta
     }
 }
 

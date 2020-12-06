@@ -39,6 +39,13 @@ class CFElement : UIElement {
             [MessageBox]::Show("Error", $errorObject, $null)
         }
     }
+
+    static [void] RenderText([string] $text, $buffer, $x, $y, $attrs) {
+        $chars = $text.ToCharArray()
+        0..($chars.Length - 1) | ForEach-Object {
+            $buffer.SetPixel($_ + $x, $y, $chars[$_], $attrs)
+        }
+    }
 }
 
 class CFHost : UIHost {
@@ -1003,10 +1010,37 @@ class CFBrowser : CFStackPanel {
 
 }
 
+class CFCustomMenuItem : MenuItem {
+    [Color] $BackgroundColor           = [color]::DarkGreen
+    
+    [void] Render([RenderingBuffer] $buffer) {
+        if ($this.HasFocus -or $this.expanded) {
+            $captionAttrs = [Colors]::Blend([Color]::Black,   $this.BackgroundColor )
+            $specialAttrs = [Colors]::Blend([Color]::DarkRed, $this.BackgroundColor )
+        } else {
+            $captionAttrs = [Colors]::Blend([Color]::Black,   [Color]::Gray )
+            $specialAttrs = [Colors]::Blend([Color]::DarkRed, [Color]::Gray )
+        }
+        if ( $this.disabled ) {
+            $captionAttrs = [Colors]::Blend( [Color]::DarkGray, [Color]::Gray )
+        }
+        $buffer.FillRectangle( 0, 0, $this.ActualWidth, $this.ActualHeight, ' ', $captionAttrs )
+        if ( $null -ne $this.Title ) {
+            $attrs = if ($this.Disabled) { $specialAttrs } else { $captionAttrs }
+            #$this.RenderString( $this.Title, $buffer, 1, 0, $this.ActualWidth, $this.captionAttrs)
+            [CFElement]::RenderText($this.Title, $buffer, 1, 0, $attrs)
+        }
+        if ( $null -ne $this.TitleRight ) {
+            #$this.RenderString( $this.TitleRight, $buffer, $this.ActualWidth - $this.TitleRight.Length - 1, 0, $this.TitleRight.Length, $captionAttrs )
+            [CFElement]::RenderText($this.TitleRight, $buffer, $this.ActualWidth - $this.TitleRight.Length - 1, 0, $captionAttrs)
+        }
+    }
+}
+
 class CFMenuItem : CFElement {
 
     CFMenuItem() {
-        $this.SetNativeUI([MenuItem]::new())
+        $this.SetNativeUI([CFCustomMenuItem]::new())
         $this.WrapProperty("Caption", "Title")
         $this.AddScriptBlockProperty("Action")
         $this.NativeUI.Add_Click({ $this.Control.OnAction() })
@@ -1023,7 +1057,7 @@ class CFDropDownMenu : CFButton {
         $this.Icon         = [CFIcon] @{ Kind = "chevron_down" }
         $this.IconPosition = [IconPosition]::Right
 
-        $this.NativeUI.ContextMenu = [ContextMenu]::new()
+        $this.NativeUI.ContextMenu = [ContextMenu] @{ PopupShadow = $true }
         $this.AddNativeUIChild = {
             param (
                 [CFElement] $element
@@ -1059,7 +1093,8 @@ class CFAutoComplete : CFTextBox {
 
     [void] CreateMenuItems() {
         0..19 | ForEach-Object {
-            [MenuItem] $menuItem = [MenuItem] @{ Title = $_ }
+            [MenuItem] $menuItem = [CFCustomMenuItem] @{ Title = $_ }
+            $this.StyleMenuItem($menuItem)
             Add-Member -InputObject $menuItem -MemberType NoteProperty -Name AutoCompleteTextBox -Value $this
             Add-Member -InputObject $menuItem -MemberType NoteProperty -Name AutoCompleteId      -Value $_
             $menuItem.Add_Click({
@@ -1068,6 +1103,9 @@ class CFAutoComplete : CFTextBox {
             })
             $this.NativeUI.ContextMenu.Items.Add($menuItem)
         }
+    }
+
+    [void] StyleMenuItem($menuItem) {
     }
 
     [void] SetCursor() {

@@ -278,10 +278,10 @@ class IconStrinfy {
         query_builder              = [string] [char] 63055
         left_semi_circle           = [string] [char] 57526
         right_semi_circle          = [string] [char] 57524
-        first_page                 = [string] [char] 63917
+        first_page                 = [string] [char] 64255
         chevron_left               = [string] [char] 61523
         chevron_right              = [string] [char] 61524
-        last_page                  = [string] [char] 63916
+        last_page                  = [string] [char] 64256
         radio_button_checked       = [string] [char] 64611
         radio_button_unchecked     = [string] [char] 64612
         check_box                  = [string] [char] 62510

@@ -23,6 +23,10 @@ class MaterialCFStackPanel : CFStackPanel {
 }
 
 class MaterialCFLabel : CFLabel {
+
+    MaterialCFLabel() {
+        $this.NativeUI.Color  = [Color]::DarkGray
+    }
 }
 
 class MaterialCFIcon : CFIcon {

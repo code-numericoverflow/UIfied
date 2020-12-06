@@ -293,7 +293,7 @@ class CFCustomTextBox : TextBox {
     }
 
     [void] RenderFlat([RenderingBuffer] $buffer) {
-        $displayOffset = 0
+        $displayOffset = $this.GetDisplayOffset()
         [Attr] $attr = [Colors]::Blend([Color]::Magenta, [Color]::White)
         $buffer.FillRectangle(0, 0, $this.ActualWidth, $this.ActualHeight, '_', $attr)
         if ($null -ne $this.Text) {
@@ -303,25 +303,18 @@ class CFCustomTextBox : TextBox {
                 }
             }
         }
+        if ($displayOffset -gt 0) {
+            $buffer.SetPixel(0, 0, '<', $attr)
+        }
+        if (-not [String]::IsNullOrEmpty($this.Text) -and $this.ActualWidth - 2 + $displayOffset -lt $this.Text.Length) {
+            $buffer.SetPixel($this.ActualWidth - 1, 0, '>', $attr)
+        }
     }
 
-    #public override void Render(RenderingBuffer buffer) {
-    #    Attr attr = Colors.Blend(Color.White, Color.DarkBlue);
-    #    buffer.FillRectangle(0, 0, ActualWidth, ActualHeight, ' ', attr);
-    #    if (null != text) {
-    #        for (int i = displayOffset; i < text.Length; i++) {
-    #            if (i - displayOffset < ActualWidth - 2 && i - displayOffset >= 0) {
-    #                buffer.SetPixel(1 + i - displayOffset, 0, PasswordChar.HasValue ? PasswordChar.Value : text[i]);
-    #            }
-    #        }
-    #    }
-    #    Attr arrowsAttr = Colors.Blend(Color.Green, Color.DarkBlue);
-    #    if (displayOffset > 0)
-    #        buffer.SetPixel(0, 0, '<', arrowsAttr);
-    #    if (!String.IsNullOrEmpty(text) && ActualWidth - 2 + displayOffset < text.Length)
-    #        buffer.SetPixel(ActualWidth - 1, 0, '>', arrowsAttr);
-    #}
-
+    [int] GetDisplayOffset() {
+        $prop = $this.GetType().BaseType.GetField("displayOffset", [BindingFlags]::NonPublic -bor [BindingFlags]::Instance)
+        return $prop.GetValue($this)
+    }
 }
 
 class CFTextBox : CFElement {

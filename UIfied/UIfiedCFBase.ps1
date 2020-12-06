@@ -7,8 +7,6 @@ using namespace ConsoleFramework.Controls
 using namespace ConsoleFramework.Events
 using namespace ConsoleFramework.Rendering
 
-# Font Creation https://www.calligraphr.com/
-
 class CFElement : UIElement {
 
     CFElement() {
@@ -83,12 +81,15 @@ class CFWindow : WindowBase {
 }
 
 class CFCustomPanel : Panel {
-    [color] $ForegroundColor = [color]::Black
-    [color] $BackgroundColor = [color]::Gray
-    [char]  $Pattern         = ' '
-
+    static [color] $DefaultBackgroundColor    = [color]::Gray
+           [color] $ForegroundColor           = [color]::Black
+           [color] $BackgroundColor           = [color]::Gray
+           [char]  $Pattern                   = ' '
     
     [void] Render([RenderingBuffer] $buffer) {
+        if ($this.BackgroundColor -eq [color]::Gray) {
+            $this.BackgroundColor = [CFCustomPanel]::DefaultBackgroundColor
+        }
         $buffer.FillRectangle( 0, 0, $this.ActualWidth, $this.ActualHeight, $this.Pattern, [colors]::Blend($this.ForegroundColor, $this.BackgroundColor));
         #for ([int] $x = 0; $x -lt $this.ActualWidth; $x++) {
         #    for ([int] $y = 0; $y -lt $this.ActualHeight; $y++) {
@@ -102,7 +103,7 @@ class CFCustomPanel : Panel {
 class CFStackPanel : CFElement {
 
     CFStackPanel() {
-        $this.SetNativeUI([Panel]::new())
+        $this.SetNativeUI([CFCustomPanel]::new())
         $this.WrapProperty("Orientation", "Orientation")
     }
 }
@@ -134,23 +135,109 @@ class CFIcon : CFLabel {
 }
 
 class CFCustomButton : Button {
+    [string]   $Style = "Default"
+    [color]    $ForegroundColor = [color]::White
+    [color]    $BackgroundColor = [color]::Magenta
+    [char]     $Pattern         = ' '
 
     [Size] MeasureOverride([Size] $availableSize) {
-        if (-not [System.string]::IsNullOrEmpty($this.Caption)) {
-            if ($this.MaxWidth -ge 20) {
-                $currentWidth = $this.Caption.Length + 5
-            } else {
-                $currentWidth = $this.MaxWidth
+        switch ($this.Style) {
+            "Pill"     {
+                return [Size]::new(($this.Caption.Length + 2), 1)
             }
-            if ($this.MaxHeight -ge 20) {
-                $currentHeight = 2
-            } else {
-                $currentHeight = $this.MaxHeight
+            "Flat"     {
+                return [Size]::new(($this.Caption.Length + 2), 1)
             }
-            [Size] $minButtonSize = [Size]::new($currentWidth, $currentHeight)
-            return $minButtonSize;
+            "Primary"  {
+                return [Size]::new(($this.Caption.Length + 2), 1)
+            }
+            default {
+                if (-not [System.string]::IsNullOrEmpty($this.Caption)) {
+                    if ($this.MaxWidth -ge 20) {
+                        $currentWidth = $this.Caption.Length + 5
+                    } else {
+                        $currentWidth = $this.MaxWidth
+                    }
+                    if ($this.MaxHeight -ge 20) {
+                        $currentHeight = 2
+                    } else {
+                        $currentHeight = $this.MaxHeight
+                    }
+                    [Size] $minButtonSize = [Size]::new($currentWidth, $currentHeight)
+                    return $minButtonSize;
+                } else {
+                    return [Size]::new(8, 2);
+                }
+            }
+        }
+        return $null
+    }
+
+    [void] Render([RenderingBuffer] $buffer) {
+        switch ($this.Style) {
+            "Pill"      { $thiS.RenderPill($buffer)       }
+            "Flat"      { $thiS.RenderFlat($buffer)       }
+            "Primary"   { $thiS.RenderPrimary($buffer)    }
+            default     { $thiS.RenderDefault($buffer)    }
+        }
+    }
+
+    [void] RenderDefault([RenderingBuffer] $buffer) {
+        ([Button] $this).Render($buffer)
+    }
+
+    [void] RenderPill([RenderingBuffer] $buffer) {
+        $buffer.FillRectangle( 0, 0, $this.ActualWidth, $this.ActualHeight, $this.Pattern, [colors]::Blend($this.ForegroundColor, $this.BackgroundColor))
+        $chars = $this.Caption.ToCharArray()
+        $buffer.SetPixel(0, 0, [IconStrinfy]::ToIconString("left_semi_circle"), [Colors]::Blend($this.BackgroundColor, $this.ForegroundColor))
+        $buffer.SetOpacityRect(0, 0, 1, 1, 3);
+        0..($chars.Length - 1) | ForEach-Object {
+            $buffer.SetPixel($_ + 1, 0, $chars[$_], [Colors]::Blend($this.GetForegroundColor(), $this.BackgroundColor))
+        }
+        $buffer.SetPixel($chars.Length + 1, 0, [IconStrinfy]::ToIconString("right_semi_circle"), [Colors]::Blend($this.BackgroundColor, $this.ForegroundColor))
+        $buffer.SetOpacityRect($this.ActualWidth - 1, 0, 1, 1, 3);
+
+        $this.Margin       = [Thickness]::new(0, 0, 1, 1)
+    }
+
+    [void] RenderPrimary([RenderingBuffer] $buffer) {
+        $buffer.FillRectangle( 0, 0, $this.ActualWidth, $this.ActualHeight, $this.Pattern, [colors]::Blend($this.ForegroundColor, $this.BackgroundColor))
+        $chars = $this.Caption.ToCharArray()
+        $buffer.SetPixel(0, 0, ' ', [Colors]::Blend($this.ForegroundColor, $this.BackgroundColor))
+        #$buffer.SetOpacityRect(0, 0, 1, 1, 3);
+        0..($chars.Length - 1) | ForEach-Object {
+            $buffer.SetPixel($_ + 1, 0, $chars[$_], [Colors]::Blend($this.GetForegroundColor(), $this.BackgroundColor))
+        }
+        $buffer.SetPixel($chars.Length + 1, 0, ' ', [Colors]::Blend($this.ForegroundColor, $this.BackgroundColor))
+        #$buffer.SetOpacityRect($this.ActualWidth - 1, 0, 1, 1, 3);
+
+        $this.Margin       = [Thickness]::new(0, 0, 1, 1)
+    }
+
+    [void] RenderFlat([RenderingBuffer] $buffer) {
+        $buffer.FillRectangle( 0, 0, $this.ActualWidth, $this.ActualHeight, $this.Pattern, [colors]::Blend($this.ForegroundColor, $this.BackgroundColor))
+        $chars = $this.Caption.ToCharArray()
+        0..($chars.Length - 1) | ForEach-Object {
+            $buffer.SetPixel($_ + 1, 0, $chars[$_], [Colors]::Blend($this.GetForegroundColor(), $this.BackgroundColor))
+        }
+        $buffer.SetOpacityRect(0, 0, $this.ActualWidth, $this.ActualHeight, 3);
+
+        $this.Margin       = [Thickness]::new(0, 0, 1, 1)
+    }
+
+    [Color] GetForegroundColor() {
+        if ($this.Disabled) {
+            return [Color]::Gray
         } else {
-            return [Size]::(8, 2);
+            if ($this.Pressed -or $this.PressedUsingKeyboard) {
+                return [Color]::Black
+            } else {
+                if ($this.HasFocus) {
+                    return [Color]::DarkGray
+                } else {
+                    return $this.ForegroundColor
+                }
+            }
         }
     }
 }
@@ -191,10 +278,56 @@ class CFButton : CFElement {
     }
 }
 
+class CFCustomTextBox : TextBox {
+    [string]   $Style = "Default"
+
+    [void] Render([RenderingBuffer] $buffer) {
+        switch ($this.Style) {
+            "Flat"      { $thiS.RenderFlat($buffer)       }
+            default     { $thiS.RenderDefault($buffer)    }
+        }
+    }
+
+    [void] RenderDefault([RenderingBuffer] $buffer) {
+        ([TextBox] $this).Render($buffer)
+    }
+
+    [void] RenderFlat([RenderingBuffer] $buffer) {
+        $displayOffset = 0
+        [Attr] $attr = [Colors]::Blend([Color]::Magenta, [Color]::White)
+        $buffer.FillRectangle(0, 0, $this.ActualWidth, $this.ActualHeight, '_', $attr)
+        if ($null -ne $this.Text) {
+            for ($i = $displayOffset; $i -lt $this.text.Length; $i++) {
+                if (($i - $displayOffset) -lt ($this.ActualWidth - 2) -and ($i - $displayOffset) -ge 0) {
+                    $buffer.SetPixel(1 + ($i - $displayOffset), 0, $this.Text.ToCharArray()[$i], [Colors]::Blend([Color]::Black, [Color]::White))
+                }
+            }
+        }
+    }
+
+    #public override void Render(RenderingBuffer buffer) {
+    #    Attr attr = Colors.Blend(Color.White, Color.DarkBlue);
+    #    buffer.FillRectangle(0, 0, ActualWidth, ActualHeight, ' ', attr);
+    #    if (null != text) {
+    #        for (int i = displayOffset; i < text.Length; i++) {
+    #            if (i - displayOffset < ActualWidth - 2 && i - displayOffset >= 0) {
+    #                buffer.SetPixel(1 + i - displayOffset, 0, PasswordChar.HasValue ? PasswordChar.Value : text[i]);
+    #            }
+    #        }
+    #    }
+    #    Attr arrowsAttr = Colors.Blend(Color.Green, Color.DarkBlue);
+    #    if (displayOffset > 0)
+    #        buffer.SetPixel(0, 0, '<', arrowsAttr);
+    #    if (!String.IsNullOrEmpty(text) && ActualWidth - 2 + displayOffset < text.Length)
+    #        buffer.SetPixel(ActualWidth - 1, 0, '>', arrowsAttr);
+    #}
+
+}
+
 class CFTextBox : CFElement {
 
     CFTextBox() {
-        $this.SetNativeUI([TextBox]::new())
+        $this.SetNativeUI([CFCustomTextBox]::new())
         $this.NativeUI.Size = 10
         $this.WrapProperty("Text", "Text")
         $this.AddScriptBlockProperty("Change")
@@ -215,10 +348,65 @@ class CFTextBox : CFElement {
 
 }
 
+class CFCustomCheckBox : CheckBox {
+    [string]   $Style = "Default"
+
+    [Size] MeasureOverride([Size] $availableSize) {
+        switch ($this.Style) {
+            "Flat"  {
+                return [Size]::new(($this.Caption.Length + 2), 1)
+            }
+            default {
+                return [Size]::new(($this.Caption.Length + 4), 1)
+            }
+        }
+        return $null
+    }
+
+    [void] Render([RenderingBuffer] $buffer) {
+        switch ($this.Style) {
+            "Flat"   { $thiS.RenderFlat($buffer)    }
+            default  { $thiS.RenderDefault($buffer) }
+        }
+    }
+
+    [void] RenderDefault([RenderingBuffer] $buffer) {
+        ([CheckBox] $this).Render($buffer)
+    }
+
+    [void] RenderFlat([RenderingBuffer] $buffer) {
+        $buttonAttrs = [Colors]::Blend([Color]::Magenta, [Color]::White);
+        if ($this.Checked) {
+            $buffer.SetPixel(0, 0, [IconStrinfy]::ToIconString("check_box"), $buttonAttrs)
+        } else {
+            $buffer.SetPixel(0, 0, [IconStrinfy]::ToIconString("check_box_outlined_blank"), $buttonAttrs)
+        }
+        $buffer.SetPixel(1, 0, " " , $buttonAttrs)
+        $chars = $this.Caption.ToCharArray()
+        0..($chars.Length - 1) | ForEach-Object {
+            $buffer.SetPixel($_ + 2, 0, $chars[$_], [Colors]::Blend($this.GetForegroundColor(), [Color]::White))
+        }
+        #$buffer.SetOpacityRect(0, 0, $this.ActualWidth, $this.ActualHeight, 3)
+    }
+
+    [Color] GetForegroundColor() {
+        if ($this.Disabled) {
+            return [Color]::Gray
+        } else {
+            if ($this.HasFocus) {
+                return [Color]::DarkGray
+            } else {
+                return [Color]::Black
+            }
+        }
+    }
+
+}
+
 class CFCheckBox : CFElement {
 
     CFCheckBox() {
-        $this.SetNativeUI([CheckBox]::new())
+        $this.SetNativeUI([CFCustomCheckBox]::new())
         $this.WrapProperty("Caption", "Caption")
         $this.WrapProperty("IsChecked", "Checked")
         $this.AddScriptBlockProperty("Click")
@@ -231,10 +419,64 @@ class CFCheckBox : CFElement {
 
 }
 
+class CFCustomRadioButton : RadioButton {
+    [string]   $Style = "Default"
+
+    [Size] MeasureOverride([Size] $availableSize) {
+        switch ($this.Style) {
+            "Flat"  {
+                return [Size]::new(($this.Caption.Length + 2), 1)
+            }
+            default {
+                return [Size]::new(($this.Caption.Length + 4), 1)
+            }
+        }
+        return $null
+    }
+
+    [void] Render([RenderingBuffer] $buffer) {
+        switch ($this.Style) {
+            "Flat"   { $thiS.RenderFlat($buffer)    }
+            default  { $thiS.RenderDefault($buffer) }
+        }
+    }
+
+    [void] RenderDefault([RenderingBuffer] $buffer) {
+        ([RadioButton] $this).Render($buffer)
+    }
+
+    [void] RenderFlat([RenderingBuffer] $buffer) {
+        $buttonAttrs = [Colors]::Blend([Color]::Magenta, [Color]::White);
+        if ($this.Checked) {
+            $buffer.SetPixel(0, 0, [IconStrinfy]::ToIconString("radio_button_checked"), $buttonAttrs)
+        } else {
+            $buffer.SetPixel(0, 0, [IconStrinfy]::ToIconString("radio_button_unchecked"), $buttonAttrs)
+        }
+        $buffer.SetPixel(1, 0, " " , $buttonAttrs)
+        $chars = $this.Caption.ToCharArray()
+        0..($chars.Length - 1) | ForEach-Object {
+            $buffer.SetPixel($_ + 2, 0, $chars[$_], [Colors]::Blend($this.GetForegroundColor(), [Color]::White))
+        }
+        #$buffer.SetOpacityRect(0, 0, $this.ActualWidth, $this.ActualHeight, 3)
+    }
+
+    [Color] GetForegroundColor() {
+        if ($this.Disabled) {
+            return [Color]::Gray
+        } else {
+            if ($this.HasFocus) {
+                return [Color]::DarkGray
+            } else {
+                return [Color]::Black
+            }
+        }
+    }
+}
+
 class CFRadioButton : CFElement {
 
     CFRadioButton() {
-        $this.SetNativeUI([RadioButton]::new())
+        $this.SetNativeUI([CFCustomRadioButton]::new())
         $this.WrapProperty("Caption", "Caption")
         $this.WrapProperty("IsChecked", "Checked")
         $this.AddScriptBlockProperty("Click")
@@ -312,7 +554,7 @@ class CFTabItem : CFElement {
     [String] $Caption   = ""
 
     CFTabItem() {
-        $this.SetNativeUI([Panel]::new())
+        $this.SetNativeUI([CFCustomPanel]::new())
     }
 
 }
@@ -339,7 +581,7 @@ class CFModal : CFElement {
 
     CFModal() {
         $this.Window = [Window]::new()
-        $this.SetNativeUI([Panel]::new())
+        $this.SetNativeUI([CFCustomPanel]::new())
         $this.WrapProperty("Title", "Title", "Window")
         $this.AddNativeUIChild = {
             param (
@@ -393,7 +635,7 @@ class CFTimer : CFElement {
 class CFDatePicker : CFElement {
 
     CFDatePicker() {
-        $textBox = [TextBox]::new()
+        $textBox = [CFCustomTextBox]::new()
         $textBox.Size = 10
         $textBox.MaxLenght = 10
         $this.SetNativeUI($textBox)
@@ -445,7 +687,7 @@ class CFDatePicker : CFElement {
 class CFTimePicker : CFElement {
 
     CFTimePicker() {
-        $textBox = [TextBox]::new()
+        $textBox = [CFCustomTextBox]::new()
         $textBox.Size = 5
         $textBox.MaxLenght = 5
         $this.SetNativeUI($textBox)
@@ -708,7 +950,7 @@ class CFBrowser : CFStackPanel {
     }
 
     [void] StyleEditionButtons([CFButton] $editButton, [CFButton] $deleteButton, [int] $rowIndex) {
-        $editButton.Caption       = "*"
+        $editButton.Caption       = "/"
         $deleteButton.Caption     = "-"
 
         $editButton.NativeUI.MaxWidth     = 5
@@ -828,12 +1070,13 @@ class CFAutoComplete : CFTextBox {
     }
 
     [void] SetCursor() {
+        $nativeUI = [TextBox]$this.NativeUI
         $position = $this.Text.Length
-        $prop = $this.NativeUI.GetType().GetProperty("CursorPosition", [BindingFlags]::NonPublic -bor [BindingFlags]::Instance)
-        $prop.SetValue($this.NativeUI, [Point]::new($position, 0), $null)
-        $prop = $this.NativeUI.GetType().GetField("cursorPosition", [BindingFlags]::NonPublic -bor [BindingFlags]::Instance)
-        $prop.SetValue($this.NativeUI, $position)
-        $this.NativeUI.Invalidate()
+        $prop = $nativeUI.GetType().GetProperty("CursorPosition", [BindingFlags]::NonPublic -bor [BindingFlags]::Instance)
+        $prop.SetValue($nativeUI, [Point]::new($position, 0), $null)
+        $prop = $nativeUI.GetType().BaseType.GetField("cursorPosition", [BindingFlags]::NonPublic -bor [BindingFlags]::Instance)
+        $prop.SetValue($nativeUI, $position)
+        $nativeUI.Invalidate()
     }
 
     [void] ShowDropDown() {

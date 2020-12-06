@@ -9,6 +9,7 @@ enum UIType {
     Ooui
     MaterialWPF
     MaterialOoui
+    MaterialCF
 }
 
 class UIConfig {
@@ -58,6 +59,13 @@ function Set-UIMaterialOoui {
     param (
     )
     Set-UIType -Type ([UIType]::MaterialOoui)
+}
+
+function Set-UIMaterialCF {
+    [CmdletBinding(SupportsShouldProcess)]
+    param (
+    )
+    Set-UIType -Type ([UIType]::MaterialCF)
 }
 
 #endregion
@@ -261,12 +269,23 @@ class IconStrinfy {
     static [bool]  $ShowIcon = $true
     
     hidden static $Icons = @{
-        menu               = [string] [char] 02261 # 62542
-        add                = [string] [char] 62541
-        delete             = [string] [char] 62606
-        clear              = [string] [char] 62567
-        calendar_today     = [string] [char] 62957
-        query_builder      = [string] [char] 63055
+        menu                       = [string] [char] 02261 # 62542
+        add                        = [string] [char] 62541
+        edit                       = [string] [char] 61504
+        delete                     = [string] [char] 62606
+        clear                      = [string] [char] 62567
+        calendar_today             = [string] [char] 62957
+        query_builder              = [string] [char] 63055
+        left_semi_circle           = [string] [char] 57526
+        right_semi_circle          = [string] [char] 57524
+        first_page                 = [string] [char] 63917
+        chevron_left               = [string] [char] 61523
+        chevron_right              = [string] [char] 61524
+        last_page                  = [string] [char] 63916
+        radio_button_checked       = [string] [char] 64611
+        radio_button_unchecked     = [string] [char] 64612
+        check_box                  = [string] [char] 62510
+        check_box_outlined_blank   = [string] [char] 64609
     }
 
     static [String] ToIconString([String] $kindName) {

@@ -243,8 +243,9 @@ class CFCustomButton : Button {
 }
 
 class CFButton : CFElement {
-    hidden [String]  $CaptionText   = ""
-    hidden [String]  $IconText      = ""
+    hidden [String]         $CaptionText   = ""
+    hidden [String]         $IconText      = ""
+           [IconPosition]   $IconPosition  = [IconPosition]::Left
 
     CFButton() {
         $this.SetNativeUI([CFCustomButton]::new())
@@ -270,7 +271,11 @@ class CFButton : CFElement {
     }
 
     [void] RefreshCaption() {
-        $this.NativeUI.Caption = ($this.IconText + " " + $this.CaptionText).Trim()
+        if ($this.IconPosition -eq [IconPosition]::Left) {
+            $this.NativeUI.Caption = ($this.IconText + " " + $this.CaptionText).Trim()
+        } else {
+            $this.NativeUI.Caption = ($this.CaptionText + " " + $this.IconText).Trim()
+        }
     }
 
     [void] OnAction() {
@@ -1015,6 +1020,9 @@ class CFMenuItem : CFElement {
 class CFDropDownMenu : CFButton {
 
     CFDropDownMenu() {
+        $this.Icon         = [CFIcon] @{ Kind = "chevron_down" }
+        $this.IconPosition = [IconPosition]::Right
+
         $this.NativeUI.ContextMenu = [ContextMenu]::new()
         $this.AddNativeUIChild = {
             param (

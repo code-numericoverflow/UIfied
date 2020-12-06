@@ -281,6 +281,7 @@ class IconStrinfy {
         first_page                 = [string] [char] 64255
         chevron_left               = [string] [char] 61523
         chevron_right              = [string] [char] 61524
+        chevron_down               = [string] [char] 61560
         last_page                  = [string] [char] 64256
         radio_button_checked       = [string] [char] 64611
         radio_button_unchecked     = [string] [char] 64612
@@ -295,6 +296,11 @@ class IconStrinfy {
             return ""
         }
     }
+}
+
+enum IconPosition {
+    Left
+    Right
 }
 
 #endregion

@@ -77,6 +77,10 @@ class MaterialCFTabItem : CFTabItem {
 }
 
 class MaterialCFTabControl : CFTabControl {
+    
+    MaterialCFTabControl() {
+        $this.NativeUI.Style = "Flat"
+    }
 }
 
 class MaterialCFModal : CFModal {

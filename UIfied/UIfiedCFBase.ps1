@@ -564,10 +564,56 @@ class CFTabItem : CFElement {
 
 }
 
+class CFCustomTabControl : TabControl {
+    [string]   $Style = "Default"
+
+    [void] Render([RenderingBuffer] $buffer) {
+        switch ($this.Style) {
+            "Flat"   { $thiS.RenderFlat($buffer)    }
+            default  { $thiS.RenderDefault($buffer) }
+        }
+    }
+
+    [void] RenderDefault([RenderingBuffer] $buffer) {
+        ([TabControl] $this).Render($buffer)
+    }
+
+    [void] RenderFlat([RenderingBuffer] $buffer) {
+        $attr = [Colors]::Blend( [Color]::Black, [Color]::DarkGreen )
+        $inactiveAttr = [Colors]::Blend( [Color]::DarkGray, [Color]::DarkGreen )
+
+        # Transparent background for borders
+        $buffer.SetOpacityRect( 0, 0, $this.ActualWidth, $this.ActualHeight, 3 )
+        $buffer.FillRectangle( 0, 0, $this.ActualWidth, $this.ActualHeight, ' ', $attr )
+        # Transparent child content part
+        if ( $this.ActualWidth -gt 2 -and $this.ActualHeight -gt 3 ) {
+            $buffer.SetOpacityRect( 1, 3, $this.ActualWidth - 2, $this.ActualHeight - 4, 2 )
+        }
+        # Transparent child content part
+        if ( $this.ActualWidth -gt 2 -and $this.ActualHeight -gt 3 ) {
+            $buffer.SetOpacityRect( 1, 3, $this.ActualWidth - 2, $this.ActualHeight - 4, 2 )
+        }
+        #$this.renderBorderSafe( $buffer, 0, 2, [Math]::Max( $this.getTabHeaderWidth( ) - 1, $this.ActualWidth - 1 ), $this.ActualHeight - 1 )
+        # Start to render header
+        $buffer.FillRectangle( 0, 0, $this.ActualWidth, [Math]::Min( 2, $this.ActualHeight ), ' ', $attr )
+        
+        $x = 0
+        for ($tab = 0; $tab -lt $this.tabDefinitions.Count; $x += $this.TabDefinitions[ $tab++ ].Title.Length + 3 ) {
+            $tabDefinition = $this.TabDefinitions[ $tab ];
+            $titleAttr = if ($this.activeTabIndex -eq $tab) { $attr } else { $inactiveAttr }
+            $buffer.RenderStringSafe( " " + $tabDefinition.Title.ToUpperInvariant() + " ", $x + 1, 1, $titleAttr )
+            if ($this.activeTabIndex -eq $tab) {
+                $pattern = ([string] ([char] 0xf068)) * ($tabDefinition.Title.Length + 2)
+                $buffer.RenderStringSafe( $pattern, $x + 1, 2, [Colors]::Blend( [Color]::Green, [Color]::DarkGreen ) )
+            }
+        }
+    }
+}
+
 class CFTabControl : CFElement {
 
     CFTabControl() {
-        $this.SetNativeUI([TabControl]::new())
+        $this.SetNativeUI([CFCustomTabControl]::new())
         $this.AddNativeUIChild = {
             param (
                 [CFElement] $element
@@ -578,7 +624,6 @@ class CFTabControl : CFElement {
             $this.NativeUI.Controls.Add($element.NativeUI)
         }
     }
-
 }
 
 class CFModal : CFElement {

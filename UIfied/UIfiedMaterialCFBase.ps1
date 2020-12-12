@@ -178,3 +178,6 @@ class MaterialCFAutoComplete : CFAutoComplete {
 
 class MaterialCFCard : CFCard {
 }
+
+class MaterialCFImage : CFImage {
+}

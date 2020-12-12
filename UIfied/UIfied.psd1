@@ -75,7 +75,7 @@ FunctionsToExport = 'Get-UIDatePicker', 'Get-UIModal', 'Get-UITimer', 'Get-UIBut
                'Set-UIWPF', 'Set-UICF', 'Get-UICheckBox', 'Get-UITabControl', 'Set-UIMaterialWPF',
                'Get-UIRadioGroup', 'Get-UILabel', 'Get-UIList', 'Get-UIStackPanel', 'Get-UIBrowser',
                'Get-UIDropDownMenu', 'Get-UIMenuItem', 'Get-UIAutoComplete', 'Get-UIAutoCompleteItem',
-               'Set-UIMaterialOoui', 'Get-UIIcon', 'Get-UICard', 'Set-UIMaterialCF'
+               'Set-UIMaterialOoui', 'Get-UIIcon', 'Get-UICard', 'Set-UIMaterialCF', 'Get-UIImage'
 
 # Cmdlets para exportar desde este módulo; para conseguir el mejor rendimiento, no uses caracteres comodines ni elimines la entrada; usa una matriz vacía si no hay cmdlets que exportar.
 CmdletsToExport = @()

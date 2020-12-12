@@ -377,3 +377,19 @@ function Get-UICard {
     }
     $card
 }
+
+function Get-UIImage {
+    param (
+        [UIType]       $UIType       = [UIConfig]::UIType,
+        [String]       $Name         = "",
+        [String]       $Source       = "",
+        [int]          $Width        = 50
+    )
+    $image = New-Object ($UIType.ToString() + "Image")
+    if ($Source -ne "") {
+        $image.Source    = $Source
+    }
+    $image.Name      = $Name
+    $image.Width     = $Width
+    $image
+}

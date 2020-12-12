@@ -241,3 +241,6 @@ class MaterialOouiAutoComplete : OouiAutoComplete {
 
 class MaterialOouiCard : OouiCard {
 }
+
+class MaterialOouiImage : OouiImage {
+}

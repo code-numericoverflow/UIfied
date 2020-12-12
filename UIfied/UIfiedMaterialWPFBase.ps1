@@ -347,3 +347,6 @@ class MaterialWPFCard : WPFCard {
         $this.HeaderTextBlock.SetResourceReference([Control]::StyleProperty, "MaterialDesignSubHeadingTextBlock")
     }
 }
+
+class MaterialWPFImage : WPFImage {
+}

@@ -149,12 +149,36 @@ $wsb = {
                         }
                     }
                 }
+                UITabItem -Caption "Images" -Components {
+                    UILabel    -Caption "Image samples"
+                    UIDropDownMenu -Caption "Select Image" -Components {
+                        UIMenuItem   -Caption "PowerShell Logo" -Action {
+                            param($this)
+                            $this.Form.ImageSource.Text = "https://deow9bq0xqvbj.cloudfront.net/image-logo/1769310/powershell.png"
+                        }
+                        UIMenuItem   -Caption "Android logo" -Action {
+                            param($this)
+                            $this.Form.ImageSource.Text = "https://logovector.net/wp-content/uploads/2010/06/291431-android-2-logo.png"
+                        }
+                        UIMenuItem   -Caption "Apple logo" -Action {
+                            param($this)
+                            $this.Form.ImageSource.Text = "http://cdn.wccftech.com/wp-content/uploads/2013/09/Apple-logo1.jpg"
+                        }
+                    }
+                    UILabel    -Caption "Image source"
+                    UITextBox  -Name ImageSource
+                    UIButton -Caption "Show" -Action {
+                        param($this)
+                        $this.Form.MyImage.Source = $this.Form.ImageSource.Text
+                    }
+                    UIImage -Name MyImage -Width 300
+                }
             }
         }
     }
 }
 
-Set-UIMaterialCF
+Set-UIMaterialCf
 
 $h = Get-UIHost
 #cls

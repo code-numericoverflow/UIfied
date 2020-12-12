@@ -1097,3 +1097,17 @@ class OouiCard : OouiElement {
         $this.CardBodyDiv.Orientation        = [Orientation]::Vertical
     }
 }
+
+class OouiImage : OouiElement {
+
+    OouiImage() {
+        $image = [Image]::new()
+        $this.SetNativeUI($image)
+        $this.WrapProperty("Source", "Source")
+        Add-Member -InputObject $this -Name Width -MemberType ScriptProperty -Value {
+            $this.NativeUI.Style.width
+        } -SecondValue {
+            $this.NativeUI.Style.width = $args[0]
+        }
+    }
+}

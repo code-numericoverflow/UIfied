@@ -1,4 +1,4 @@
-using namespace System.Collections.Generic
+﻿using namespace System.Collections.Generic
 using namespace System.Management.Automation.Language
 
 #region UI Type selection

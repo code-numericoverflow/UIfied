@@ -800,3 +800,13 @@ class WPFCard : WPFElement {
     }
 
 }
+
+class WPFImage : WPFElement {
+
+    WPFImage() {
+        $image = [Image]::new()
+        $this.SetNativeUI($image)
+        $this.WrapProperty("Source", "Source")
+        $this.WrapProperty("Width", "Width")
+    }
+}

@@ -8,5 +8,5 @@
 . "$PSScriptRoot\UIfiedOouiBase.ps1"
 . "$PSScriptRoot\UIfiedMaterialOouiBase.ps1"
 . "$PSScriptRoot\LoadMaterialWPFBinaries.ps1"
-. "$PSScriptRoot\UIfiedMaterialWPFBase.ps1"
 . "$PSScriptRoot\UIfiedMaterialCFBase.ps1"
+. "$PSScriptRoot\UIfiedMaterialWPFBase.ps1"

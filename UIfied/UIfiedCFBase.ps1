@@ -1236,3 +1236,163 @@ class CFCard : CFElement {
         $this.BodyPanel.Margin          = [Thickness]::new(1, 1, 1, 0)
     }
 }
+
+#region UI Images
+
+class ImageCache {
+    static hidden  [hashtable]   $Cache    = @{}
+
+    static [string] GetCachePath([string] $imageSource) {
+        if ($null -eq [ImageCache]::Cache."$imageSource") {
+            if ($imageSource.ToUpperInvariant().StartsWith("HTTP")) {
+                [ImageCache]::CacheWebImage($imageSource)
+            } else {
+                [ImageCache]::CacheFileImage($imageSource)
+            }
+        }
+        return [ImageCache]::Cache."$imageSource"
+    }
+
+    static hidden [void] CacheWebImage([string] $url) {
+        $fileName     = (Get-Random -Minimum 1000000 -Maximum 9999999).ToString()
+        $extension    = $url.Split(".") | Select-Object -Last 1
+        $outputPath   = $env:TMP + [System.IO.Path]::DirectorySeparatorChar + $fileName + "." + $extension
+        Invoke-WebRequest $url -OutFile $outputPath | Out-Null
+        [ImageCache]::Cache += @{ "$url" = $outputPath } 
+    }
+
+    static hidden [void] CacheFileImage([string] $path) {
+        [ImageCache]::Cache += @{ "$path" = $path } 
+    }
+}
+
+Function Get-ClosestConsoleColor {
+    param (
+        [System.Drawing.Color]   $PixelColor
+    ) 
+    $Colors = @{ 
+        FF000000 =   [Color]::Black          
+        FF000080 =   [Color]::DarkBlue       
+        FF008000 =   [Color]::DarkGreen      
+        FF008080 =   [Color]::DarkCyan       
+        FF800000 =   [Color]::DarkRed        
+        FF800080 =   [Color]::DarkMagenta    
+        FF808000 =   [Color]::DarkYellow     
+        FFC0C0C0 =   [Color]::Gray           
+        FF808080 =   [Color]::DarkGray       
+        FF0000FF =   [Color]::Blue           
+        FF00FF00 =   [Color]::Green          
+        FF00FFFF =   [Color]::Cyan           
+        FFFF0000 =   [Color]::Red            
+        FFFF00FF =   [Color]::Magenta        
+        FFFFFF00 =   [Color]::Yellow          
+        FFFFFFFF =   [Color]::White                  
+    }
+    $selectedColor = [Color]::Black
+    $selectedDiff  = 32000
+    foreach ($item in $Colors.Keys) {
+        $diffR        = [Int] ("0x" + $item.Substring(2, 2)) - $PixelColor.R
+        $diffG        = [Int] ("0x" + $item.Substring(4, 2)) - $PixelColor.G
+        $diffB        = [Int] ("0x" + $item.Substring(6, 2)) - $PixelColor.B
+        $diffTotal    = [Math]::Abs($diffR) + [Math]::Abs($diffG) + [Math]::Abs($diffB)
+        if ($diffTotal -lt $selectedDiff) {
+            $selectedColor = $Colors."$item"
+            $selectedDiff  = $diffTotal
+        }
+    }
+    $selectedColor
+}
+
+Function Get-ClosestConsoleChar {
+    param(
+        [Parameter(Mandatory)]
+        [System.Drawing.Color]   $PixelColor,
+        [char[]]                 $Characters   = "█▓▒░ ".ToCharArray() # "$#H&@*+;:-,. ".ToCharArray() 
+    )
+    $c = $characters.count
+    $brightness = $PixelColor.GetBrightness() 
+    [int]$offset = [Math]::Floor($brightness * $c) 
+    $ch = $characters[$offset] 
+    if (-not $ch) {
+        $ch = $characters[-1]
+    }
+    $ch
+}
+
+#endregion
+
+class CFImagePanel : Panel {
+    hidden   [int]             $ImageWidth      = 0
+    hidden   [int]             $ImageHeight     = 0
+    hidden   [string]          $ImageSource     = ""
+    hidden   [Drawing.Image]   $TargetImage     = $null
+    hidden   [float]           $Ratio           = 1.5
+
+    CFImagePanel() {
+        Add-Member -InputObject $this -Name Source -MemberType ScriptProperty -Value {
+            $this.ImageSource
+        } -SecondValue {
+            if ($this.ImageSource -ne $args[0]) {
+                $this.ImageSource = $args[0]
+                $this.RefreshImage()
+            }
+        }
+        Add-Member -InputObject $this -Name TargetWidth -MemberType ScriptProperty -Value {
+            $this.ImageWidth
+        } -SecondValue {
+            if ($this.ImageWidth -ne $args[0]) {
+                $this.ImageWidth = $args[0]
+                $this.RefreshImage()
+            }
+        }
+    }
+
+    [void] RefreshImage() {
+        if ($this.ImageWidth -ne 0 -and $this.ImageSource -ne "") {
+            $path                = [ImageCache]::GetCachePath($this.Source)
+            $image               = [Drawing.Image]::FromFile($Path)
+            $this.ImageHeight    = [int] ($image.Height / ($image.Width / $this.ImageWidth) / $this.Ratio)
+            if ($this.TargetImage -ne $null) {
+                $this.TargetImage.Dispose()
+            }
+            $this.TargetImage    = new-object Drawing.Bitmap($image ,$this.ImageWidth, $this.ImageHeight) 
+            $image.Dispose() | Out-Null
+            $this.Invalidate()
+        }
+    }
+
+    [Size] MeasureOverride([Size] $availableSize) {
+        return [Size]::new($this.ImageWidth, $this.ImageHeight)
+    }
+
+    [void] Render([RenderingBuffer] $buffer) {
+        $bitmap = $this.TargetImage 
+    
+        for ([int]$y=0; $y -lt $bitmap.Height; $y++) { 
+            for ([int]$x=0; $x -lt $bitmap.Width; $x++) {
+                $pixelColor = $bitmap.GetPixel($x, $y)
+                $character  = Get-ClosestConsoleChar -PixelColor $pixelColor
+                #$character  = "█"
+                #$color      = Get-ClosestConsoleColor -PixelColor $pixelColor
+                $color      = [Color]::Black
+                $buffer.SetPixel($x, $y, $character, [Colors]::Blend($color, [Color]::White))
+            }
+        }
+    }
+}
+
+class CFImage : CFElement {
+    hidden [int] $TargetWidth   = 0
+
+    CFImage() {
+        $imagePanel = [CFImagePanel]::new()
+        $this.SetNativeUI($imagePanel)
+        $this.WrapProperty("Source", "Source")
+        Add-Member -InputObject $this -Name Width -MemberType ScriptProperty -Value {
+            $this.TargetWidth
+        } -SecondValue {
+            $this.TargetWidth              = $args[0]
+            $this.NativeUI.TargetWidth     = ([int] $args[0] / 10) # Conversion to character length
+        }
+    }
+}

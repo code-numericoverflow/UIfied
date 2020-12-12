@@ -71,3 +71,4 @@ We have implemented these controls:
 - Autocomplete
 - Icon
 - Card
+- Image

@@ -25,7 +25,7 @@ Write complex UIs the easy way with the UIfied DSL
     Set-UIWpf
     Invoke-Command -ScriptBlock $sample
 
-## Four UI types supported
+## Six UI types supported
 
 UIFied supports four UI flavors
 
@@ -72,3 +72,14 @@ We have implemented these controls:
 - Icon
 - Card
 - Image
+
+## Screenshots
+
+Material Design console sample
+![Material Design console sample](UIfied.Test/MaterialCF.gif)
+
+Material Design windows sample
+![Material Design windows sample](UIfied.Test/MaterialWPF.gif)
+
+Material Design ern sample
+![Material Design ern sample](UIfied.Test/MaterialOoui.gif)

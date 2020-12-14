@@ -37,7 +37,11 @@ class MaterialOouiHost : OouiHost {
                     vertical-align: top;
                 }
                 .card {
-                    width: max-content;
+                    margin: 50px 20px;
+                    width: auto !important;
+                }
+                .card-title {
+                    white-space: nowrap;
                 }
             </style>
         '

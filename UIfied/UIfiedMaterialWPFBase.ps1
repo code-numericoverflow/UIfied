@@ -343,7 +343,8 @@ class MaterialWPFCard : WPFCard {
     [void] StyleComponents() {
         ([WPFCard] $this).StyleComponents()
         $this.NativeUI.SetResourceReference([Control]::StyleProperty, "MaterialDesignCardGroupBox")
-        $this.NativeUI.Foreground = [System.Windows.Media.Brushes]::White
+        $this.HeaderTextBlock.Foreground = [System.Windows.Media.Brushes]::White
+        $this.CurrentIcon.NativeUI.Foreground = [System.Windows.Media.Brushes]::White
         $this.HeaderTextBlock.SetResourceReference([Control]::StyleProperty, "MaterialDesignSubHeadingTextBlock")
     }
 }

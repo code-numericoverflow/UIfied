@@ -362,7 +362,7 @@ function Get-UIAutoCompleteItem {
 function Get-UICard {
     param (
         [UIType]       $UIType       = [UIConfig]::UIType,
-                       $Icon         = $null,
+                       $Icon         = (Get-UIIcon -Kind add),
         [String]       $Caption      = "",
         [ScriptBlock]  $Components   = {},
         [String]       $Name         = ""

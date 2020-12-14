@@ -242,8 +242,7 @@ class MaterialWPFDatePicker : WPFElement {
     MaterialWPFDatePicker() {
         $datePicker = [DatePicker]::new()
         $datePicker.Width = 100
-        $datePicker.SetResourceReference([Control]::StyleProperty, "MaterialDesignFloatingHintDatePicker")
-        $datePicker.SetValue([HintAssist]::HintProperty, "Hola")
+        $datePicker.SetResourceReference([Control]::StyleProperty, "MaterialDesignDatePicker")
         $this.SetNativeUI($datePicker)
 
         $this.AddScriptBlockProperty("Change")
@@ -268,8 +267,7 @@ class MaterialWPFTimePicker : WPFElement {
     MaterialWPFTimePicker() {
         $timePicker = [TimePicker]::new()
         $timePicker.Width = 100
-        $timePicker.SetResourceReference([Control]::StyleProperty, "MaterialDesignFloatingHintTimePicker")
-        $timePicker.SetValue([HintAssist]::HintProperty, "Hola")
+        $timePicker.SetResourceReference([Control]::StyleProperty, "MaterialDesignTimePicker")
         $timePicker.Is24Hours = $true
         $this.SetNativeUI($timePicker)
 

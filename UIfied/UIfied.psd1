@@ -12,7 +12,7 @@
 RootModule = '.\UIfied.psm1'
 
 # Número de versión de este módulo.
-ModuleVersion = '0.0.5'
+ModuleVersion = '0.0.6'
 
 # PSEditions compatibles
 # CompatiblePSEditions = @()

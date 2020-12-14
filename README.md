@@ -33,7 +33,7 @@ UIFied supports four UI flavors
 - Console: UIfied uses [ConsoleFramework](https://github.com/elw00d/consoleframework) for console UIs.
 - Web: UIfied web support is based on [Ooui](https://github.com/praeclarum/Ooui).
 - Material Windows: WPF with Material Design flavor based on [MaterialDesignInXamlToolkit](https://github.com/MaterialDesignInXAML/MaterialDesignInXamlToolkit).
-- Material Console: Console with Material Design flavor. You must install "Literation Mono Nerd Font Complete Mono Windows Compatible.ttf" fonts for correct icon visualization.
+- Material Console: Console with Material Design flavor. You must install [Literation Mono Nerd Font Complete Mono Windows Compatible.ttf](https://github.com/ryanoasis/nerd-fonts) fonts for correct icon visualization.
 - Material Web: Web with Material Design flavor
 
 Write once and use it accross differents UIs. You can switch the target UI framework by simply using a command.
@@ -81,5 +81,5 @@ Material Design console sample
 Material Design windows sample
 ![Material Design windows sample](UIfied.Test/MaterialWPF.gif)
 
-Material Design ern sample
-![Material Design ern sample](UIfied.Test/MaterialOoui.gif)
+Material Design web sample
+![Material Design web sample](UIfied.Test/MaterialOoui.gif)

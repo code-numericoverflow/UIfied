@@ -3,7 +3,7 @@ Import-Module UIfied
 $sample = {
     $wsb = {
         UIWindow -Caption "Title" -Components {
-            UIStackPannel -Orientation Vertical -Components {
+            UIStackPanel -Orientation Vertical -Components {
                 UILabel    -Caption "Hello"
                 UIButton   -Caption "Button" -Action {
                     param($this)

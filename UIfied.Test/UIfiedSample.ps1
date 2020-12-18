@@ -1,7 +1,7 @@
 ﻿
 Import-Module "$PSScriptRoot\..\UIfied"
 
-$wsb2 = {
+$wsb = {
     UIWindow -Caption "My Title" -Loaded {
             param ($this)
             $this.Form.Caption = $this.Form.Caption + " Loaded at " + (Get-Date).ToString()
@@ -191,9 +191,9 @@ $wsb2 = {
     }
 }
 
-Set-UIMaterialWPF
+Set-UIMaterialCF
 
 $h = Get-UIHost
 #cls
-$h.ShowFrame($wsb2)
+$h.ShowFrame($wsb)
 

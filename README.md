@@ -9,7 +9,7 @@ Write complex UIs the easy way with the UIfied DSL
     $sample = {
         $wsb = {
             UIWindow -Caption "Title" -Components {
-                UIStackPannel -Orientation Vertical -Components {
+                UIStackPanel -Orientation Vertical -Components {
                     UILabel    -Caption "Hello"
                     UIButton   -Caption "Button" -Action {
                         param($this)
@@ -59,7 +59,7 @@ We have implemented these controls:
 - ListItem
 - RadioButton
 - RadioGroup
-- StackPannel
+- StackPanel
 - TabControl
 - TabItem
 - TextBox

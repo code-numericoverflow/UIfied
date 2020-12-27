@@ -85,6 +85,7 @@ class MaterialWPFButton : WPFElement {
     hidden  [stackpanel]         $StackPanel    = [StackPanel]::new()
     hidden  [MaterialWPFIcon]    $CurrentIcon   = $null
     hidden  [String]             $CaptionText   = ""
+            [bool]               $RightIcon     = $false
 
     MaterialWPFButton() {
         $this.SetNativeUI([Button]::new())
@@ -109,12 +110,19 @@ class MaterialWPFButton : WPFElement {
 
     [void] RefreshCaption() {
         $this.StackPanel.Children.Clear()
-        if ($this.CurrentIcon -ne $null) {
-            $this.StackPanel.AddChild($this.CurrentIcon.NativeUI)
-        }
-        if ($this.CaptionText -ne "") {
-            $label = [TextBlock]::new()
-            $label.Text = $this.CaptionText
+
+        $label = [TextBlock]::new()
+        $label.Text = $this.CaptionText
+
+        if ($this.RightIcon) {
+            $this.StackPanel.AddChild($label)
+            if ($this.CurrentIcon -ne $null) {
+                $this.StackPanel.AddChild($this.CurrentIcon.NativeUI)
+            }
+        } else {
+            if ($this.CurrentIcon -ne $null) {
+                $this.StackPanel.AddChild($this.CurrentIcon.NativeUI)
+            }
             $this.StackPanel.AddChild($label)
         }
     }
@@ -329,7 +337,26 @@ class MaterialWPFBrowser : WPFBrowser {
 class MaterialWPFMenuItem : WPFMenuItem {
 }
 
-class MaterialWPFDropDownMenu : WPFDropDownMenu {   
+class MaterialWPFDropDownMenu : MaterialWPFButton {
+
+    MaterialWPFDropDownMenu() {
+        $this.RightIcon = $true
+        $this.Icon = [MaterialWPFIcon] @{ Kind = "chevron_down" }
+
+        $this.NativeUI.ContextMenu = [ContextMenu]::new()
+        $this.AddNativeUIChild = {
+            param (
+                [WPFElement] $element
+            )
+            $this.NativeUI.ContextMenu.Items.Add($element.NativeUI)
+        }
+        
+        $this.Action = {
+            param($this)
+            $this.NativeUI.ContextMenu.IsOpen = -not $this.NativeUI.ContextMenu.IsOpen
+        }
+    }
+    
 }
 
 class MaterialWPFAutoComplete : WPFAutoComplete {

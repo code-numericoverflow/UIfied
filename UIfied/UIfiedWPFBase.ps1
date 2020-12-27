@@ -128,6 +128,7 @@ class WPFIcon : WPFLabel {
 class WPFButton : WPFElement {
     hidden [String]  $CaptionText   = ""
     hidden [String]  $IconText      = ""
+           [bool]    $RightIcon     = $false
 
     WPFButton() {
         $this.SetNativeUI([Button]::new())
@@ -153,7 +154,11 @@ class WPFButton : WPFElement {
     }
 
     [void] RefreshCaption() {
-        $this.NativeUI.Content = ($this.IconText + " " + $this.CaptionText).Trim()
+        if ($this.RightIcon) {
+            $this.NativeUI.Content = ($this.CaptionText + " " + $this.IconText).Trim()
+        } else {
+            $this.NativeUI.Content = ($this.IconText + " " + $this.CaptionText).Trim()
+        }
     }
 
     [void] OnAction() {
@@ -702,6 +707,9 @@ class WPFMenuItem : WPFElement {
 class WPFDropDownMenu : WPFButton {
 
     WPFDropDownMenu() {
+        $this.RightIcon = $true
+        $this.Icon = [WPFIcon] @{ Kind = "chevron_down" }
+
         $this.NativeUI.ContextMenu = [ContextMenu]::new()
         $this.AddNativeUIChild = {
             param (

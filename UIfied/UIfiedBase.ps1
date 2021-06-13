@@ -281,12 +281,15 @@ class IconStrinfy {
         first_page                 = [string] [char] 64255
         chevron_left               = [string] [char] 61523
         chevron_right              = [string] [char] 61524
+        chevron_up                 = [string] [char] 61559
         chevron_down               = [string] [char] 61560
         last_page                  = [string] [char] 64256
         radio_button_checked       = [string] [char] 64611
         radio_button_unchecked     = [string] [char] 64612
         check_box                  = [string] [char] 62510
         check_box_outlined_blank   = [string] [char] 64609
+        keyboard_arrow_down        = [string] [char] 63035
+        keyboard_arrow_up          = [string] [char] 63038
     }
 
     static [String] ToIconString([String] $kindName) {

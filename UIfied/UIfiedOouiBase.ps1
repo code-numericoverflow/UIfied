@@ -1,4 +1,4 @@
-using namespace System.Collections.Generic
+﻿using namespace System.Collections.Generic
 using namespace Ooui
 
 #region Ooui missing elements
@@ -73,9 +73,9 @@ class OouiHost : UIHost {
     [ScriptBlock] $CreateElement
 
     OouiHost() {
-        # Style documentation in https://getbootstrap.com/docs/4.5/components
+        # Style documentation in https://getbootstrap.com/docs/5.0
         [UI]::HeadHtml = '
-            <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/bootstrap/4.5.0/css/bootstrap.min.css" />
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
             <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" rel="stylesheet" type="text/css" />
             <style>
                 .card {
@@ -89,6 +89,9 @@ class OouiHost : UIHost {
                     float: left;
                 }
             </style>
+        '
+        [UI]::BodyFooterHtml = '
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
         '
     }
 
@@ -1094,6 +1097,7 @@ class OouiCard : OouiElement {
     [void] StyleComponents() {
         $this.CardContainerDiv.ClassName     = "card"
         $this.Header.ClassName               = "card-title"
+        $this.Header.Style.display           = "inline"
         $this.CardHeaderDiv.ClassName        = "card-header card-header-icon "
         $this.CardIconDiv.ClassName          = "card-icon"
         $this.CardIcon.ClassName             = "material-icons"
@@ -1114,4 +1118,74 @@ class OouiImage : OouiElement {
             $this.NativeUI.Style.width = $args[0]
         }
     }
+}
+
+class OouiTextEditor : OouiElement {
+
+    OouiTextEditor() {
+        $this.SetNativeUI([TextArea]::new())
+        $this.WrapProperty("Text", "Value")
+        $this.AddScriptBlockProperty("Change")
+        Add-Member -InputObject $this -Name Height -MemberType ScriptProperty -Value {
+            [int] $this.NativeUI.Rows
+        } -SecondValue {
+            $this.NativeUI.Rows  = $args[0]
+        }
+        Add-Member -InputObject $this -Name Width  -MemberType ScriptProperty -Value {
+            [int] $this.NativeUI.Columns
+        } -SecondValue {
+            $this.NativeUI.Columns  = $args[0]
+        }
+
+        Register-ObjectEvent -InputObject $this.NativeUI -EventName Change -MessageData $this -Action {
+            $this = $event.MessageData
+            $this.Control.OnChange()
+        } | Out-Null
+    }
+
+    [void] OnChange() {
+        Invoke-Command -ScriptBlock $this._Change -ArgumentList $this
+    }
+}
+
+class OouiExpander : OouiElement {
+    hidden  [div]             $AcordionDiv           = [div]    @{ ClassName = "accordion" }
+    hidden  [div]             $AcodionItemDiv        = [div]    @{ ClassName = "accordion-item" }
+    hidden  [Heading]         $AccordionHeader       = [Heading]::new(2)
+    hidden  [Button]          $AccordionButton       = [Button] @{ ClassName = "accordion-button" }
+    hidden  [div]             $AccordionCollapseDiv  = [div]    @{ ClassName = "accordion-collapse collapse show" }
+    hidden  [OouiStackPanel]  $Body                  = [OouiStackPanel]::new()
+
+    OouiExpander() {
+        $this.SetNativeUI($this.AcordionDiv)
+        $this.AcordionDiv.AppendChild($this.AcodionItemDiv)
+        $this.AccordionHeader.ClassName = "accordion-header"
+        $this.AcodionItemDiv.AppendChild($this.AccordionHeader)
+        $this.AccordionButton.SetAttribute("data-bs-toggle", "collapse")
+        $this.AccordionButton.SetAttribute("data-bs-target", "#$($this.AccordionCollapseDiv.Id)")
+        $this.AccordionButton.SetAttribute("aria-expanded",  "true")
+        $this.AccordionButton.SetAttribute("aria-controls",  $this.AccordionCollapseDiv.Id)
+        $this.AccordionHeader.AppendChild($this.AccordionButton)
+        #$this.AccordionCollapseDiv.SetAttribute("data-bs-parent",    "#$($this.AcordionDiv.Id)")
+        $this.AcodionItemDiv.AppendChild($this.AccordionCollapseDiv)
+        $this.Body.NativeUI.ClassName = "accordion-body"
+        $this.AccordionCollapseDiv.AppendChild($this.Body.NativeUI)
+
+        $this.WrapProperty("Caption", "Text", "AccordionButton")
+
+        $this.AddNativeUIChild = {
+            param (
+                [OouiElement] $element
+            )
+            $listItem = [Div]::new()
+            if ($this.Body.Orientation -eq [Orientation]::Horizontal) {
+                $listItem.Style.float = "left"
+            } else {
+                $listItem.Style.clear = "both"
+            }
+            $this.Body.NativeUI.AppendChild($listItem) | Out-Null
+            $listItem.AppendChild($element.NativeUI)   | Out-Null
+        }
+    }
+
 }

@@ -43,6 +43,10 @@ $wsb = {
                                 UILabel    -Caption "CheckBox:"
                                 UICheckBox -Caption "Ketchup"
                             }
+                            UICard -Caption TextEditor -Components {
+                                UILabel    -Caption "TextEditor:"
+                                UITextEditor -Text "Change this text`nLine2" -Height 5 -Width 30
+                            }
                         }
                     }
                 }
@@ -85,6 +89,11 @@ $wsb = {
                                 }
                             }
                         }
+                        #UICard -Caption "Expanders" -Components {
+                        #    UIExpander -Caption "My expander" -Components {
+                        #        UILabel -Caption "Expander content"
+                        #    }
+                        #}
                     }
                     UIStackPanel -Orientation Horizontal -Components {
                         UICard -Caption "Autocompletes" -Components {

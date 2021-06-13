@@ -393,3 +393,36 @@ function Get-UIImage {
     $image.Width     = $Width
     $image
 }
+
+function Get-UITextEditor {
+    param (
+        [UIType]       $UIType       = [UIConfig]::UIType,
+        [String]       $Text         = "",
+        [Int]          $Height       = 20,
+        [Int]          $Width        = 60,
+        [String]       $Name         = ""
+    )
+    $textEditor = New-Object ($UIType.ToString() + "TextEditor")
+    $textEditor.Text       = $Text
+    $textEditor.Name       = $Name
+    $textEditor.Height     = $Height
+    $textEditor.Width      = $Width
+    $textEditor
+}
+
+function Get-UIExpander {
+    param (
+        [UIType]       $UIType       = [UIConfig]::UIType,
+        [ScriptBlock]  $Components   = {},
+        [String]       $Caption      = "",
+        [String]       $Name         = ""
+    )
+    $expander = New-Object ($UIType.ToString() + "Expander")
+    $expander.Caption    = $Caption
+    $expander.Name       = $Name
+    $childElements = Invoke-Command -ScriptBlock $Components
+    $childElements | ForEach-Object {
+        $expander.AddChild($_)
+    }
+    $expander
+}

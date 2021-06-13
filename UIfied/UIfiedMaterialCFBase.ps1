@@ -181,3 +181,9 @@ class MaterialCFCard : CFCard {
 
 class MaterialCFImage : CFImage {
 }
+
+class MaterialCFTextEditor : CFTextEditor {
+}
+
+class MaterialCFExpander : CFExpander {
+}

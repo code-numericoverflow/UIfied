@@ -12,7 +12,7 @@
 RootModule = '.\UIfied.psm1'
 
 # Número de versión de este módulo.
-ModuleVersion = '0.0.7'
+ModuleVersion = '0.0.8'
 
 # PSEditions compatibles
 # CompatiblePSEditions = @()
@@ -75,7 +75,8 @@ FunctionsToExport = 'Get-UIDatePicker', 'Get-UIModal', 'Get-UITimer', 'Get-UIBut
                'Set-UIWPF', 'Set-UICF', 'Get-UICheckBox', 'Get-UITabControl', 'Set-UIMaterialWPF',
                'Get-UIRadioGroup', 'Get-UILabel', 'Get-UIList', 'Get-UIStackPanel', 'Get-UIBrowser',
                'Get-UIDropDownMenu', 'Get-UIMenuItem', 'Get-UIAutoComplete', 'Get-UIAutoCompleteItem',
-               'Set-UIMaterialOoui', 'Get-UIIcon', 'Get-UICard', 'Set-UIMaterialCF', 'Get-UIImage'
+               'Set-UIMaterialOoui', 'Get-UIIcon', 'Get-UICard', 'Set-UIMaterialCF', 'Get-UIImage',
+               'Get-UITextEditor', 'Get-UIExpander'
 
 # Cmdlets para exportar desde este módulo; para conseguir el mejor rendimiento, no uses caracteres comodines ni elimines la entrada; usa una matriz vacía si no hay cmdlets que exportar.
 CmdletsToExport = @()

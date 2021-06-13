@@ -1396,3 +1396,73 @@ class CFImage : CFElement {
         }
     }
 }
+
+class CFCustomTextEditor : TextEditor {
+
+    #[Size] MeasureOverride([Size] $availableSize) {
+    #    return $availableSize
+    #}
+
+    [void] Render([RenderingBuffer] $buffer) {
+        switch ($this.Style) {
+            default     { $thiS.RenderDefault($buffer)    }
+        }
+    }
+
+    [void] RenderDefault([RenderingBuffer] $buffer) {
+        ([TextEditor] $this).Render($buffer)
+    }
+}
+
+class CFTextEditor : CFElement {
+
+    CFTextEditor() {
+        $this.SetNativeUI([CFCustomTextEditor]::new())
+        $this.WrapProperty("Height", "Height")
+        $this.WrapProperty("Width" , "Width" )
+        $this.WrapProperty("Text"  , "Text"  )
+    }
+
+}
+
+class CFExpander : CFElement {
+    hidden  [CFCustomPanel] $BodyPanel          = [CFCustomPanel]::new()
+    hidden  [CFCustomPanel] $CollapsablePanel   = [CFCustomPanel]::new()
+    hidden  [CFButton]      $Button             = [CFButton]::new()
+    hidden  [String]        $Title              = ""
+
+    CFExpander() {
+        $this.SetNativeUI($this.BodyPanel)
+
+        $this.Button.NativeUI.Style     = "Flat"
+        $this.Button.NativeUI.ForegroundColor = [color]::Black
+        $this.Button.Icon               = [CFIcon] @{ Kind = "keyboard_arrow_up" }
+        $this.Button.IconPosition       = [IconPosition]::Right
+        Add-Member -InputObject $this.Button -MemberType NoteProperty -Name Expander -Value $this
+        $this.Button.Action             = {
+            param ($this)
+            $this.Control.Expander.Toogle()
+        }
+        $this.BodyPanel.xChildren.Add($this.Button.NativeUI)
+        $this.BodyPanel.xChildren.Add($this.CollapsablePanel)
+
+        $this.AddNativeUIChild          = {
+            param (
+                [CFElement] $element
+            )
+            $this.CollapsablePanel.xChildren.Add($element.NativeUI) | Out-Null
+        }
+
+        $this.WrapProperty("Caption", "Caption", "Button")
+    }
+    
+    [void] Toogle() {
+        if ($this.CollapsablePanel.Visibility -eq [Visibility]::Visible) {
+            $this.CollapsablePanel.Visibility = [Visibility]::Collapsed
+            $this.Button.Icon         = [CFIcon] @{ Kind = "keyboard_arrow_down" }
+        } else {
+            $this.CollapsablePanel.Visibility = [Visibility]::Visible
+            $this.Button.Icon         = [CFIcon] @{ Kind = "keyboard_arrow_up" }
+        }
+    }
+}

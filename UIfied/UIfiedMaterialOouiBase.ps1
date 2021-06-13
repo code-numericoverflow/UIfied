@@ -45,6 +45,7 @@ class MaterialOouiHost : OouiHost {
                 }
             </style>
         '
+        [UI]::BodyFooterHtml = ''
     }
 }
 
@@ -248,3 +249,69 @@ class MaterialOouiCard : OouiCard {
 
 class MaterialOouiImage : OouiImage {
 }
+
+class MaterialOouiTextEditor : OouiTextEditor {
+}
+
+class MaterialOouiExpander : OouiElement {
+    hidden  [div]               $ExpanderContainerDiv     = [div]::new()
+    hidden  [div]               $ExpanderHeaderDiv        = [div]::new()
+    hidden  [div]               $ExpanderButtonDiv        = [div]::new()
+    hidden  [OouiStackPanel]    $ExpanderBodyDiv          = [OouiStackPanel]::new()
+    hidden  [Button]            $ExpanderButton           = [Button]::new()
+    hidden  [Heading]           $Header                   = [Heading]::new(4)
+    hidden  [Icon]              $ExpanderIcon             = [Icon]::new()
+
+    MaterialOouiExpander() {
+        $this.SetNativeUI($this.ExpanderContainerDiv)
+        $this.ExpanderContainerDiv.AppendChild($this.ExpanderHeaderDiv)
+        $this.ExpanderContainerDiv.AppendChild($this.ExpanderBodyDiv.NativeUI)
+        $this.ExpanderHeaderDiv.AppendChild($this.ExpanderButtonDiv)
+        $this.ExpanderHeaderDiv.AppendChild($this.Header)
+        $this.ExpanderButtonDiv.AppendChild($this.ExpanderButton)
+        $this.ExpanderButton.AppendChild($this.ExpanderIcon)
+        
+        $this.WrapProperty("Caption", "Text", "Header")
+        $this.AddNativeUIChild = {
+            param (
+                [OouiElement] $element
+            )
+            $listItem = [Div]::new()
+            if ($this.ExpanderBodyDiv.Orientation -eq [Orientation]::Horizontal) {
+                $listItem.Style.float = "left"
+            } else {
+                $listItem.Style.clear = "both"
+            }
+            $this.ExpanderBodyDiv.NativeUI.AppendChild($listItem) | Out-Null
+            $listItem.AppendChild($element.NativeUI) | Out-Null
+        }
+        Register-ObjectEvent -InputObject $this.ExpanderButton -EventName Click -MessageData $this -Action {
+            $this = $event.MessageData
+            $this.ToogleContent()
+        } | Out-Null
+        $this.StyleComponents()
+    }
+
+    [void] StyleComponents() {
+        $this.ExpanderButton.ClassName                    = "btn btn-primary btn-link btn-sm"
+        $this.ExpanderButton.Style.Padding                = "0"
+        $this.ExpanderIcon.ClassName                      = "material-icons"
+        $this.ExpanderIcon.Text                           = "expand_less"
+        $this.ExpanderButtonDiv.Style.float               = "left"
+        $this.Header.Style.display                        = "inline"
+        $this.ExpanderIcon.Style.FontSize                 = "2rem"
+        $this.ExpanderHeaderDiv.Style.BorderBottomStyle   = "solid"
+        $this.ExpanderHeaderDiv.Style.BorderBottomColor   = "#ddd"
+        $this.ExpanderHeaderDiv.Style.BorderBottomWidth   = "1px"
+    }
+
+    [void] ToogleContent() {
+        $this.ExpanderBodyDiv.Visible = -not $this.ExpanderBodyDiv.Visible
+        if ($this.ExpanderIcon.Text -eq "expand_more") {
+            $this.ExpanderIcon.Text = "expand_less"
+        } else {
+            $this.ExpanderIcon.Text = "expand_more"
+        }
+    }
+}
+

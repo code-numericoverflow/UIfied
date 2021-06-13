@@ -72,6 +72,8 @@ We have implemented these controls:
 - Icon
 - Card
 - Image
+- TextEditor
+- Expander
 
 ## Screenshots
 

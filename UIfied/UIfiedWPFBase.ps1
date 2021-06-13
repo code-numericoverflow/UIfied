@@ -818,3 +818,40 @@ class WPFImage : WPFElement {
         $this.WrapProperty("Width", "Width")
     }
 }
+
+class WPFTextEditor : WPFTextBox {
+
+    WPFTextEditor() {
+        #$this.NativeUI.TextWrapping                    = "Wrap" 
+        $this.NativeUI.AcceptsReturn                   = $true
+        $this.NativeUI.VerticalScrollBarVisibility     = "Visible"
+        $this.NativeUI.HorizontalScrollBarVisibility   = "Auto"
+        Add-Member -InputObject $this -Name Height -MemberType ScriptProperty -Value {
+            [int] $this.NativeUI.Height / 20
+        } -SecondValue {
+            $this.NativeUI.Height  = $args[0] * 20
+        }
+        Add-Member -InputObject $this -Name Width  -MemberType ScriptProperty -Value {
+            [int] $this.NativeUI.Width / 20
+        } -SecondValue {
+            $this.NativeUI.Width  = $args[0] * 20
+        }
+    }
+
+}
+
+class WPFExpander : WPFElement {
+    hidden $StackPanelNativeUI = [StackPanel]::new()
+
+    WPFExpander() {
+        $this.SetNativeUI([Expander]::new())
+        $this.WrapProperty("Caption", "Header")
+        $this.NativeUI.Content = $this.StackPanelNativeUI
+        $this.AddNativeUIChild = {
+            param (
+                [WPFElement] $element
+            )
+            $this.StackPanelNativeUI.AddChild($element.NativeUI) | Out-Null
+        }
+    }
+}

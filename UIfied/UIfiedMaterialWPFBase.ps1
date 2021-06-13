@@ -160,11 +160,20 @@ class MaterialWPFListColumn : WPFListColumn {
 }
 
 class MaterialWPFTabItem : MaterialWPFStackPanel {
-    [MaterialWPFRadioButton]   $HeaderRadioButton   = ([MaterialWPFRadioButton]  @{ Caption     = ""     })
+            [MaterialWPFRadioButton]   $HeaderRadioButton   = ([MaterialWPFRadioButton]  @{ Caption     = ""     })
+    hidden  [String]                   $CaptionText         = ""
 
     MaterialWPFTabItem() {
         Add-Member -InputObject $this.HeaderRadioButton -Name Tab -Value $this -MemberType NoteProperty
-        $this.WrapProperty("Caption", "Caption", "HeaderRadioButton")
+
+        #$this.WrapProperty("Caption", "Caption", "HeaderRadioButton")
+        Add-Member -InputObject $this -Name Caption -MemberType ScriptProperty -Value {
+            $this.CaptionText
+        } -SecondValue {
+            $this.CaptionText = $args[0]
+            $this.HeaderRadioButton.Caption = $args[0].ToUpperInvariant()
+        }
+
         $this.HeaderRadioButton.NativeUI.SetResourceReference([Control]::StyleProperty, "MaterialDesignTabRadioButton")
         $this.Visible = $false
         $this.HeaderRadioButton.Click = {
@@ -375,4 +384,10 @@ class MaterialWPFCard : WPFCard {
 }
 
 class MaterialWPFImage : WPFImage {
+}
+
+class MaterialWPFTextEditor : WPFTextEditor {
+}
+
+class MaterialWPFExpander : WPFExpander {
 }

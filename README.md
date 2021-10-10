@@ -27,7 +27,7 @@ Write complex UIs the easy way with the UIfied DSL
 
 ## Six UI types supported
 
-UIFied supports four UI flavors
+UIFied supports six UI flavors
 
 - Windows: UIfied creates WPF UIs.
 - Console: UIfied uses [ConsoleFramework](https://github.com/elw00d/consoleframework) for console UIs.

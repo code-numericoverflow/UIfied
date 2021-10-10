@@ -58,10 +58,12 @@ function Get-UIStackPanel {
     param (
         [UIType]       $UIType       = [UIConfig]::UIType,
         [Orientation]  $Orientation  = [Orientation]::Vertical,
-        [ScriptBlock]  $Components   = {}
+        [ScriptBlock]  $Components   = {},
+        [String]       $Name         = ""
     )
     $stackPanel = New-Object ($UIType.ToString() + "StackPanel")
     $stackPanel.Orientation = $Orientation
+    $stackPanel.Name = $Name
     $childElements = Invoke-Command -ScriptBlock $Components
     $childElements | ForEach-Object {
         $stackPanel.AddChild($_)

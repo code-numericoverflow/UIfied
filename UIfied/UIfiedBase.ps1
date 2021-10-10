@@ -272,7 +272,7 @@ class IconStrinfy {
         menu                       = [string] [char] 02261 # 62542
         add                        = [string] [char] 62541
         edit                       = [string] [char] 61504
-        delete                     = [string] [char] 62606
+        delete                     = [string] [char] 63061
         clear                      = [string] [char] 62567
         calendar_today             = [string] [char] 62957
         query_builder              = [string] [char] 63055

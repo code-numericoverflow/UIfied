@@ -167,6 +167,8 @@ class WPFButton : WPFElement {
 }
 
 class WPFTextBox : WPFElement {
+    [String] $Pattern       = ""
+    [String] $DefaultText   = ""
 
     WPFTextBox() {
         $this.SetNativeUI([TextBox]::new())
@@ -174,6 +176,14 @@ class WPFTextBox : WPFElement {
         $this.WrapProperty("TextAlignment", "TextAlignment")
         $this.AddScriptBlockProperty("Change")
         $this.NativeUI.Add_TextChanged({ $this.Control.OnChange() })
+        $this.NativeUI.Add_LostFocus({
+            if ($this.Control.Pattern -ne "") {
+                $regex = [Regex]::new($this.Control.Pattern)
+                if (-not $regex.IsMatch($this.Control.Text)) {
+                    $this.Control.Text = $this.Control.DefaultText
+                }
+            }
+        })
     }
 
     [void] OnChange() {
@@ -854,5 +864,25 @@ class WPFExpander : WPFElement {
             )
             $this.StackPanelNativeUI.AddChild($element.NativeUI) | Out-Null
         }
+    }
+}
+
+class WPFInteger : WPFTextBox {
+
+    WPFInteger() {
+        $this.TextAlignment   = [TextAlignment]::Right
+        $this.Pattern         = '^[\d]+$'
+        $this.DefaultText     = "0"
+        $this.Text            = "0"
+    }
+}
+
+class WPFDouble : WPFTextBox {
+
+    WPFDouble() {
+        $this.TextAlignment   = [TextAlignment]::Right
+        $this.Pattern         = '^[\d\.]+$'
+        $this.DefaultText     = "0.0"
+        $this.Text            = "0.0"
     }
 }

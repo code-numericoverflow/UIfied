@@ -391,3 +391,9 @@ class MaterialWPFTextEditor : WPFTextEditor {
 
 class MaterialWPFExpander : WPFExpander {
 }
+
+class MaterialWPFInteger : WPFInteger {
+}
+
+class MaterialWPFDouble : WPFDouble {
+}

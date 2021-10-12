@@ -89,12 +89,16 @@ function Get-UITextBox {
         [ScriptBlock]     $Change            = {},
         [String]          $Text              = "",
         [TextAlignment]   $TextAlignment     = [TextAlignment]::Left,
+        [String]          $Pattern           = "",
+        [String]          $DefaultText       = "",
         [String]          $Name              = ""
     )
     $textBox = New-Object ($UIType.ToString() + "TextBox")
     $textBox.Change          = $Change
     $textBox.Text            = $Text
     $textBox.TextAlignment   = $TextAlignment
+    $textBox.Pattern         = $Pattern
+    $textBox.DefaultText     = $DefaultText
     $textBox.Name            = $Name
     $textBox
 }
@@ -429,4 +433,32 @@ function Get-UIExpander {
         $expander.AddChild($_)
     }
     $expander
+}
+
+function Get-UIInteger {
+    param (
+        [UIType]          $UIType            = [UIConfig]::UIType,
+        [ScriptBlock]     $Change            = {},
+        [String]          $Text              = "0",
+        [String]          $Name              = ""
+    )
+    $integer = New-Object ($UIType.ToString() + "Integer")
+    $integer.Change  = $Change
+    $integer.Text    = $Text
+    $integer.Name    = $Name
+    $integer
+}
+
+function Get-UIDouble {
+    param (
+        [UIType]          $UIType            = [UIConfig]::UIType,
+        [ScriptBlock]     $Change            = {},
+        [String]          $Text              = "0.00",
+        [String]          $Name              = ""
+    )
+    $double = New-Object ($UIType.ToString() + "Double")
+    $double.Change  = $Change
+    $double.Text    = $Text
+    $double.Name    = $Name
+    $double
 }

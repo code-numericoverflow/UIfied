@@ -315,3 +315,16 @@ class MaterialOouiExpander : OouiElement {
     }
 }
 
+class MaterialOouiInteger : OouiInteger {
+
+    MaterialOouiInteger() {
+        $this.NativeUI.ClassName = "form-control"
+    }
+}
+
+class MaterialOouiDouble : OouiDouble {
+
+    MaterialOouiDouble() {
+        $this.NativeUI.ClassName = "form-control"
+    }
+}

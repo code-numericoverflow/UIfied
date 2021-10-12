@@ -187,3 +187,17 @@ class MaterialCFTextEditor : CFTextEditor {
 
 class MaterialCFExpander : CFExpander {
 }
+
+class MaterialCFInteger : CFInteger {
+
+    MaterialCFInteger() {
+        $this.NativeUI.Style = "Flat"
+    }
+}
+
+class MaterialCFDouble : CFDouble {
+
+    MaterialCFDouble() {
+        $this.NativeUI.Style = "Flat"
+    }
+}

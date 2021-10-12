@@ -269,6 +269,8 @@ class OouiButton : OouiElement {
 }
 
 class OouiTextBox : OouiElement {
+    [String] $Pattern       = ""
+    [String] $DefaultText   = ""
 
     OouiTextBox() {
         $this.SetNativeUI([TextInput]::new())
@@ -276,6 +278,12 @@ class OouiTextBox : OouiElement {
         $this.AddScriptBlockProperty("Change")
         Register-ObjectEvent -InputObject $this.NativeUI -EventName Change -MessageData $this -Action {
             $this = $event.MessageData
+            if ($this.Control.Pattern -ne "") {
+                $regex = [Regex]::new($this.Control.Pattern)
+                if (-not $regex.IsMatch($this.Control.Text)) {
+                    $this.Control.Text = $this.Control.DefaultText
+                }
+            }
             $this.Control.OnChange()
         } | Out-Null
         Add-Member -InputObject $this -Name TextAlignment -MemberType ScriptProperty -Value {
@@ -1202,4 +1210,24 @@ class OouiExpander : OouiElement {
         }
     }
 
+}
+
+class OouiInteger : OouiTextBox {
+
+    OouiInteger() {
+        $this.TextAlignment   = [TextAlignment]::Right
+        $this.Pattern         = '^[\d]+$'
+        $this.DefaultText     = "0"
+        $this.Text            = "0"
+    }
+}
+
+class OouiDouble : OouiTextBox {
+
+    OouiDouble() {
+        $this.TextAlignment   = [TextAlignment]::Right
+        $this.Pattern         = '^[\d\.]+$'
+        $this.DefaultText     = "0.0"
+        $this.Text            = "0.0"
+    }
 }

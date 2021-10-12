@@ -4,7 +4,7 @@ Import-Module "$PSScriptRoot\..\UIfied"
 $wsb = {
     UIWindow -Caption "My Title" -Loaded {
             param ($this)
-            $this.Form.Caption = $this.Form.Caption + " Loaded at " + (Get-Date).ToString()
+            $this.Form.Caption = $this.Form.Caption + " Loaded at " + (Get-Date).ToString() + " " + $PID
         } -Components {
         UIStackPanel -Orientation Vertical -Components {
             UITabControl -Components {
@@ -30,6 +30,12 @@ $wsb = {
                                 }
                                 UILabel    -Caption "TextAlignment"
                                 UITextBox -TextAlignment Right
+                                UILabel    -Caption "Pattern"
+                                UITextBox -TextAlignment Right -Text "0" -DefaultText "0" -Pattern '^\d+$'
+                                UILabel    -Caption "Integer"
+                                UIInteger
+                                UILabel    -Caption "Double"
+                                UIDouble
                             }
                         }
                         UIStackPanel -Orientation Vertical -Components {
@@ -202,7 +208,7 @@ $wsb = {
     }
 }
 
-Set-UIMaterialCF
+Set-UIMaterialOoui
 
 $h = Get-UIHost
 #cls

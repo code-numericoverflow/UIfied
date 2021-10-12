@@ -331,6 +331,8 @@ class CFCustomTextBox : TextBox {
 
 class CFTextBox : CFElement {
     [TextAlignment] $TextAlignment = [TextAlignment]::Left
+    [String]        $Pattern       = ""
+    [String]        $DefaultText   = ""
 
     CFTextBox() {
         $this.SetNativeUI([CFCustomTextBox]::new())
@@ -346,6 +348,15 @@ class CFTextBox : CFElement {
                 $this.Control.OnChange()
             }
         })
+        $this.NativeUI.Add_LostKeyboardFocus({
+            if ($this.Control.Pattern -ne "") {
+                $regex = [Regex]::new($this.Control.Pattern)
+                if (-not $regex.IsMatch($this.Control.Text)) {
+                    $this.Control.Text = $this.Control.DefaultText
+                }
+            }
+        })
+        
     }
 
     [void] OnChange() {
@@ -1465,5 +1476,25 @@ class CFExpander : CFElement {
             $this.CollapsablePanel.Visibility = [Visibility]::Visible
             $this.Button.Icon         = [CFIcon] @{ Kind = "keyboard_arrow_up" }
         }
+    }
+}
+
+class CFInteger : CFTextBox {
+
+    CFInteger() {
+        $this.TextAlignment   = [TextAlignment]::Right
+        $this.Pattern         = '^[\d]+$'
+        $this.DefaultText     = "0"
+        $this.Text            = "0"
+    }
+}
+
+class CFDouble : CFTextBox {
+
+    CFDouble() {
+        $this.TextAlignment   = [TextAlignment]::Right
+        $this.Pattern         = '^[\d\.]+$'
+        $this.DefaultText     = "0.0"
+        $this.Text            = "0.0"
     }
 }

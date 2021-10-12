@@ -28,6 +28,8 @@ $wsb = {
                                     param($this)
                                     $this.Form.TextBoxLabel.Caption = $this.Control.Text
                                 }
+                                UILabel    -Caption "TextAlignment"
+                                UITextBox -TextAlignment Right
                             }
                         }
                         UIStackPanel -Orientation Vertical -Components {

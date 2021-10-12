@@ -241,6 +241,11 @@ enum Orientation {
     Vertical
 }
 
+enum TextAlignment {
+    Left
+    Right
+}
+
 class ListItem {
     [List[UIElement]] $Children            = [List[UIElement]]::new()
 
@@ -304,6 +309,46 @@ class IconStrinfy {
 enum IconPosition {
     Left
     Right
+}
+
+#endregion
+
+#region UI Utilities
+
+function Set-UIControlValue {
+    param (
+        $Object,
+        $Form,
+        $ControlPrefix   = ""
+    )
+    $properties = Get-Member -InputObject $Object -MemberType Properties
+    $properties | ForEach-Object {
+        $propertyName = $_.Name
+        $controlName = $ControlPrefix + $propertyName
+        $control = $Form."$controlName"
+        if ($control -ne $null) {
+            $controlProperties = Get-Member -InputObject $control -MemberType Properties
+            if ($controlProperties.Name -contains "Text") {
+                $control.Text = $Object."$propertyName"
+            } elseif ($controlProperties.Name -contains "Value") {
+                $control.Value = $Object."$propertyName"
+            }
+        }
+    }
+}
+
+function Get-UIMethod {
+    param (
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
+        [Object]  $InputObject, 
+        [Parameter(Mandatory = $true)]
+        [String]   $Name,
+        [ScriptBlock] $ScriptBlock = { }
+    )
+    process {
+        Add-Member -InputObject $InputObject -MemberType ScriptMethod -Name $Name -Value $ScriptBlock | Out-Null
+        $InputObject
+    }
 }
 
 #endregion

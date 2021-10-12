@@ -330,6 +330,7 @@ class CFCustomTextBox : TextBox {
 }
 
 class CFTextBox : CFElement {
+    [TextAlignment] $TextAlignment = [TextAlignment]::Left
 
     CFTextBox() {
         $this.SetNativeUI([CFCustomTextBox]::new())

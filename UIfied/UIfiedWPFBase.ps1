@@ -171,6 +171,7 @@ class WPFTextBox : WPFElement {
     WPFTextBox() {
         $this.SetNativeUI([TextBox]::new())
         $this.WrapProperty("Text", "Text")
+        $this.WrapProperty("TextAlignment", "TextAlignment")
         $this.AddScriptBlockProperty("Change")
         $this.NativeUI.Add_TextChanged({ $this.Control.OnChange() })
     }

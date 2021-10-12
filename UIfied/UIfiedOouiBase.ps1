@@ -278,6 +278,20 @@ class OouiTextBox : OouiElement {
             $this = $event.MessageData
             $this.Control.OnChange()
         } | Out-Null
+        Add-Member -InputObject $this -Name TextAlignment -MemberType ScriptProperty -Value {
+            if ($this.NativeUI.Style.TextAlign -eq "left") {
+                [TextAlignment]::Left
+            } else {
+                [TextAlignment]::Right
+            }
+        } -SecondValue {
+            if ($args[0] -eq "Left") {
+                $this.NativeUI.Style.TextAlign = "left"
+            } else {
+                $this.NativeUI.Style.TextAlign = "right"
+            }
+
+        }
     }
 
     [void] OnChange() {

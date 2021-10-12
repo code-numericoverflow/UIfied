@@ -85,15 +85,17 @@ function Get-UILabel {
 
 function Get-UITextBox {
     param (
-        [UIType]       $UIType       = [UIConfig]::UIType,
-        [ScriptBlock]  $Change       = {},
-        [String]       $Text         = "",
-        [String]       $Name         = ""
+        [UIType]          $UIType            = [UIConfig]::UIType,
+        [ScriptBlock]     $Change            = {},
+        [String]          $Text              = "",
+        [TextAlignment]   $TextAlignment     = [TextAlignment]::Left,
+        [String]          $Name              = ""
     )
     $textBox = New-Object ($UIType.ToString() + "TextBox")
-    $textBox.Change     = $Change
-    $textBox.Text       = $Text
-    $textBox.Name       = $Name
+    $textBox.Change          = $Change
+    $textBox.Text            = $Text
+    $textBox.TextAlignment   = $TextAlignment
+    $textBox.Name            = $Name
     $textBox
 }
 

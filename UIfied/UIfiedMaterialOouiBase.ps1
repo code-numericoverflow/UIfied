@@ -259,7 +259,7 @@ class MaterialOouiExpander : OouiElement {
     hidden  [div]               $ExpanderButtonDiv        = [div]::new()
     hidden  [OouiStackPanel]    $ExpanderBodyDiv          = [OouiStackPanel]::new()
     hidden  [Button]            $ExpanderButton           = [Button]::new()
-    hidden  [Heading]           $Header                   = [Heading]::new(4)
+    hidden  [Heading]           $Header                   = [Heading]::new(3)
     hidden  [Icon]              $ExpanderIcon             = [Icon]::new()
 
     MaterialOouiExpander() {

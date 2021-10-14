@@ -328,3 +328,9 @@ class MaterialOouiDouble : OouiDouble {
         $this.NativeUI.ClassName = "form-control"
     }
 }
+
+class MaterialOouiComboBoxItem : OouiComboBoxItem {
+}
+
+class MaterialOouiCombobox : OouiCombobox {
+}

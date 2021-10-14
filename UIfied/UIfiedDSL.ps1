@@ -462,3 +462,33 @@ function Get-UIDouble {
     $double.Name    = $Name
     $double
 }
+
+function Get-UIComboBoxItem {
+    param (
+        [String]       $Id        = "",
+        [String]       $Caption   = ""
+    )
+    $comboBoxItem = New-Object ($UIType.ToString() + "ComboBoxItem")
+    $comboBoxItem.Id       = $Id
+    $comboBoxItem.Caption  = $Caption
+    $comboBoxItem
+}
+
+function Get-UIComboBox {
+    param (
+        [UIType]       $UIType       = [UIConfig]::UIType,
+        [ScriptBlock]  $Change       = {},
+        [String]       $Text         = "",
+        [ScriptBlock]  $Components   = {},
+        [String]       $Name         = ""
+    )
+    $comboBox = New-Object ($UIType.ToString() + "ComboBox")
+    $comboBox.Name    = $Name
+    $comboBox.Change  = $Change
+    $comboBox.Text    = $Text
+    $childElements = Invoke-Command -ScriptBlock $Components
+    $childElements | ForEach-Object {
+        $comboBox.AddChild($_)
+    }
+    $comboBox
+}

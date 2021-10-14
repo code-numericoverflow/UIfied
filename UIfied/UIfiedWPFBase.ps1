@@ -886,3 +886,41 @@ class WPFDouble : WPFTextBox {
         $this.Text            = "0.0"
     }
 }
+
+class WPFComboBoxItem : WPFElement {
+
+    WPFComboBoxItem() {
+        $this.SetNativeUI([ComboBoxItem]::new())
+        $this.WrapProperty("Id"     , "Tag")
+        $this.WrapProperty("Caption", "Content")
+    }
+}
+
+class WPFComboBox : WPFElement {
+
+    WPFComboBox() {
+        $this.SetNativeUI([ComboBox]::new())
+        Add-Member -InputObject $this -Name Text -MemberType ScriptProperty -Value {
+            $this.NativeUI.SelectedItem.Tag
+        } -SecondValue {
+            $id = $Args[0]
+            $selectedItem = $this.NativeUI.Items | Where-Object { $_.Tag -eq $id }
+            if ($selectedItem -ne $null) {
+                $this.NativeUI.SelectedItem = $selectedItem
+            }
+        }
+        $this.AddScriptBlockProperty("Change")
+        $this.NativeUI.Add_SelectionChanged({ $this.Control.OnChange() })
+        $this.AddNativeUIChild = {
+            param (
+                [WPFElement] $element
+            )
+            $this.NativeUI.Items.Add($element.NativeUI)
+        }
+    }
+
+    [void] OnChange() {
+        $this.InvokeTrappableCommand($this._Change, $this)
+    }
+
+}

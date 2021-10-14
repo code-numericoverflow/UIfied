@@ -1498,3 +1498,47 @@ class CFDouble : CFTextBox {
         $this.Text            = "0.0"
     }
 }
+
+class CFComboBoxItem : CFMenuItem {
+    [String] $Id     
+
+    CFComboBoxItem() {
+    }
+}
+
+class CFCombobox : CFDropDownMenu {
+    [String]   $SelectedId
+
+    CFCombobox() {
+        Add-Member -InputObject $this -Name Text -MemberType ScriptProperty -Value {
+            $this.SelectedId
+        } -SecondValue {
+            $id = $args[0]
+            if ($this.SelectedId -ne $id) {
+                $selectedItem = $this.Children | Where-Object { $_.Id -eq $id }
+                if ($selectedItem -ne $null) {
+                    $this.Caption = $selectedItem.Caption
+                    $this.SelectedId = $id
+                    $this.Control.OnChange()
+                }
+            }
+        }
+        $this.AddScriptBlockProperty("Change")
+        $this.AddNativeUIChild = {
+            param (
+                [CFElement] $element
+            )
+            Add-Member -InputObject $element -MemberType NoteProperty -Name ComboBox          -Value $this
+            $element.Action = {
+                param ($this)
+                $this.ComboBox.Text = $this.Id
+            }
+            $this.NativeUI.ContextMenu.Items.Add($element.NativeUI)
+        }
+    }
+
+    [void] OnChange() {
+        Invoke-Command -ScriptBlock $this._Change -ArgumentList $this
+    }
+
+}

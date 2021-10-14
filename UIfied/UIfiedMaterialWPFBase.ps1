@@ -397,3 +397,9 @@ class MaterialWPFInteger : WPFInteger {
 
 class MaterialWPFDouble : WPFDouble {
 }
+
+class MaterialWPFComboBoxItem : WPFComboBoxItem {
+}
+
+class MaterialWPFComboBox : WPFComboBox {
+}

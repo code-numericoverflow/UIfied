@@ -1231,3 +1231,105 @@ class OouiDouble : OouiTextBox {
         $this.Text            = "0.0"
     }
 }
+
+#region ComboBox with Select
+#class OouiComboBoxItem : OouiElement {
+#
+#    OouiComboBoxItem() {
+#        $this.SetNativeUI([Option]::new())
+#        $this.WrapProperty("Id"     , "Value")
+#        $this.WrapProperty("Caption", "Label")
+#    }
+#}
+#
+#class OouiComboBox : OouiElement {
+#
+#    OouiComboBox() {
+#        $this.SetNativeUI([Select]::new())
+#        Add-Member -InputObject $this -Name Text -MemberType ScriptProperty -Value {
+#            $this.NativeUI.Value
+#        } -SecondValue {
+#            $id = [String] $Args[0]
+#            $this.NativeUI.value = $id
+#            #$selectedItem = $this.NativeUI.Children | Where-Object { $_.Value -eq $id }
+#            #if ($selectedItem -ne $null) {
+#            #    $this.NativeUI.Value = $id
+#            #    $selectedItem.DefaultSelected = $true
+#            #}
+#        }
+#        $this.AddScriptBlockProperty("Change")
+#        Register-ObjectEvent -InputObject $this.NativeUI -EventName Change -MessageData $this -Action {
+#            $this = $event.MessageData
+#            $this.Control.OnChange()
+#        } | Out-Null
+#        $this.AddNativeUIChild = {
+#            param (
+#                [OouiElement] $element
+#            )
+#            $this.NativeUI.AppendChild($element.NativeUI)
+#        }
+#    }
+#
+#    [void] OnChange() {
+#        $this.InvokeTrappableCommand($this._Change, $this)
+#    }
+#
+#}
+#endregion
+
+class OouiComboBoxItem : OouiMenuItem {
+    [String] $Id     
+
+    OouiComboBoxItem() {
+    }
+}
+
+class OouiCombobox : OouiDropDownMenu {
+    [String]   $SelectedId
+    [String]   $BackgroundColor = "transparent"
+    [String]   $Color           = "black"
+
+    OouiCombobox() {
+        Add-Member -InputObject $this -Name Text -MemberType ScriptProperty -Value {
+            $this.SelectedId
+        } -SecondValue {
+            $id = $args[0]
+            if ($this.SelectedId -ne $id) {
+                $selectedItem = $this.Children | Where-Object { $_.Id -eq $id }
+                if ($selectedItem -ne $null) {
+                    $this.DropDownToogle.Caption = $selectedItem.Caption
+                    $this.SelectedId = $id
+                    $this.Control.OnChange()
+                }
+            }
+        }
+        $this.AddScriptBlockProperty("Change")
+        $this.AddNativeUIChild = {
+            param (
+                [OouiElement] $element
+            )
+            $menuItem = [Ooui.ListItem]::new()
+            $element.NativeUI.SetAttribute("class",  "dropdown-item")
+            $element.NativeUI.Style.Width = "100%"
+            $element.NativeUI.Style.BorderColor = "transparent"
+            Add-Member -InputObject $element -MemberType NoteProperty -Name ComboBox          -Value $this
+            $element.Action = {
+                param ($this)
+                $this.ComboBox.Text = $this.Id
+            }
+            $menuItem.AppendChild($element.NativeUI) | Out-Null
+            $this.DropDownMenu.AppendChild($menuItem) | Out-Null
+        }
+        $this.StyleComponents()
+    }
+
+    [void] OnChange() {
+        Invoke-Command -ScriptBlock $this._Change -ArgumentList $this
+    }
+
+    [void] StyleComponents () {
+        $this.DropDownToogle.NativeUI.Style.BackgroundColor = $this.BackgroundColor
+        $this.DropDownToogle.NativeUI.Style.Color           = $this.Color
+    }
+
+}

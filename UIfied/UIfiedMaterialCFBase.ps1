@@ -201,3 +201,17 @@ class MaterialCFDouble : CFDouble {
         $this.NativeUI.Style = "Flat"
     }
 }
+
+class MaterialCFComboBoxItem : CFComboBoxItem {
+
+    MaterialCFComboBoxItem() {
+        $this.NativeUI.BackgroundColor = [Color]::Magenta
+    }
+}
+
+class MaterialCFComboBox : CFComboBox {
+
+    MaterialCFComboBox() {
+        $this.NativeUI.Style = "Primary"
+    }
+}

@@ -20,6 +20,7 @@ $wsb = {
                                     param($this)
                                     $this.Form.ButtonLabel.Caption = Get-Date
                                     $this.Form.MyButton.Icon = (Get-UIIcon -Kind "add")
+                                    $this.Form.MyCombo.Text = "1"
                                 } -Icon (UIIcon -Kind "delete")
                             }
                             UICard -Caption TextBoxes -Components {
@@ -54,6 +55,15 @@ $wsb = {
                             UICard -Caption TextEditor -Components {
                                 UILabel    -Caption "TextEditor:"
                                 UITextEditor -Text "Change this text`nLine2" -Height 5 -Width 30
+                            }
+                            UICard -Caption ComboBox -Components {
+                                UIComboBox -Text 2 -Name MyCombo -Components {
+                                    Get-UIComboBoxItem -Id 1 -Caption Hello
+                                    Get-UIComboBoxItem -Id 2 -Caption GoodBy
+                                } -Change {
+                                    param($this)
+                                    $this.Form.TextBoxLabel.Caption = $this.Control.Text
+                                }
                             }
                         }
                     }
@@ -208,7 +218,7 @@ $wsb = {
     }
 }
 
-Set-UIMaterialOoui
+Set-UIMaterialCF
 
 $h = Get-UIHost
 #cls

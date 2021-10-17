@@ -291,7 +291,7 @@ function Get-UIBrowser {
     param (
         [UIType]       $UIType       = [UIConfig]::UIType,
         [ScriptBlock]  $Columns      = {},
-        [HashTable[]]  $Data         = [HashTable[]] @(),
+        [Object[]]     $Data         = [Object[]] @(),
         [int]          $PageRows     = 10,
         [ScriptBlock]  $AddNew       = {},
         [ScriptBlock]  $Edit         = {},

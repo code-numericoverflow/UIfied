@@ -799,11 +799,11 @@ class CFTimePicker : CFElement {
 }
 
 class CFBrowser : CFStackPanel {
-    [HashTable[]]            $Data            = [HashTable[]] @()
+    [Object[]]               $Data            = [Object[]] @()
     [int]                    $PageRows        = 10
     [int]                    $CurrentPage     = 0
     [Boolean]                $IsEditable      = $true
-    [HashTable]              $CurrentRow
+    [Object]                 $CurrentRow
 
     #region Components Declaration
 
@@ -878,7 +878,7 @@ class CFBrowser : CFStackPanel {
         return $listItem
     }
 
-    hidden [HashTable] GetInitialHash() {
+    hidden [Object] GetInitialHash() {
         $hash = @{}
         $this.Columns | ForEach-Object {
             $column = $_
@@ -887,7 +887,7 @@ class CFBrowser : CFStackPanel {
         return $hash
     }
 
-    hidden [void] AddEditionButtons([HashTable] $hash, [ListItem] $listItem, [int] $rowIndex) {
+    hidden [void] AddEditionButtons([Object] $hash, [ListItem] $listItem, [int] $rowIndex) {
         $editionPanel = [CFStackPanel]::new()
         $editionPanel.Orientation = "Horizontal"
         $listItem.AddChild($editionPanel)
@@ -910,7 +910,7 @@ class CFBrowser : CFStackPanel {
         $this.StyleEditionButtons($editButton, $deleteButton, $rowIndex)
     }
 
-    hidden [void] AddCell([HashTable] $hash, [string] $columnName, [ListItem] $listItem, [int] $rowIndex) {
+    hidden [void] AddCell([Object] $hash, [string] $columnName, [ListItem] $listItem, [int] $rowIndex) {
         $itemLabel = [CFLabel]::new()
         $itemLabel.Caption = $hash."$columnName"
         $listItem.AddChild($itemLabel)
@@ -972,7 +972,7 @@ class CFBrowser : CFStackPanel {
         }
     }
 
-    hidden [HashTable[]] GetSelectedData() {
+    hidden [Object[]] GetSelectedData() {
         return $this.Data | Select-Object -Skip ($this.CurrentPage * $this.PageRows) -First $this.PageRows
     }
 

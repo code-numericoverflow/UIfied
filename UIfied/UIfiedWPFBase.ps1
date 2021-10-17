@@ -428,11 +428,11 @@ class WPFTimePicker : WPFElement {
 }
 
 class WPFBrowser : WPFStackPanel {
-    [HashTable[]]            $Data            = [HashTable[]] @()
+    [Object[]]               $Data            = [Object[]] @()
     [int]                    $PageRows        = 10
     [int]                    $CurrentPage     = 0
     [Boolean]                $IsEditable      = $true
-    [HashTable]              $CurrentRow
+    [Object]                 $CurrentRow
 
     #region Components Declaration
 
@@ -507,7 +507,7 @@ class WPFBrowser : WPFStackPanel {
         return $listItem
     }
 
-    hidden [HashTable] GetInitialHash() {
+    hidden [Object] GetInitialHash() {
         $hash = @{}
         $this.Columns | ForEach-Object {
             $column = $_
@@ -516,7 +516,7 @@ class WPFBrowser : WPFStackPanel {
         return $hash
     }
 
-    hidden [void] AddEditionButtons([HashTable] $hash, [ListItem] $listItem, [int] $rowIndex) {
+    hidden [void] AddEditionButtons([Object] $hash, [ListItem] $listItem, [int] $rowIndex) {
         $editionPanel = [WPFStackPanel]::new()
         $editionPanel.Orientation = "Horizontal"
         $listItem.AddChild($editionPanel)
@@ -539,7 +539,7 @@ class WPFBrowser : WPFStackPanel {
         $this.StyleEditionButtons($editButton, $deleteButton, $rowIndex)
     }
 
-    hidden [void] AddCell([HashTable] $hash, [string] $columnName, [ListItem] $listItem, [int] $rowIndex) {
+    hidden [void] AddCell([Object] $hash, [string] $columnName, [ListItem] $listItem, [int] $rowIndex) {
         $itemLabel = [WPFLabel]::new()
         $itemLabel.Caption = $hash."$columnName"
         $listItem.AddChild($itemLabel)
@@ -601,7 +601,7 @@ class WPFBrowser : WPFStackPanel {
         }
     }
 
-    hidden [HashTable[]] GetSelectedData() {
+    hidden [Object[]] GetSelectedData() {
         return $this.Data | Select-Object -Skip ($this.CurrentPage * $this.PageRows) -First $this.PageRows
     }
 

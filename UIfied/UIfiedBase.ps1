@@ -337,6 +337,29 @@ function Set-UIControlValue {
     }
 }
 
+function Get-UIControlValue {
+    param (
+        $Object,
+        $Form,
+        $ControlPrefix   = ""
+    )
+    $properties = Get-Member -InputObject $Object -MemberType Properties
+    $properties | ForEach-Object {
+        $propertyName = $_.Name
+        $controlName = $ControlPrefix + $propertyName
+        $control = $Form."$controlName"
+        if ($control -ne $null) {
+            $controlProperties = Get-Member -InputObject $control -MemberType Properties
+            if ($controlProperties.Name -contains "Text") {
+                $Object."$propertyName" = $control.Text
+            } elseif ($controlProperties.Name -contains "Value") {
+                $Object."$propertyName" = $control.Value
+            }
+        }
+    }
+    $Object
+}
+
 function Get-UIMethod {
     param (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]

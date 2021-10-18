@@ -88,6 +88,19 @@ class OouiHost : UIHost {
                 .card-icon {
                     float: left;
                 }
+                button {
+                    width: 100%;
+                }
+                .nav {
+                    padding-top: 10px;
+                }
+                .nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+                    color: #0d6efd;
+                    background-color: white;
+                    border-style: solid;
+                    border-color: #0d6efd;
+                    border-width: 2px;
+                }
             </style>
         '
         [UI]::BodyFooterHtml = '

@@ -43,6 +43,12 @@ class MaterialOouiHost : OouiHost {
                 .card-title {
                     white-space: nowrap;
                 }
+                .card .card-header .card-icon {
+                    background: #9124a3;
+                }
+                button {
+                    width: 100%;
+                }
             </style>
         '
         [UI]::BodyFooterHtml = ''

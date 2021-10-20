@@ -3,11 +3,16 @@ using namespace System.Windows
 using namespace System.Windows.Controls
 using namespace MaterialDesignThemes.Wpf
 
+$Global:SyncHash = $null
+
 class MaterialWPFHost : UIHost {
     [HashTable]  $SyncHash
-                 $UIRunspace
 
     [void] ShowFrame([ScriptBlock] $frameScriptBlock) {
+        $this.SyncHash = [HashTable]::Synchronized(@{})
+        $this.SyncHash.Errors = @()
+        $Global:SyncHash = $this.SyncHash
+
         $window = Invoke-Command -ScriptBlock $frameScriptBlock
         $window.ShowDialog()
     }

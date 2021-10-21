@@ -364,12 +364,28 @@ function Get-UIMethod {
     param (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
         [Object]  $InputObject, 
-        [Parameter(Mandatory = $true)]
+        [Parameter(Position = 0, Mandatory = $true)]
         [String]   $Name,
+        [Parameter(Position = 1)]
         [ScriptBlock] $ScriptBlock = { }
     )
     process {
         Add-Member -InputObject $InputObject -MemberType ScriptMethod -Name $Name -Value $ScriptBlock | Out-Null
+        $InputObject
+    }
+}
+
+function Get-UIProperty {
+    param (
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
+        [Object]  $InputObject, 
+        [Parameter(Position = 0, Mandatory = $true)]
+        [String]   $Name,
+        [ScriptBlock] $Get = { },
+        [ScriptBlock] $Set = { }
+    )
+    process {
+        Add-Member -InputObject $InputObject -Name $Name -MemberType ScriptProperty -Value $Get -SecondValue $Set | Out-Null
         $InputObject
     }
 }

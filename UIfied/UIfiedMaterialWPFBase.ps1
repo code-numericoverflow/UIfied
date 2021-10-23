@@ -3,43 +3,12 @@ using namespace System.Windows
 using namespace System.Windows.Controls
 using namespace MaterialDesignThemes.Wpf
 
-class MaterialWPFHost : UIHost {
-    [HashTable]  $SyncHash
-
-    [void] ShowFrame([ScriptBlock] $frameScriptBlock) {
-        $this.SyncHash = [HashTable]::Synchronized(@{})
-        $this.SyncHash.Errors = @()
-        $Global:SyncHash = $this.SyncHash
-
-        $window = Invoke-Command -ScriptBlock $frameScriptBlock
-        $window.ShowDialog()
-    }
+class MaterialWPFHost : WPFHost {
 }
 
-class MaterialWPFWindow : WindowBase {
-    [Application]  $Application   = [System.Windows.Application]::new()
+class MaterialWPFWindow : WPFWindow {
 
-    MaterialWPFWindow() {
-        $this.StyleApplication()
-        $windowNativeUI = [Window]::new()
-        $windowNativeUI.SizeToContent = 'WidthAndHeight'
-        $windowNativeUI.Margin        = 10
-        $windowNativeUI.FontFamily = "MaterialDesignFont"
-        $windowNativeUI.SetResourceReference([Control]::BackgroundProperty, "MaterialDesignPaper")
-        $this.Application.MainWindow = $windowNativeUI
-
-        $this.SetNativeUI($windowNativeUI)
-        $this.WrapProperty("Caption", "Title")
-        $this.AddScriptBlockProperty("Loaded")
-        $this.AddNativeUIChild = {
-            param (
-                [WPFElement] $element
-            )
-            $this.NativeUI.Content = $element.NativeUI
-        }
-    }
-
-    hidden [void] StyleApplication() {
+    [void] StyleApplication() {
         $uris =
         "/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Light.xaml",
         "/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml",
@@ -52,15 +21,10 @@ class MaterialWPFWindow : WindowBase {
         }
     }
 
-    [void] ShowDialog() {
-        $this.NativeUI.ShowDialog()
-        #$this.Application.Run()
+    [void] StyleComponents() {
+        $this.windowNativeUI.FontFamily = "MaterialDesignFont"
+        $this.windowNativeUI.SetResourceReference([Control]::BackgroundProperty, "MaterialDesignPaper")
     }
-
-    [void] OnLoaded() {
-        Invoke-Command -ScriptBlock $this._Loaded -ArgumentList $this
-    }
-
 }
 
 class MaterialWPFStackPanel : WPFStackPanel {
@@ -221,37 +185,7 @@ class MaterialWPFTabControl : MaterialWPFStackPanel {
 
 }
 
-class MaterialWPFModal : WPFElement {
-    [StackPanel]   $Stack
-    [Window]       $ModalWindow
-
-    MaterialWPFModal() {
-        $this.Stack = [StackPanel]::new()
-        $this.SetNativeUI($this.Stack)
-
-        $this.ModalWindow = [Window]::new()
-        $this.ModalWindow.WindowStyle = [WindowStyle]::SingleBorderWindow
-        $this.ModalWindow.SizeToContent = 'WidthAndHeight'
-        $this.ModalWindow.Margin        = 10
-        $this.ModalWindow.Content       = [StackPanel]::new()
-        $this.WrapProperty("Title", "Title", "ModalWindow")
-
-        $this.AddNativeUIChild = {
-            param (
-                [WPFElement] $element
-            )
-            $this.ModalWindow.Content.AddChild($element.NativeUI) | Out-Null
-        }
-    }
-
-    [void] Show() {
-        $this.ModalWindow.WindowStartupLocation = "CenterOwner"
-        $this.ModalWindow.ShowDialog()
-    }
-
-    [void] Hide() {
-        $this.ModalWindow.Hide()
-    }
+class MaterialWPFModal : WPFModal {
 }
 
 class MaterialWPFTimer : WPFTimer {

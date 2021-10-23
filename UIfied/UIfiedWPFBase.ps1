@@ -40,38 +40,28 @@ class WPFElement : UIElement {
 
 class WPFHost : UIHost {
     [HashTable]  $SyncHash
-                 $UIRunspace
 
     [void] ShowFrame([ScriptBlock] $frameScriptBlock) {
         $this.SyncHash = [HashTable]::Synchronized(@{})
         $this.SyncHash.Errors = @()
-        $this.UIRunspace =[RunspaceFactory]::CreateRunspace()
-        $this.UIRunspace.Name = "UIRunspace"
-        $this.UIRunspace.ApartmentState = "STA"
-        $this.UIRunspace.ThreadOptions = "ReuseThread"         
-        $this.UIRunspace.Open()
-        $this.UIRunspace.SessionStateProxy.SetVariable("SyncHash", $this.SyncHash)
-        $referenceScript = "
-            Import-Module ""$PSScriptRoot\..\UIfied""
-            Set-UIWpf
-        "
-        $ps = [PowerShell]::Create()
-        $ps = $ps.AddScript($referenceScript)
-        $script = [ScriptBlock]::Create("`$SyncHash.Window = " + $frameScriptBlock.ToString() + "; `$SyncHash.Window.ShowDialog()")
-        $ps = $ps.AddScript($script)
-        $ps.Runspace = $this.UIRunspace
-        $ps.BeginInvoke() | Out-Null
-    }
+        $Global:SyncHash = $this.SyncHash
 
+        $Window = Invoke-Command -ScriptBlock $frameScriptBlock
+        $window.ShowDialog()
+    }
 }
 
 class WPFWindow : WindowBase {
+    [Application]  $Application      = [System.Windows.Application]::new()
+    [Window]       $windowNativeUI   = [Window]::new()
 
     WPFWindow() {
-        $windowNativeUI = [Window]::new()
-        $windowNativeUI.SizeToContent = 'WidthAndHeight'
-        $windowNativeUI.Margin        = 10
-        $this.SetNativeUI($windowNativeUI)
+        $this.StyleApplication()
+        $this.windowNativeUI.SizeToContent = 'WidthAndHeight'
+        $this.windowNativeUI.Margin        = 10
+        $this.Application.MainWindow = $this.windowNativeUI
+
+        $this.SetNativeUI($this.windowNativeUI)
         $this.WrapProperty("Caption", "Title")
         $this.AddScriptBlockProperty("Loaded")
         $this.AddNativeUIChild = {
@@ -80,6 +70,13 @@ class WPFWindow : WindowBase {
             )
             $this.NativeUI.Content = $element.NativeUI
         }
+        $this.StyleCOmponents()
+    }
+
+    [void] StyleApplication() {
+    }
+
+    [void] StyleComponents() {
     }
 
     [void] ShowDialog() {
@@ -319,29 +316,39 @@ class WPFTabControl : WPFElement {
 }
   
 class WPFModal : WPFElement {
+    [StackPanel]   $Stack
+    [Window]       $ModalWindow
 
     WPFModal() {
-        $windowNativeUI = [Window]::new()
-        $windowNativeUI.WindowStyle = [WindowStyle]::SingleBorderWindow
-        $windowNativeUI.SizeToContent = 'WidthAndHeight'
-        $windowNativeUI.Margin        = 10
-        $this.SetNativeUI($windowNativeUI)
-        $this.WrapProperty("Title", "Title")
+        $this.Stack = [StackPanel]::new()
+        $this.SetNativeUI($this.Stack)
+
+        $this.ModalWindow = [Window]::new()
+        $this.ModalWindow.SizeToContent = 'WidthAndHeight'
+        $this.ModalWindow.Margin        = 10
+        $this.ModalWindow.Content       = [StackPanel]::new()
+        $this.WrapProperty("Title", "Title", "ModalWindow")
+
         $this.AddNativeUIChild = {
             param (
                 [WPFElement] $element
             )
-            $this.NativeUI.Content = $element.NativeUI
+            $this.ModalWindow.Content.AddChild($element.NativeUI) | Out-Null
         }
+        $this.StyleComponets()
     }
 
     [void] Show() {
-        $this.NativeUI.WindowStartupLocation = "CenterOwner"
-        $this.NativeUI.ShowDialog()
+        $this.ModalWindow.WindowStartupLocation = "CenterOwner"
+        $this.ModalWindow.ShowDialog()
     }
 
     [void] Hide() {
-        $this.NativeUI.Hide()
+        $this.ModalWindow.Hide()
+    }
+
+    [void] StyleComponets() {
+        $this.ModalWindow.WindowStyle = [WindowStyle]::SingleBorderWindow
     }
 }
 

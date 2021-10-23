@@ -3,8 +3,6 @@ using namespace System.Windows
 using namespace System.Windows.Controls
 using namespace MaterialDesignThemes.Wpf
 
-$Global:SyncHash = $null
-
 class MaterialWPFHost : UIHost {
     [HashTable]  $SyncHash
 

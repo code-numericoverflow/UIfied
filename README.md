@@ -74,6 +74,7 @@ We have implemented these controls:
 - Image
 - TextEditor
 - Expander
+- ComboBox
 
 ## Screenshots
 

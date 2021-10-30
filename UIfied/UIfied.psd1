@@ -12,7 +12,7 @@
 RootModule = '.\UIfied.psm1'
 
 # Número de versión de este módulo.
-ModuleVersion = '0.0.8'
+ModuleVersion = '0.0.9'
 
 # PSEditions compatibles
 # CompatiblePSEditions = @()
@@ -30,7 +30,7 @@ CompanyName = 'NumericOverflow'
 Copyright = '(c) 2020 Code. Todos los derechos reservados.'
 
 # Descripción de la funcionalidad proporcionada por este módulo.
-Description = 'A PowerShell unified DSL for UIs'
+Description = 'A Windows PowerShell unified DSL for UIs'
 
 # Versión mínima del motor de Windows PowerShell requerida por este módulo.
 PowerShellVersion = '5.1'
@@ -76,7 +76,8 @@ FunctionsToExport = 'Get-UIDatePicker', 'Get-UIModal', 'Get-UITimer', 'Get-UIBut
                'Get-UIRadioGroup', 'Get-UILabel', 'Get-UIList', 'Get-UIStackPanel', 'Get-UIBrowser',
                'Get-UIDropDownMenu', 'Get-UIMenuItem', 'Get-UIAutoComplete', 'Get-UIAutoCompleteItem',
                'Set-UIMaterialOoui', 'Get-UIIcon', 'Get-UICard', 'Set-UIMaterialCF', 'Get-UIImage',
-               'Get-UITextEditor', 'Get-UIExpander'
+               'Get-UITextEditor', 'Get-UIExpander', 'Set-UIControlValue', 'Get-UIMethod', 'Get-UIProperty',
+               'Get-UIInteger', 'Get-UIDouble', 'Get-UIComboBox', 'Get-UIComboBoxItem', 'Get-UIControlValue'
 
 # Cmdlets para exportar desde este módulo; para conseguir el mejor rendimiento, no uses caracteres comodines ni elimines la entrada; usa una matriz vacía si no hay cmdlets que exportar.
 CmdletsToExport = @()

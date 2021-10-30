@@ -38,6 +38,15 @@ $wsb = {
                                 UILabel    -Caption "Double"
                                 UIDouble
                             }
+                            UICard -Caption ComboBox -Components {
+                                UIComboBox -Text 2 -Name MyCombo -Components {
+                                    Get-UIComboBoxItem -Id 1 -Caption Hello
+                                    Get-UIComboBoxItem -Id 2 -Caption GoodBy
+                                } -Change {
+                                    param($this)
+                                    $this.Form.TextBoxLabel.Caption = $this.Control.Text
+                                }
+                            }
                         }
                         UIStackPanel -Orientation Vertical -Components {
                             UICard -Caption Pickers -Components {
@@ -55,15 +64,6 @@ $wsb = {
                             UICard -Caption TextEditor -Components {
                                 UILabel    -Caption "TextEditor:"
                                 UITextEditor -Text "Change this text`nLine2" -Height 5 -Width 30
-                            }
-                            UICard -Caption ComboBox -Components {
-                                UIComboBox -Text 2 -Name MyCombo -Components {
-                                    Get-UIComboBoxItem -Id 1 -Caption Hello
-                                    Get-UIComboBoxItem -Id 2 -Caption GoodBy
-                                } -Change {
-                                    param($this)
-                                    $this.Form.TextBoxLabel.Caption = $this.Control.Text
-                                }
                             }
                         }
                     }
@@ -218,7 +218,7 @@ $wsb = {
     }
 }
 
-Set-UIMaterialCF
+Set-UIMaterialWPF
 
 $h = Get-UIHost
 #cls

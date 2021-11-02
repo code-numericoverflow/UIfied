@@ -103,6 +103,9 @@ class MaterialWPFButton : WPFElement {
 class MaterialWPFTextBox : WPFTextBox {
 }
 
+class MaterialWPFPassword : WPFPassword {
+}
+
 class MaterialWPFCheckBox : WPFCheckBox {
 
     MaterialWPFCheckBox() {

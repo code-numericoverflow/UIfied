@@ -168,11 +168,8 @@ class WPFTextBox : WPFElement {
     [String] $DefaultText   = ""
 
     WPFTextBox() {
-        $this.SetNativeUI([TextBox]::new())
-        $this.WrapProperty("Text", "Text")
-        $this.WrapProperty("TextAlignment", "TextAlignment")
+        $this.SetNativeUIControl()
         $this.AddScriptBlockProperty("Change")
-        $this.NativeUI.Add_TextChanged({ $this.Control.OnChange() })
         $this.NativeUI.Add_LostFocus({
             if ($this.Control.Pattern -ne "") {
                 $regex = [Regex]::new($this.Control.Pattern)
@@ -183,11 +180,29 @@ class WPFTextBox : WPFElement {
         })
     }
 
+    [void] SetNativeUIControl() {
+        $this.SetNativeUI([TextBox]::new())
+        $this.WrapProperty("Text", "Text")
+        $this.WrapProperty("TextAlignment", "TextAlignment")
+        $this.NativeUI.Add_TextChanged({ $this.Control.OnChange() })
+    }
+
     [void] OnChange() {
         $this.InvokeTrappableCommand($this._Change, $this)
     }
 
 }
+
+class WPFPassword : WPFTextBox {
+    
+    [void] SetNativeUIControl() {
+        $this.SetNativeUI([PasswordBox]::new())
+        $this.WrapProperty("Text", "Password")
+        $this.NativeUI.Add_PasswordChanged({ $this.Control.OnChange() })
+    }
+
+}
+
 
 class WPFCheckBox : WPFElement {
 

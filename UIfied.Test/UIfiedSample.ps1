@@ -65,6 +65,12 @@ $wsb = {
                                 UILabel    -Caption "TextEditor:"
                                 UITextEditor -Text "Change this text`nLine2" -Height 5 -Width 30
                             }
+                            UICard -Caption Password -Components {
+                                UIPassword -Change {
+                                    param($this)
+                                    $this.Form.TextBoxLabel.Caption = $this.Control.Text
+                                }
+                            }
                         }
                     }
                 }

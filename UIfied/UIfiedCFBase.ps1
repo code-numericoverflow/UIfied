@@ -295,8 +295,10 @@ class CFCustomTextBox : TextBox {
 
     [void] Render([RenderingBuffer] $buffer) {
         switch ($this.Style) {
-            "Flat"      { $thiS.RenderFlat($buffer)       }
-            default     { $thiS.RenderDefault($buffer)    }
+            "PassWord"      { $thiS.RenderPassword($buffer)     }
+            "Flat"          { $thiS.RenderFlat($buffer)         }
+            "FlatPassWord"  { $thiS.RenderFlatPassword($buffer) }
+            default         { $thiS.RenderDefault($buffer)      }
         }
     }
 
@@ -312,6 +314,44 @@ class CFCustomTextBox : TextBox {
             for ($i = $displayOffset; $i -lt $this.text.Length; $i++) {
                 if (($i - $displayOffset) -lt ($this.ActualWidth - 2) -and ($i - $displayOffset) -ge 0) {
                     $buffer.SetPixel(1 + ($i - $displayOffset), 0, $this.Text.ToCharArray()[$i], [Colors]::Blend([Color]::Black, [Color]::White))
+                }
+            }
+        }
+        if ($displayOffset -gt 0) {
+            $buffer.SetPixel(0, 0, '<', $attr)
+        }
+        if (-not [String]::IsNullOrEmpty($this.Text) -and $this.ActualWidth - 2 + $displayOffset -lt $this.Text.Length) {
+            $buffer.SetPixel($this.ActualWidth - 1, 0, '>', $attr)
+        }
+    }
+
+    [void] RenderPassword([RenderingBuffer] $buffer) {
+        $displayOffset = $this.GetDisplayOffset()
+        [Attr] $attr = [Colors]::Blend([Color]::White, [Color]::DarkBlue)
+        $buffer.FillRectangle(0, 0, $this.ActualWidth, $this.ActualHeight, ' ', $attr)
+        if ($null -ne $this.Text) {
+            for ($i = $displayOffset; $i -lt $this.text.Length; $i++) {
+                if (($i - $displayOffset) -lt ($this.ActualWidth - 2) -and ($i - $displayOffset) -ge 0) {
+                    $buffer.SetPixel(1 + ($i - $displayOffset), 0, '*', [Colors]::Blend([Color]::White, [Color]::DarkBlue))
+                }
+            }
+        }
+        if ($displayOffset -gt 0) {
+            $buffer.SetPixel(0, 0, '<', $attr)
+        }
+        if (-not [String]::IsNullOrEmpty($this.Text) -and $this.ActualWidth - 2 + $displayOffset -lt $this.Text.Length) {
+            $buffer.SetPixel($this.ActualWidth - 1, 0, '>', $attr)
+        }
+    }
+
+    [void] RenderFlatPassword([RenderingBuffer] $buffer) {
+        $displayOffset = $this.GetDisplayOffset()
+        [Attr] $attr = [Colors]::Blend([Color]::Magenta, [Color]::White)
+        $buffer.FillRectangle(0, 0, $this.ActualWidth, $this.ActualHeight, '_', $attr)
+        if ($null -ne $this.Text) {
+            for ($i = $displayOffset; $i -lt $this.text.Length; $i++) {
+                if (($i - $displayOffset) -lt ($this.ActualWidth - 2) -and ($i - $displayOffset) -ge 0) {
+                    $buffer.SetPixel(1 + ($i - $displayOffset), 0, '*', [Colors]::Blend([Color]::Black, [Color]::White))
                 }
             }
         }
@@ -363,6 +403,13 @@ class CFTextBox : CFElement {
         $this.InvokeTrappableCommand($this._Change, $this)
     }
 
+}
+
+class CFPassword : CFTextBox {
+
+    CFPassword() {
+        $this.NativeUI.Style = "Password"
+    }
 }
 
 class CFCustomCheckBox : CheckBox {

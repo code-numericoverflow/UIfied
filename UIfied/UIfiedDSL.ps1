@@ -103,6 +103,24 @@ function Get-UITextBox {
     $textBox
 }
 
+function Get-UIPassword {
+    param (
+        [UIType]          $UIType            = [UIConfig]::UIType,
+        [ScriptBlock]     $Change            = {},
+        [String]          $Text              = "",
+        [String]          $Pattern           = "",
+        [String]          $DefaultText       = "",
+        [String]          $Name              = ""
+    )
+    $password = New-Object ($UIType.ToString() + "Password")
+    $password.Change          = $Change
+    $password.Text            = $Text
+    $password.Pattern         = $Pattern
+    $password.DefaultText     = $DefaultText
+    $password.Name            = $Name
+    $password
+}
+
 function Get-UICheckBox {
     param (
         [UIType]       $UIType       = [UIConfig]::UIType,

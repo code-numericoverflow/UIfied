@@ -46,6 +46,13 @@ class MaterialCFTextBox : CFTextBox {
     }
 }
 
+class MaterialCFPassword : CFTextBox {
+
+    MaterialCFPassword() {
+        $this.NativeUI.Style = "FlatPassword"
+    }
+}
+
 class MaterialCFCheckBox : CFCheckBox {
 
     MaterialCFCheckBox() {

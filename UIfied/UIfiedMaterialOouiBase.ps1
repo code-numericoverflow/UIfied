@@ -78,6 +78,13 @@ class MaterialOouiTextBox : OouiTextBox {
     
 }
 
+class MaterialOouiPassword : OouiPassword {
+
+    MaterialOouiPassword() {
+        $this.NativeUI.ClassName = "form-control"
+    }
+    
+}
 class MaterialOouiCheckBox : OouiElement {
 
 #  <div class="form-check">

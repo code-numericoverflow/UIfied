@@ -286,7 +286,7 @@ class OouiTextBox : OouiElement {
     [String] $DefaultText   = ""
 
     OouiTextBox() {
-        $this.SetNativeUI([TextInput]::new())
+        $this.SetNativeUIControl()
         $this.WrapProperty("Text", "Value")
         $this.AddScriptBlockProperty("Change")
         Register-ObjectEvent -InputObject $this.NativeUI -EventName Change -MessageData $this -Action {
@@ -315,9 +315,21 @@ class OouiTextBox : OouiElement {
         }
     }
 
+    [void] SetNativeUIControl() {
+        $this.SetNativeUI([TextInput]::new())
+    }
+
     [void] OnChange() {
         Invoke-Command -ScriptBlock $this._Change -ArgumentList $this
     }
+}
+
+class OouiPassword : OouiTextBox {
+
+    [void] SetNativeUIControl() {
+        $this.SetNativeUI([Input]::new("password"))
+    }
+
 }
 
 class OouiCheckBox : OouiElement {

@@ -224,7 +224,7 @@ $wsb = {
     }
 }
 
-Set-UIMaterialWPF
+Set-UIMaterialOoui
 
 $h = Get-UIHost
 #cls

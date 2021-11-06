@@ -203,7 +203,6 @@ class WPFPassword : WPFTextBox {
 
 }
 
-
 class WPFCheckBox : WPFElement {
 
     WPFCheckBox() {
@@ -363,7 +362,7 @@ class WPFModal : WPFElement {
     }
 
     [void] StyleComponets() {
-        $this.ModalWindow.WindowStyle = [WindowStyle]::SingleBorderWindow
+        $this.ModalWindow.WindowStyle = [WindowStyle]::None
     }
 }
 

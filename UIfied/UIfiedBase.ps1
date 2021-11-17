@@ -390,4 +390,28 @@ function Get-UIProperty {
     }
 }
 
+function Add-UIChild {
+    param (
+        [Parameter(ValueFromPipeline=$true, Mandatory=$true)]
+        [UIElement] $Child,
+        [Parameter(Mandatory=$true)]
+        [UIElement] $Target
+    )
+    process {
+        $Target.AddChild($Child)
+    }
+}
+
+function Remove-UIChild {
+    param (
+        [Parameter(ValueFromPipeline=$true, Mandatory=$true)]
+        [UIElement] $Child,
+        [Parameter(Mandatory=$true)]
+        [UIElement] $Target
+    )
+    process {
+        $Target.RemoveChild($Child)
+    }
+}
+
 #endregion

@@ -299,6 +299,12 @@ class MaterialWPFDropDownMenu : MaterialWPFButton {
             )
             $this.NativeUI.ContextMenu.Items.Add($element.NativeUI)
         }
+        $this.RemoveNativeUIChild = {
+            param (
+                [WPFElement] $element
+            )
+            $this.NativeUI.ContextMenu.Items.Remove($element.NativeUI)
+        }
         
         $this.Action = {
             param($this)

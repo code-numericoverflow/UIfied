@@ -85,6 +85,7 @@ class MaterialOouiPassword : OouiPassword {
     }
     
 }
+
 class MaterialOouiCheckBox : OouiElement {
 
 #  <div class="form-check">

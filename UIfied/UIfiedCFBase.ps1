@@ -1168,6 +1168,12 @@ class CFDropDownMenu : CFButton {
             )
             $this.NativeUI.ContextMenu.Items.Add($element.NativeUI)
         }
+        $this.RemoveNativeUIChild = {
+            param (
+                [CFElement] $element
+            )
+            $this.NativeUI.ContextMenu.Items.Remove($element.NativeUI)
+        }
         
         $this.Action = {
             param($this)

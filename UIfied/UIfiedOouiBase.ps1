@@ -994,6 +994,16 @@ class OouiDropDownMenu : OouiStackPanel {
             $menuItem.AppendChild($element.NativeUI) | Out-Null
             $this.DropDownMenu.AppendChild($menuItem) | Out-Null
         }
+        $this.RemoveNativeUIChild = {
+            param (
+                [OouiElement] $element
+            )
+            $this.DropDownMenu.Children | ForEach-Object {
+                if ($_.Children.Item(0) -eq $element.NativeUI) { 
+                    $this.DropDownMenu.RemoveChild($_) | Out-Null
+                }
+            }
+        }
         Add-Member -InputObject $this -Name "Caption" -MemberType ScriptProperty                `
                     -Value          { $this.DropDownToogle.NativeUI.Text }                      `
                     -SecondValue    { $this.DropDownToogle.NativeUI.Text = $args[0] }

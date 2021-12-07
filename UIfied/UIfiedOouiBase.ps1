@@ -149,6 +149,7 @@ class NotSharedForm : Div {
     Publish() {
         $hostWrapper = [OouiWrapper.OouiWrapper]::new($this.Port, $this.Path)
         $hostWrapper.Publish()
+        $hostWrapper.PublishFileUpload("C:\Windows\Temp", "/files/upload")
         Add-Member -InputObject $hostWrapper -MemberType NoteProperty -Name sb -Value $this.CreateElement | Out-Null
         Register-ObjectEvent -InputObject $hostWrapper -EventName OnPublish -MessageData $hostWrapper -Action {
             param ($hostWrapper)
@@ -1365,6 +1366,18 @@ class OouiCombobox : OouiDropDownMenu {
     [void] StyleComponents () {
         $this.DropDownToogle.NativeUI.Style.BackgroundColor = $this.BackgroundColor
         $this.DropDownToogle.NativeUI.Style.Color           = $this.Color
+    }
+
+}
+
+class OouiFileUpload : OouiElement {
+           [Anchor]   $Anchor        = [Anchor] @{ Href = "/files"; Target = "_blank" }
+    hidden [Span]     $LabelNativeUI = [Span]::new()
+
+    OouiFileUpload() {
+        $this.SetNativeUI($this.Anchor)
+        $this.WrapProperty("Caption", "Text", "LabelNativeUI")
+        $this.NativeUI.AppendChild($this.LabelNativeUI)
     }
 
 }

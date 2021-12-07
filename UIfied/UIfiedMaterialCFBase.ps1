@@ -222,3 +222,6 @@ class MaterialCFComboBox : CFComboBox {
         $this.NativeUI.Style = "Primary"
     }
 }
+
+class MaterialCFFileUpload : CFFileUpload {
+}

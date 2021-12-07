@@ -951,3 +951,6 @@ class WPFComboBox : WPFElement {
     }
 
 }
+
+class WPFFileUpload : WPFLabel {
+}

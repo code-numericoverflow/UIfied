@@ -349,3 +349,6 @@ class MaterialWPFComboBoxItem : WPFComboBoxItem {
 
 class MaterialWPFComboBox : WPFComboBox {
 }
+
+class MaterialWPFFileUpload : WPFFileUpload {
+}

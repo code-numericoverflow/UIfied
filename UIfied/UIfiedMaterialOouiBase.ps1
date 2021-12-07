@@ -348,3 +348,6 @@ class MaterialOouiComboBoxItem : OouiComboBoxItem {
 
 class MaterialOouiCombobox : OouiCombobox {
 }
+
+class MaterialOouiFileUpload : OouiFileUpload {
+}

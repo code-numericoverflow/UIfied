@@ -1595,3 +1595,6 @@ class CFCombobox : CFDropDownMenu {
     }
 
 }
+
+class CFFileUpload : CFLabel {
+}

@@ -38,10 +38,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\TestOouiStarndard\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\OouiWrapper\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="Ooui, Version=0.11.303.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\TestOouiStarndard\packages\Ooui.0.11.303\lib\netstandard2.0\Ooui.dll</HintPath>
+      <HintPath>..\OouiWrapper\packages\Ooui.0.11.303\lib\netstandard2.0\Ooui.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

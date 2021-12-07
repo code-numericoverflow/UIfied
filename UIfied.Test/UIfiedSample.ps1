@@ -217,6 +217,9 @@ $wsb = {
                                 $this.Form.TimerStart.Enable = $true
                             }
                         }
+                        UICard -Caption "FileUpload" -Components {
+                            UIFileUpload -Caption "File Upload"
+                        }
                     }
                 }
             }
@@ -224,7 +227,7 @@ $wsb = {
     }
 }
 
-Set-UIMaterialOoui
+Set-UIOoui
 
 $h = Get-UIHost
 #cls

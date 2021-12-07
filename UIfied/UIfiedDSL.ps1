@@ -510,3 +510,15 @@ function Get-UIComboBox {
     }
     $comboBox
 }
+
+function Get-UIFileUpload {
+    param (
+        [UIType]       $UIType       = [UIConfig]::UIType,
+        [String]       $Caption      = "",
+        [String]       $Name         = ""
+    )
+    $fileUpload           = New-Object ($UIType.ToString() + "FileUpload")
+    $fileUpload.Name      = $Name
+    $fileUpload.Caption   = $Caption
+    $fileUpload
+}

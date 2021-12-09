@@ -49,7 +49,7 @@ namespace OouiWrapper
 		void HandleUpload(HttpListenerContext context, CancellationToken token)
 		{
 
-			SaveFile(context.Request.ContentEncoding, GetBoundary(context.Request.ContentType), context.Request.InputStream);
+			SaveFile(context.Request.ContentEncoding, GetBoundary(context.Request.ContentType), context.Request.InputStream, this.UploadFolder);
 
 			context.Response.StatusCode = 200;
 			context.Response.ContentType = "text/html";
@@ -64,7 +64,7 @@ namespace OouiWrapper
 			return "--" + ctype.Split(';')[1].Split('=')[1];
 		}
 
-		private static void SaveFile(Encoding enc, String boundary, Stream input)
+		private static void SaveFile(Encoding enc, String boundary, Stream input, string uploadFolder)
 		{
 			Byte[] boundaryBytes = enc.GetBytes(boundary);
 			Int32 boundaryLen = boundaryBytes.Length;
@@ -78,7 +78,7 @@ namespace OouiWrapper
 			var fileNameLen = inputText.Substring(fileNameBeginPos).IndexOf('\n') - 1;
 			var fileName = inputText.Substring(fileNameBeginPos, fileNameLen).Replace("\"", "");
 
-			using (FileStream output = new FileStream(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + System.IO.Path.DirectorySeparatorChar + fileName, FileMode.Create, FileAccess.Write))
+			using (FileStream output = new FileStream(uploadFolder + System.IO.Path.DirectorySeparatorChar + fileName, FileMode.Create, FileAccess.Write))
 			{
 
 				// Find start boundary

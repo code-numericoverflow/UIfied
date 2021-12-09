@@ -149,7 +149,7 @@ class NotSharedForm : Div {
     Publish() {
         $hostWrapper = [OouiWrapper.OouiWrapper]::new($this.Port, $this.Path)
         $hostWrapper.Publish()
-        $hostWrapper.PublishFileUpload("C:\Windows\Temp", "/files/upload")
+        $hostWrapper.PublishFileUpload($env:UploadPath, "/files/upload")
         Add-Member -InputObject $hostWrapper -MemberType NoteProperty -Name sb -Value $this.CreateElement | Out-Null
         Register-ObjectEvent -InputObject $hostWrapper -EventName OnPublish -MessageData $hostWrapper -Action {
             param ($hostWrapper)

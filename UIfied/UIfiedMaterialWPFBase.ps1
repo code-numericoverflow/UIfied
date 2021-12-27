@@ -33,6 +33,9 @@ class MaterialWPFStackPanel : WPFStackPanel {
 class MaterialWPFIcon : WPFElement {
     hidden [String]  $KindName
     hidden           $TextInfo
+    static           $IconTranslation = [PSCustomObject] @{
+        document = "FileDocument"
+    }
 
     MaterialWPFIcon() {
         $this.TextInfo = ([System.Globalization.CultureInfo]::new("en-US",$false)).TextInfo
@@ -41,7 +44,11 @@ class MaterialWPFIcon : WPFElement {
             $this.KindName
         } -SecondValue {
             $this.KindName = $args[0]
-            $this.NativeUI.Kind = $this.TextInfo.ToTitleCase($this.KindName).Replace("_", [String]::Empty)
+            if ([MaterialWPFIcon]::IconTranslation."$($this.KindName)" -ne $null) {
+                $this.NativeUI.Kind = [MaterialWPFIcon]::IconTranslation."$($this.KindName)"
+            } else {
+                $this.NativeUI.Kind = $this.TextInfo.ToTitleCase($this.KindName).Replace("_", [String]::Empty)
+            }
         }
     }
 }

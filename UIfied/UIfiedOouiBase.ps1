@@ -70,6 +70,7 @@ class OouiElement : UIElement {
 class OouiHost : UIHost {
     $Shared         = $false
     $Port           = 8185
+    $Host           = [UI]::Host
     [ScriptBlock] $CreateElement
 
     OouiHost() {
@@ -129,7 +130,7 @@ class OouiHost : UIHost {
     }
 
     [void] ShowNotSharedFrame() {
-        $notSharedForm = [NotSharedForm]::new($this.Port, "/Form")
+        $notSharedForm = [NotSharedForm]::new($this.Host, $this.Port, "/Form")
         $notSharedForm.CreateElement = $this.CreateElement
         $notSharedForm.Publish()
     }
@@ -138,16 +139,19 @@ class OouiHost : UIHost {
 class NotSharedForm : Div {
     [Anchor]       $Anchor
     [ScriptBlock]  $CreateElement
+    [string]       $Host
     [int]          $Port
     [string]       $Path
 
-    NotSharedForm([int]$port, [string]$path) {
+    NotSharedForm([string]$host, [int]$port, [string]$path) {
+        $this.Host = $host
         $this.Port = $port
         $this.Path = $path
     }
 
     Publish() {
         $hostWrapper = [OouiWrapper.OouiWrapper]::new($this.Port, $this.Path)
+        $hostWrapper.Host = $this.Host
         $hostWrapper.Publish()
         $hostWrapper.PublishFileUpload($env:UploadPath, "/files/upload")
         Add-Member -InputObject $hostWrapper -MemberType NoteProperty -Name sb -Value $this.CreateElement | Out-Null
@@ -205,15 +209,24 @@ class OouiStackPanel : OouiElement {
 }
 
 class OouiIcon : OouiElement {
+    [String] $KindName = ""
+    static   $IconTranslation = [PSCustomObject] @{
+        document = "description"
+    }
 
     OouiIcon() {
         $nativeUI = [Icon]::new()
         $nativeUI.ClassName = "material-icons"
         $this.SetNativeUI($nativeUI)
         Add-Member -InputObject $this -Name Kind -MemberType ScriptProperty -Value {
-            $this.NativeUI.Text
+            $this.KindName
         } -SecondValue {
-            $this.NativeUI.Text = $args[0]
+            $this.KindName = $args[0]
+            if ([OouiIcon]::IconTranslation."$($this.KindName)" -ne $null) {
+                $this.NativeUI.Text = [OouiIcon]::IconTranslation."$($this.KindName)"
+            } else {
+                $this.NativeUI.Text = $this.KindName
+            }
         }
     }
 

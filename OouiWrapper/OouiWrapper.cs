@@ -12,7 +12,8 @@ namespace OouiWrapper
     public class OouiWrapper
     {
         public Element Frame;
-        private int Port;
+        public int Port;
+		public string Host = UI.Host;
         private string Path;
         public delegate void OnPublishHandler();
         public event OnPublishHandler OnPublish;
@@ -26,6 +27,7 @@ namespace OouiWrapper
         }
         public void Publish()
         {
+			UI.Host = this.Host;
             UI.Port = this.Port;
             UI.Publish(this.Path, MakeElement);
         }
@@ -58,7 +60,24 @@ namespace OouiWrapper
 
 			context.Response.Close();
 		}
-
+		//public void HandleHookableElement(HttpListenerContext listenerContext, CancellationToken token)
+		//{
+		//	var url = listenerContext.Request.Url;
+		//	var path = url.LocalPath;
+		//	var response = listenerContext.Response;
+		//
+		//	response.StatusCode = 200;
+		//	response.ContentType = "text/html";
+		//	response.ContentEncoding = Encoding.UTF8;
+		//	var html = Encoding.UTF8.GetBytes(UI.RenderTemplate(path));
+		//	//var html = Encoding.UTF8.GetBytes(MakeFrame()));
+		//	response.ContentLength64 = html.LongLength;
+		//	using (var s = response.OutputStream)
+		//	{
+		//		s.Write(html, 0, html.Length);
+		//	}
+		//	response.Close();
+		//}
 		private static String GetBoundary(String ctype)
 		{
 			return "--" + ctype.Split(';')[1].Split('=')[1];
@@ -187,4 +206,5 @@ namespace OouiWrapper
 			return app;
 		}
 	}
+
 }

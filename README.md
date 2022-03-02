@@ -75,6 +75,7 @@ We have implemented these controls:
 - TextEditor
 - Expander
 - ComboBox
+- Expander
 
 ## Screenshots
 
